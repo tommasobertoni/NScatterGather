@@ -10,11 +10,13 @@ namespace NScatterGather.Inspection
     {
         private static readonly Type _taskType;
         private static readonly Type _valueTaskType;
+        private static readonly Type _voidType;
 
         static MethodAnalyzer()
         {
             _taskType = typeof(Task);
             _valueTaskType = typeof(ValueTask);
+            _voidType = typeof(void);
         }
 
         public bool IsMatch(
@@ -25,6 +27,12 @@ namespace NScatterGather.Inspection
             match = null;
 
             var (_, method, parameters, _) = inspection;
+
+            if (parameters.Count == 0 && requestType == _voidType)
+            {
+                match = method;
+                return true;
+            }
 
             if (parameters.Count != 1)
                 return false;
