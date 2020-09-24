@@ -8,16 +8,9 @@ namespace NScatterGather.Inspection
 {
     internal class MethodAnalyzer
     {
-        private static readonly Type _taskType;
-        private static readonly Type _valueTaskType;
-        private static readonly Type _voidType;
-
-        static MethodAnalyzer()
-        {
-            _taskType = typeof(Task);
-            _valueTaskType = typeof(ValueTask);
-            _voidType = typeof(void);
-        }
+        private static readonly Type _voidType = typeof(void);
+        private static readonly Type _taskType = typeof(Task);
+        private static readonly Type _valueTaskType = typeof(ValueTask);
 
         public bool IsMatch(
             MethodInspection inspection,

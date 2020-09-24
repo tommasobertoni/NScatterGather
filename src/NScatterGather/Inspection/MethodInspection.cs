@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace NScatterGather.Inspection
 {
     internal class MethodInspection
     {
+        private static readonly Type _voidType = typeof(void);
+        private static readonly Type _taskType = typeof(Task);
+        private static readonly Type _valueTaskType = typeof(ValueTask);
+
         public Type InspectedType { get; }
 
         public MethodInfo InspectedMethod { get; }
@@ -13,6 +18,8 @@ namespace NScatterGather.Inspection
         public IReadOnlyList<ParameterInfo> Parameters { get; }
 
         public Type ReturnType { get; }
+
+        public bool ReturnsAResponse { get; }
 
         internal MethodInspection(
             Type inspectedType,
@@ -26,6 +33,11 @@ namespace NScatterGather.Inspection
 
             Parameters = method.GetParameters();
             ReturnType = method.ReturnType;
+
+            ReturnsAResponse =
+                ReturnType != _voidType &&
+                ReturnType != _taskType &&
+                ReturnType != _valueTaskType;
         }
 
         internal void Deconstruct(

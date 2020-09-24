@@ -28,6 +28,7 @@ namespace NScatterGather.Inspection
                 var methods = type.GetMethods(DefaultFlags);
                 return methods
                     .Select(method => new MethodInspection(type, method))
+                    .Where(inspection => inspection.ReturnsAResponse)
                     .ToArray();
             }
         }
