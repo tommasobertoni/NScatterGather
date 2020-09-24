@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System;
+using Xunit;
 
 namespace NScatterGather.Inspection
 {
@@ -7,6 +8,41 @@ namespace NScatterGather.Inspection
         class SomeRequest { }
 
         class SomeResponse { }
+
+        [Fact]
+        public void Error_if_request_type_is_null()
+        {
+            var cache = new TypeInspectionCache();
+            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(null!, new TypeInspection(false, null)));
+        }
+
+        [Fact]
+        public void Error_if_response_type_is_null()
+        {
+            var cache = new TypeInspectionCache();
+            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(typeof(SomeRequest), null!, new TypeInspection(false, null)));
+        }
+
+        [Fact]
+        public void Error_if_inspection_is_null()
+        {
+            var cache = new TypeInspectionCache();
+            Assert.Throws<ArgumentNullException>(() => cache.TryAdd<SomeRequest>(null!));
+        }
+
+        [Fact]
+        public void Error_if_request_type_is_null_when_searching()
+        {
+            var cache = new TypeInspectionCache();
+            Assert.Throws<ArgumentNullException>(() => cache.TryFindInspectionResult(null!, out _));
+        }
+
+        [Fact]
+        public void Error_if_response_type_is_null_when_searching()
+        {
+            var cache = new TypeInspectionCache();
+            Assert.Throws<ArgumentNullException>(() => cache.TryFindInspectionResult(typeof(SomeRequest), null!, out _));
+        }
 
         [Fact]
         public void Accepts_generic_request_type()

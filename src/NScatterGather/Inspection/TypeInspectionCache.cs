@@ -18,6 +18,7 @@ namespace NScatterGather.Inspection
             TypeInspection inspection)
         {
             if (requestType is null) throw new ArgumentNullException(nameof(requestType));
+            if (inspection is null) throw new ArgumentNullException(nameof(inspection));
 
             var hash = HashCode.Combine(requestType);
             return _cache.TryAdd(hash, inspection);
@@ -50,6 +51,7 @@ namespace NScatterGather.Inspection
         {
             if (requestType is null) throw new ArgumentNullException(nameof(requestType));
             if (responseType is null) throw new ArgumentNullException(nameof(responseType));
+            if (inspection is null) throw new ArgumentNullException(nameof(inspection));
 
             var hash = HashCode.Combine(requestType, responseType);
             return _cache.TryAdd(hash, inspection);
