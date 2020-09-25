@@ -6,7 +6,7 @@ namespace NScatterGather.Inspection
     {
         public bool IsMatch { get; }
 
-        public MethodInfo? Method { get; set; }
+        public MethodInfo? Method { get; }
 
         public TypeInspection(bool isMatch, MethodInfo? method) =>
             (IsMatch, Method) = (isMatch, method);
