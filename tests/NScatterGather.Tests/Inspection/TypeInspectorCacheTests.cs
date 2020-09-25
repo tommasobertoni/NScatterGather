@@ -35,6 +35,7 @@ namespace NScatterGather.Inspection
         {
             var cache = new TypeInspectionCache();
             Assert.Throws<ArgumentNullException>(() => cache.TryFindInspectionResult(null!, out _));
+            Assert.Throws<ArgumentNullException>(() => cache.TryFindInspectionResult(null!, typeof(SomeResponse), out _));
         }
 
         [Fact]

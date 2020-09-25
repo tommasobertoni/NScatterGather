@@ -13,9 +13,9 @@ namespace NScatterGather.Inspection
 
             public string EchoString(string s) => s;
 
-            public Task DoAsync() => Task.CompletedTask;
+            public Task DoTask() => Task.CompletedTask;
 
-            public Task<int> ReturnAsync(int n) => Task.FromResult(n);
+            public Task<int> ReturnTask(int n) => Task.FromResult(n);
 
             public string Multi(int n, string s) => "Don't Panic";
         }
@@ -29,8 +29,8 @@ namespace NScatterGather.Inspection
         private readonly MethodInspection _doVoidInspection;
         private readonly MethodInspection _acceptIntVoidInspection;
         private readonly MethodInspection _echoStringInspection;
-        private readonly MethodInspection _doAsyncInspection;
-        private readonly MethodInspection _returnAsyncInspection;
+        private readonly MethodInspection _doTaskInspection;
+        private readonly MethodInspection _returnTaskInspection;
         private readonly MethodInspection _multiInspection;
 
         public MethodAnalyzerTests()
@@ -46,11 +46,11 @@ namespace NScatterGather.Inspection
             _echoStringInspection = new MethodInspection(
                 t, t.GetMethod(nameof(SomeType.EchoString))!);
 
-            _doAsyncInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.DoAsync))!);
+            _doTaskInspection = new MethodInspection(
+                t, t.GetMethod(nameof(SomeType.DoTask))!);
 
-            _returnAsyncInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.ReturnAsync))!);
+            _returnTaskInspection = new MethodInspection(
+                t, t.GetMethod(nameof(SomeType.ReturnTask))!);
 
             _multiInspection = new MethodInspection(
                 t, t.GetMethod(nameof(SomeType.Multi))!);
@@ -120,12 +120,21 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_doAsyncInspection, typeof(void), typeof(Task), out var match)
-                : analyzer.IsMatch(_doAsyncInspection, typeof(void), out match);
+                ? analyzer.IsMatch(_doTaskInspection, typeof(void), typeof(Task), out var match)
+                : analyzer.IsMatch(_doTaskInspection, typeof(void), out match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoAsync)), match);
+            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoTask)), match);
+        }
+
+        [Fact]
+        public void Method_returning_task_does_not_return_void()
+        {
+            var analyzer = new MethodAnalyzer();
+            bool isMatch = analyzer.IsMatch(_doTaskInspection, typeof(void), typeof(void), out var match);
+            Assert.False(isMatch);
+            Assert.Null(match);
         }
 
         [Theory]
@@ -136,12 +145,12 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_returnAsyncInspection, typeof(int), typeof(Task<int>), out var match)
-                : analyzer.IsMatch(_returnAsyncInspection, typeof(int), out match);
+                ? analyzer.IsMatch(_returnTaskInspection, typeof(int), typeof(Task<int>), out var match)
+                : analyzer.IsMatch(_returnTaskInspection, typeof(int), out match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.ReturnAsync)), match);
+            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.ReturnTask)), match);
         }
 
         [Fact]
@@ -149,7 +158,7 @@ namespace NScatterGather.Inspection
         {
             var analyzer = new MethodAnalyzer();
 
-            bool isMatch = analyzer.IsMatch(_returnAsyncInspection, typeof(int), typeof(Task), out var match);
+            bool isMatch = analyzer.IsMatch(_returnTaskInspection, typeof(int), typeof(Task), out var match);
 
             Assert.False(isMatch);
             Assert.Null(match);
