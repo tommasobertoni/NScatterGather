@@ -49,6 +49,8 @@ namespace NScatterGather.Inspection
             Type requestType,
             [MaybeNullWhen(false)] out MethodInfo method)
         {
+            if (requestType is null) throw new ArgumentNullException(nameof(requestType));
+
             // Check in the cache if the analysis was already done.
             if (_inspectionsCache.TryFindInspectionResult(requestType, out var cached))
             {
@@ -113,6 +115,9 @@ namespace NScatterGather.Inspection
             Type responseType,
             [MaybeNullWhen(false)] out MethodInfo method)
         {
+            if (requestType is null) throw new ArgumentNullException(nameof(requestType));
+            if (responseType is null) throw new ArgumentNullException(nameof(responseType));
+
             // Check in the cache if the analysis was already done.
             if (_inspectionsCache.TryFindInspectionResult(requestType, responseType, out var cached))
             {
