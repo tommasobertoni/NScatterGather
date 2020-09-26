@@ -11,7 +11,7 @@ namespace NScatterGather.Inspection
         private static readonly BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.Instance;
         private static readonly MethodAnalyzer _methodAnalyzer = new MethodAnalyzer();
 
-        private readonly TypeInspectionCache _inspectionsCache = new TypeInspectionCache();
+        private readonly MethodMatchEvaluationCache _evaluationsCache = new MethodMatchEvaluationCache();
 
         private readonly IReadOnlyList<MethodInspection> _methodInspections;
         private readonly Type _type;
@@ -52,7 +52,7 @@ namespace NScatterGather.Inspection
             if (requestType is null) throw new ArgumentNullException(nameof(requestType));
 
             // Check in the cache if the analysis was already done.
-            if (_inspectionsCache.TryFindInspectionResult(requestType, out var cached))
+            if (_evaluationsCache.TryFindEvaluation(requestType, out var cached))
             {
                 // Compliance with the request type is already known.
                 method = cached.Method!;
@@ -66,14 +66,14 @@ namespace NScatterGather.Inspection
             if (matches.Count == 1)
             {
                 method = matches.Single();
-                _inspectionsCache.TryAdd(requestType, new TypeInspection(true, method));
+                _evaluationsCache.TryAdd(requestType, new MethodMatchEvaluation(true, method));
                 return true;
             }
 
             // Single match not found.
 
             method = null;
-            _inspectionsCache.TryAdd(requestType, new TypeInspection(false, method));
+            _evaluationsCache.TryAdd(requestType, new MethodMatchEvaluation(false, method));
 
             if (matches.Count > 1)
                 throw new InvalidOperationException(
@@ -119,7 +119,7 @@ namespace NScatterGather.Inspection
             if (responseType is null) throw new ArgumentNullException(nameof(responseType));
 
             // Check in the cache if the analysis was already done.
-            if (_inspectionsCache.TryFindInspectionResult(requestType, responseType, out var cached))
+            if (_evaluationsCache.TryFindEvaluation(requestType, responseType, out var cached))
             {
                 // Compliance with the request type is already known.
                 method = cached.Method!;
@@ -133,14 +133,14 @@ namespace NScatterGather.Inspection
             if (matches.Count == 1)
             {
                 method = matches.Single();
-                _inspectionsCache.TryAdd(requestType, responseType, new TypeInspection(true, method));
+                _evaluationsCache.TryAdd(requestType, responseType, new MethodMatchEvaluation(true, method));
                 return true;
             }
 
             // Single match not found.
 
             method = null;
-            _inspectionsCache.TryAdd(requestType, responseType, new TypeInspection(false, method));
+            _evaluationsCache.TryAdd(requestType, responseType, new MethodMatchEvaluation(false, method));
 
             if (matches.Count > 1)
                 throw new InvalidOperationException(

@@ -6,28 +6,33 @@ namespace NScatterGather.Inspection
 {
     internal class TypeInspectorRegistry
     {
-        private static readonly ConcurrentDictionary<Type, TypeInspector> _registry =
+        private readonly ConcurrentDictionary<Type, TypeInspector> _registry =
             new ConcurrentDictionary<Type, TypeInspector>();
 
-        public static void Register<T>() =>
+        public TypeInspector Register<T>() =>
             Register(typeof(T));
 
-        public static void Register(Type t)
+        public TypeInspector Register(Type type)
         {
-            _ = _registry.TryAdd(t, new TypeInspector(t));
+            if (_registry.TryGetValue(type, out var cached))
+                return cached;
+
+            var inspector = new TypeInspector(type);
+            _ = _registry.TryAdd(type, inspector);
+            return inspector;
         }
 
-        public static TypeInspector Of<T>() =>
+        public TypeInspector Of<T>() =>
             Of(typeof(T));
 
-        public static TypeInspector Of(Type t)
+        public TypeInspector Of(Type t)
         {
             _ = _registry.TryGetValue(t, out var inspector);
             return inspector ??
                 throw new KeyNotFoundException($"No {nameof(TypeInspector)} for type '{t.Name}' was registered.");
         }
 
-        internal static void Clear() =>
+        internal void Clear() =>
             _registry.Clear();
     }
 }
