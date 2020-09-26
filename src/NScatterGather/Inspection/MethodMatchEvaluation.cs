@@ -2,13 +2,13 @@
 
 namespace NScatterGather.Inspection
 {
-    internal class TypeInspection
+    internal class MethodMatchEvaluation
     {
         public bool IsMatch { get; }
 
         public MethodInfo? Method { get; }
 
-        public TypeInspection(bool isMatch, MethodInfo? method) =>
+        public MethodMatchEvaluation(bool isMatch, MethodInfo? method) =>
             (IsMatch, Method) = (isMatch, method);
 
         public void Deconstruct(
