@@ -33,6 +33,18 @@ namespace NScatterGather
             public string Fail(int n) => throw new Exception("A failure.");
         }
 
+        class SomeNeverEndingType
+        {
+            private static readonly SemaphoreSlim _semaphore =
+                new SemaphoreSlim(initialCount: 0);
+
+            public string TryDo(int n)
+            {
+                _semaphore.Wait();
+                return n.ToString();
+            }
+        }
+
         private readonly Aggregator _aggregator;
 
         public AggregatorTests()
@@ -44,14 +56,15 @@ namespace NScatterGather
             collection.Add<SomeAsyncType>();
             collection.Add<SomeCollidingType>();
             collection.Add<SomeFaultingType>();
+            collection.Add<SomeNeverEndingType>();
 
             _aggregator = new Aggregator(collection);
         }
 
-        [Fact(Timeout = 2_000)]
+        [Fact(Timeout = 1_000)]
         public async Task Sends_request_and_aggregates_responses()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
             var result = await _aggregator.Send(42, cts.Token);
 
             Assert.NotNull(result);
@@ -62,13 +75,14 @@ namespace NScatterGather
             Assert.Single(result.Faulted);
             Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.recipientType));
 
-            Assert.Empty(result.Incomplete);
+            Assert.Single(result.Incomplete);
+            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete);
         }
 
-        [Fact(Timeout = 2_000)]
+        [Fact(Timeout = 1_000)]
         public async Task Receives_expected_response_types()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
             var result = await _aggregator.Send<int, string>(42, cts.Token);
 
             Assert.NotNull(result);
@@ -78,7 +92,8 @@ namespace NScatterGather
             Assert.Single(result.Faulted);
             Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.recipientType));
 
-            Assert.Empty(result.Incomplete);
+            Assert.Single(result.Incomplete);
+            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete);
         }
     }
 }

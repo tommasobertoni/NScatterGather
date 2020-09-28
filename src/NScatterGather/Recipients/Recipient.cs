@@ -75,6 +75,8 @@ namespace NScatterGather.Recipients
 
             try
             {
+                await Task.Yield();
+
                 var response = method.Invoke(_instance, new object[] { request! });
 
                 if (response is Task taskResponse)
@@ -103,6 +105,8 @@ namespace NScatterGather.Recipients
 
             try
             {
+                await Task.Yield();
+
                 var response = method.Invoke(_instance, new object[] { request! });
 
                 if (response is Task taskResponse)
