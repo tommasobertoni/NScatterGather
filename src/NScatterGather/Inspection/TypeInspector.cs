@@ -76,9 +76,7 @@ namespace NScatterGather.Inspection
             _evaluationsCache.TryAdd(requestType, new MethodMatchEvaluation(false, method));
 
             if (matches.Count > 1)
-                throw new InvalidOperationException(
-                    $"Type '{_type.Name}' has too many matching methods " +
-                    $"accepting '{requestType.Name}'.");
+                throw new ConflictException(_type, requestType);
 
             return false;
         }
@@ -143,9 +141,7 @@ namespace NScatterGather.Inspection
             _evaluationsCache.TryAdd(requestType, responseType, new MethodMatchEvaluation(false, method));
 
             if (matches.Count > 1)
-                throw new InvalidOperationException(
-                    $"Type '{_type.Name}' has too many matching methods " +
-                    $"accepting '{requestType.Name}' and returning '{responseType.Name}'.");
+                throw new ConflictException(_type, requestType, responseType);
 
             return false;
         }
