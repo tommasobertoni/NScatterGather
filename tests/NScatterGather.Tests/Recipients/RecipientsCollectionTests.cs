@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace NScatterGather.Recipients
@@ -44,8 +40,7 @@ namespace NScatterGather.Recipients
 
         public RecipientsCollectionTests()
         {
-            var mock = new Mock<ILogger<RecipientsCollection>>();
-            _collection = new RecipientsCollection(mock.Object);
+            _collection = new RecipientsCollection();
         }
 
         [Fact]

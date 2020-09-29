@@ -2,8 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Moq;
 using NScatterGather.Recipients;
 using Xunit;
 
@@ -49,9 +47,7 @@ namespace NScatterGather
 
         public AggregatorTests()
         {
-            var mock = new Mock<ILogger<RecipientsCollection>>();
-
-            var collection = new RecipientsCollection(mock.Object);
+            var collection = new RecipientsCollection();
             collection.Add<SomeType>();
             collection.Add<SomeAsyncType>();
             collection.Add<SomeCollidingType>();

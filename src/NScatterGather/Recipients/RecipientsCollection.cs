@@ -2,23 +2,25 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 using NScatterGather.Inspection;
 
 namespace NScatterGather.Recipients
 {
+    public delegate void ConflictHandler(ConflictException ex);
+
+    public delegate void ErrorHandler(Exception ex);
+
     public class RecipientsCollection
     {
         private readonly ConcurrentBag<Recipient> _recipients = new ConcurrentBag<Recipient>();
-        private readonly ILogger<RecipientsCollection> _logger;
         private readonly TypeInspectorRegistry _registry;
 
-        public RecipientsCollection(
-            ILogger<RecipientsCollection> logger)
-        {
-            _logger = logger;
+        public event ConflictHandler? OnConflict;
+
+        public event ErrorHandler? OnError;
+
+        public RecipientsCollection() =>
             _registry = new TypeInspectorRegistry();
-        }
 
         public void Add<T>() =>
             Add(typeof(T));
@@ -59,9 +61,14 @@ namespace NScatterGather.Recipients
                 {
                     return recipient.CanAccept(requestType);
                 }
+                catch (ConflictException ex)
+                {
+                    OnConflict?.Invoke(ex);
+                    return false;
+                }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, ex.Message);
+                    OnError?.Invoke(ex);
                     return false;
                 }
             }
@@ -86,9 +93,14 @@ namespace NScatterGather.Recipients
                 {
                     return recipient.CanReplyWith(requestType, responseType);
                 }
+                catch (ConflictException ex)
+                {
+                    OnConflict?.Invoke(ex);
+                    return false;
+                }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, ex.Message);
+                    OnError?.Invoke(ex);
                     return false;
                 }
             }

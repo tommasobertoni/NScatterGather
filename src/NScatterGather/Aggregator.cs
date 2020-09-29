@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NScatterGather.Invocations;
 using NScatterGather.Recipients;
 
@@ -41,8 +40,8 @@ namespace NScatterGather
             if (allTasksCompleted.IsCompletedSuccessfully)
                 return invocations;
 
-            using (var cts = new CancellationTokenTaskSource<object?[]>(cancellationToken))
-                await Task.WhenAny(allTasksCompleted, cts.Task);
+            using (var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken))
+                await Task.WhenAny(allTasksCompleted, cancellation.Task);
 
             return invocations;
         }
@@ -73,8 +72,8 @@ namespace NScatterGather
             if (allTasksCompleted.IsCompletedSuccessfully)
                 return invocations;
 
-            using (var cts = new CancellationTokenTaskSource<TResponse[]>(cancellationToken))
-                await Task.WhenAny(allTasksCompleted, cts.Task);
+            using (var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken))
+                await Task.WhenAny(allTasksCompleted, cancellation.Task);
 
             return invocations;
         }
