@@ -1,6 +1,6 @@
 # NScatterGather
 
-** TODO: badges **
+![CI](https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master)
 
 <details>
 <summary>Table of Contents</summary>
