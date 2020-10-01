@@ -136,8 +136,6 @@ var response = await aggregator.Send<int, long>(42);
 
 ## Samples
 
-<br/>
-
 #### Hello world
 ```csharp
 class Foo { public int Double(int n) => n * 2; }
@@ -214,4 +212,4 @@ Type recipientType = response.Incomplete[0];
 
 <br/>
 
-For more, take a look at the [samples project in solution](** TODO: link to proj **)
+For more, take a look at the [samples project in solution](samples/NScatterGather.Samples).
