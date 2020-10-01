@@ -1,5 +1,6 @@
 # NScatterGather
 
+![License MIT](https://img.shields.io/github/license/tommasobertoni/NScatterGather)
 ![CI](https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master)
 
 <details>
@@ -12,7 +13,7 @@
 [Samples](#Samples)<br/>
 </details>
 
-## Intro
+# Intro
 
 The Scatter-Gather pattern: send a request message to multiple recipients, and then aggregate the results into a single response.
 
@@ -20,9 +21,7 @@ The Scatter-Gather pattern: send a request message to multiple recipients, and t
 
 It limits the coupling between the consumer and the recipients in integration scenarios, and provides standard error-handling and timeout capabilities.
 
-<hr/>
-
-## When to use
+# When to use
 
 The pattern best fits the following scenarios: *competing tasks* and *task parallelization*.
 
@@ -42,25 +41,21 @@ The tasks compute  operations concurrently:
 
 The aggregated response will then contain diverse result types, possibly meant to be used together
 
-<hr/>
-
-## How to use
+# How to use
 
 The recipients for a request, and optionally a response type, are identifyed using reflection: *no binding contracts* are used (e.g. `IRecipient`).<br/>
 This allows for less friction in both the implementation and the maintenance of the integrations, and, furthermore, to identify the target methods by conventions (i.e. sync/async).
 
-<br/>
-
-`RecipientsCollection`: identifies the registry of recipients that are eligible to be invoked:
+#### `RecipientsCollection`:
+identifies the registry of recipients that are eligible to be invoked
 ```csharp
 var collection = new RecipientsCollection();
 collection.Add<Foo>();
 collection.Add(new Bar());
 ```
 
-<br/>
-
-`Aggregator`: this type is responsible for sending the requests to all the available recipients that can support the desired request/response types, and aggregates the results:
+#### `Aggregator`:
+responsible for sending the requests to all the available recipients that can support the desired request/response types, and aggregating the results
 ```csharp
 var aggregator = new Aggregator(collection);
 
@@ -77,9 +72,8 @@ AggregatedResponse<string> strings = await aggregator.Send<int, string>(42);
 // an int value and return a string value will be invoked.
 ```
 
-<br/>
-
-`AggregatedResponse`: contains the results of the scatter-gather operation, differentiating between the completed results, the faulted and the incomplete recipients:
+#### `AggregatedResponse`:
+contains the results of the scatter-gather operation, differentiating between the completed results, the faulted and the incomplete recipients:
 ```csharp
 var completed = response.Completed[0];
 // (Type recipientType, string result) = completed;
@@ -91,11 +85,9 @@ var incomplete = response.Incomplete[0];
 // Type recipientType = incomplete;
 ```
 
-<hr/>
+# Special cases
 
-## Special cases
-
-### Handling async methods
+## Handling async methods
 
 The `Aggregator` exposes async-only methods for sending requests.
 
@@ -110,9 +102,7 @@ var response = await aggregator.Send(42);
 // [ 42, 42 ]
 ```
 
-<br/>
-
-### Handling conflicts
+## Handling conflicts
 
 Sometimes, a recipient can have two or more methods conflicting, given a request type:
 ```csharp
@@ -132,11 +122,9 @@ _ = await aggregator.Send(42);
 var response = await aggregator.Send<int, long>(42);
 ```
 
-<hr/>
+# Samples
 
-## Samples
-
-#### Hello world
+### Hello world
 ```csharp
 class Foo { public int Double(int n) => n * 2; }
 class Bar { public long Square(int n) => n * 1L * n; }
@@ -145,9 +133,7 @@ var response = await aggregator.Send(42);
 // [ 84, 1764L ]
 ```
 
-<br/>
-
-#### Specify the response type
+### Specify the response type
 ```csharp
 class Foo { public string Stringify(int n) => n.ToString(); }
 class Bar { public long Longify(int n) => n * 1L; }
@@ -156,9 +142,7 @@ var onlyStrings = await aggregator.Send<int, string>(42);
 // [ "42" ]
 ```
 
-<br/>
-
-#### Invoke async methods
+### Invoke async methods
 ```csharp
 class Foo { public string Stringify(int n) => n.ToString(); }
 
@@ -175,9 +159,7 @@ var response = await aggregator.Send(42);
 // [ "42", 42L ]
 ```
 
-<br/>
-
-#### Error handling
+### Error handling
 ```csharp
 class Foo
 {
@@ -190,9 +172,7 @@ var (recipientType, exception) = response.Faulted[0];
 // ( typeof(Foo), NotImplementedException("TODO") )
 ```
 
-<br/>
-
-#### Timeout
+### Timeout
 ```csharp
 class Foo
 {
@@ -209,7 +189,5 @@ var response = await aggregator.Send(42, cts.Token);
 Type recipientType = response.Incomplete[0];
 // typeof(Foo)
 ```
-
-<br/>
 
 For more, take a look at the [samples project in solution](samples/NScatterGather.Samples).
