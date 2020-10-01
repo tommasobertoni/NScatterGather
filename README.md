@@ -8,6 +8,7 @@
 [Intro](#Intro)<br/>
 [When to use](#When-to-use)<br/>
 [How to use](#How-to-use)<br/>
+[Special cases](#Special-cases)<br/>
 [Samples](#Samples)<br/>
 </details>
 
@@ -57,7 +58,9 @@ collection.Add<Foo>();
 collection.Add(new Bar());
 ```
 
-`Aggregator`: this type is responsible for sending the requests to all the available recipients that can support the desired request/response types, and aggregates the results into an `AggregatedResponse<TResponse>` object:
+<br/>
+
+`Aggregator`: this type is responsible for sending the requests to all the available recipients that can support the desired request/response types, and aggregates the results:
 ```csharp
 var aggregator = new Aggregator(collection);
 
@@ -74,6 +77,8 @@ AggregatedResponse<string> strings = await aggregator.Send<int, string>(42);
 // an int value and return a string value will be invoked.
 ```
 
+<br/>
+
 `AggregatedResponse`: contains the results of the scatter-gather operation, differentiating between the completed results, the faulted and the incomplete recipients:
 ```csharp
 var completed = response.Completed[0];
@@ -86,6 +91,10 @@ var incomplete = response.Incomplete[0];
 // Type recipientType = incomplete;
 ```
 
+<hr/>
+
+## Special cases
+
 ### Handling async methods
 
 The `Aggregator` exposes async-only methods for sending requests.
@@ -96,8 +105,12 @@ By convention, even if the consumer requested only results of type `TResponse`, 
 class Foo { public int Echo(int n) => n; }
 class Bar { public Task<int> EchoAsync(int n) => Task.FromResult(n); }
 
-var response = await aggregator.Send(42); // [ 42, 42 ]
+ // Nothing changes!
+var response = await aggregator.Send(42);
+// [ 42, 42 ]
 ```
+
+<br/>
 
 ### Handling conflicts
 
@@ -112,15 +125,20 @@ class Foo
 
 In this case, the aggregator will be able to invoke the recipient only if the return type of the conflicting methods is different, and it's explicitely defined by the consumer:
 ```csharp
-_ = await aggregator.Send(42); // Recipient not invoked.
-var response = await aggregator.Send<int, long>(42); // Method "Triple" invoked.
+// The recipient won't be used.
+_ = await aggregator.Send(42);
+
+// Method "Triple" will be invoked.
+var response = await aggregator.Send<int, long>(42);
 ```
 
 <hr/>
 
 ## Samples
 
-#### 1. Hello world
+<br/>
+
+#### Hello world
 ```csharp
 class Foo { public int Double(int n) => n * 2; }
 class Bar { public long Square(int n) => n * 1L * n; }
@@ -129,18 +147,22 @@ var response = await aggregator.Send(42);
 // [ 84, 1764L ]
 ```
 
-#### 2. Filter on response type
+<br/>
+
+#### Specify the response type
 ```csharp
-class Foo {	public string Stringify(int n) => n.ToString(); }
-class Bar {	public long Longify(int n) => n * 1L; }
+class Foo { public string Stringify(int n) => n.ToString(); }
+class Bar { public long Longify(int n) => n * 1L; }
 
 var onlyStrings = await aggregator.Send<int, string>(42);
-// "42"
+// [ "42" ]
 ```
 
-#### 3. Invoke async methods
+<br/>
+
+#### Invoke async methods
 ```csharp
-class Foo {	public string Stringify(int n) => n.ToString(); }
+class Foo { public string Stringify(int n) => n.ToString(); }
 
 class Bar
 {
@@ -155,7 +177,9 @@ var response = await aggregator.Send(42);
 // [ "42", 42L ]
 ```
 
-#### 4. Error handling
+<br/>
+
+#### Error handling
 ```csharp
 class Foo
 {
@@ -165,9 +189,12 @@ class Foo
 
 var response = await aggregator.Send("Don't Panic");
 var (recipientType, exception) = response.Faulted[0];
+// ( typeof(Foo), NotImplementedException("TODO") )
 ```
 
-#### 5. Timeout
+<br/>
+
+#### Timeout
 ```csharp
 class Foo
 {
@@ -182,6 +209,9 @@ var timeout = TimeSpan.FromSeconds(5);
 using var cts = new CancellationTokenSource(timeout);
 var response = await aggregator.Send(42, cts.Token);
 Type recipientType = response.Incomplete[0];
+// typeof(Foo)
 ```
+
+<br/>
 
 For more, take a look at the [samples project in solution](** TODO: link to proj **)
