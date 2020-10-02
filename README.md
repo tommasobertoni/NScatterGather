@@ -19,21 +19,19 @@ The Scatter-Gather pattern: send a request message to multiple recipients, and t
 
 ![scatter-gather-diagram](docs/images/scatter-gather-diagram.png)
 
-It limits the coupling between the consumer and the recipients in integration scenarios, and provides standard error-handling and timeout capabilities.
+This pattern helps to limit the coupling between the consumer and the recipients in integration scenarios, and provides standard error-handling and timeout capabilities.
 
 # When to use
 
-The pattern best fits the following scenarios: *competing tasks* and *task parallelization*.
+## Competing Tasks
 
-### Competing Tasks
+The recipients compete in order to provide the best, or the fastest, response to the request. The consumer will then pick the best value from the aggregated response.
 
-The recipients compete in order to provide the best, or the fastest, response to the request:
+_e.g._ get an item's price from a collection of suppliers:
 
-** TODO: img **
+![competing-tasks-diagram](docs/images/competing-tasks-diagram.png)
 
-The consumer will then pick the best value from the aggregated response.
-
-### Task parallelization
+## Task parallelization
 
 The tasks compute  operations concurrently:
 
@@ -42,25 +40,19 @@ The tasks compute  operations concurrently:
 The aggregated response will then contain diverse result types, possibly meant to be used together
 
 # How to use
-
-The recipients for a request, and optionally a response type, are identifyed using reflection: *no binding contracts* are used (e.g. `IRecipient`).<br/>
-This allows for less friction in both the implementation and the maintenance of the integrations, and, furthermore, to identify the target methods by conventions (i.e. sync/async).
-
-#### `RecipientsCollection`:
-identifies the registry of recipients that are eligible to be invoked
+Use a `RecipientsCollection` to register the eligible recipients:
 ```csharp
 var collection = new RecipientsCollection();
 collection.Add<Foo>();
 collection.Add(new Bar());
 ```
 
-#### `Aggregator`:
-responsible for sending the requests to all the available recipients that can support the desired request/response types, and aggregating the results
+Use an `Aggregator` for sending the requests to all the available recipients that can support the desired request/response types, and for aggregating the results:
 ```csharp
 var aggregator = new Aggregator(collection);
 
 // Send a request to all the recipients
-// capable of accepting and int value.
+// capable of accepting and int.
 // The results are then combined in the response:
 AggregatedResponse<object> objects = await aggregator.Send(42);
 
@@ -69,11 +61,10 @@ AggregatedResponse<object> objects = await aggregator.Send(42);
 AggregatedResponse<string> strings = await aggregator.Send<int, string>(42);
 
 // In the second case, only the recipients that accept
-// an int value and return a string value will be invoked.
+// an int and return a string will be invoked.
 ```
 
-#### `AggregatedResponse`:
-contains the results of the scatter-gather operation, differentiating between the completed results, the faulted and the incomplete recipients:
+Inspect the `AggregatedResponse` containing the results of the scatter-gather operation, grouped by completed, faulted and incomplete:
 ```csharp
 var completed = response.Completed[0];
 // (Type recipientType, string result) = completed;
@@ -84,6 +75,9 @@ var faulted = response.Faulted[0];
 var incomplete = response.Incomplete[0];
 // Type recipientType = incomplete;
 ```
+
+The recipients for a request, and optionally a response type, are identifyed via reflection: **no binding contracts** are used _(e.g. `IRecipient`)_.<br/>
+This allows for less friction in both the implementation and the maintenance of the integrations, and, furthermore, to identify the target methods by conventions (i.e. sync/async).
 
 # Special cases
 
@@ -97,7 +91,7 @@ By convention, even if the consumer requested only results of type `TResponse`, 
 class Foo { public int Echo(int n) => n; }
 class Bar { public Task<int> EchoAsync(int n) => Task.FromResult(n); }
 
- // Nothing changes!
+// Nothing changes!
 var response = await aggregator.Send(42);
 // [ 42, 42 ]
 ```
@@ -185,6 +179,7 @@ class Foo
 
 var timeout = TimeSpan.FromSeconds(5);
 using var cts = new CancellationTokenSource(timeout);
+
 var response = await aggregator.Send(42, cts.Token);
 Type recipientType = response.Incomplete[0];
 // typeof(Foo)
