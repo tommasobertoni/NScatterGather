@@ -17,7 +17,7 @@
 
 The Scatter-Gather pattern: send a request message to multiple recipients, and then aggregate the results into a single response.
 
-** TODO: img **
+![scatter-gather-diagram](docs/images/scatter-gather-diagram.png)
 
 It limits the coupling between the consumer and the recipients in integration scenarios, and provides standard error-handling and timeout capabilities.
 
