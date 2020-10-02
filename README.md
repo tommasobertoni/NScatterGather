@@ -17,7 +17,7 @@
 
 The Scatter-Gather pattern: send a request message to multiple recipients, and then aggregate the results into a single response.
 
-![scatter-gather-diagram](docs/images/scatter-gather-diagram.png)
+![scatter-gather-diagram](assets/images/scatter-gather-diagram.png)
 
 This pattern helps to limit the coupling between the consumer and the recipients in integration scenarios, and provides standard error-handling and timeout capabilities.
 
@@ -29,7 +29,7 @@ The recipients compete in order to provide the best, or the fastest, response to
 
 _e.g._ get an item's price from a collection of suppliers:
 
-![competing-tasks-diagram](docs/images/competing-tasks-diagram.png)
+![competing-tasks-diagram](assets/images/competing-tasks-diagram.png)
 
 ## Task parallelization
 
