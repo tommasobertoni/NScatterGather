@@ -27,17 +27,17 @@ This pattern helps to limit the coupling between the consumer and the recipients
 
 The recipients compete in order to provide the best, or the fastest, response to the request. The consumer will then pick the best value from the aggregated response.
 
-_e.g._ get an item's price from a collection of suppliers:
+_e.g._ Get an item's price from a collection of suppliers:
 
 ![competing-tasks-diagram](assets/images/competing-tasks-diagram.png)
 
 ## Task parallelization
 
-The tasks compute  operations concurrently:
+Different operations are computed concurrently, and their results combined or used together. The result types could be different.
 
-** TODO: img **
+_e.g._ Get a user's data from different services, and then compose a view model:
 
-The aggregated response will then contain diverse result types, possibly meant to be used together
+![tasks-parallelization-diagram](assets/images/tasks-parallelization-diagram.png)
 
 # How to use
 Use a `RecipientsCollection` to register the eligible recipients:
