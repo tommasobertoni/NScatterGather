@@ -1,4 +1,4 @@
-# NScatterGather
+![Logo](assets/logo/nscattergather-logo-full.png)
 
 ![License MIT](https://img.shields.io/github/license/tommasobertoni/NScatterGather)
 ![CI](https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master)
@@ -12,6 +12,8 @@
 [Special cases](#Special-cases)<br/>
 [Samples](#Samples)<br/>
 </details>
+
+<br/>
 
 # Intro
 
