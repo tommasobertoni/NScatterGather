@@ -1,18 +1,26 @@
 <p align="center">
-  <image src="assets/logo/nscattergather-logo-full.png" alt="NScatterGather logo" width="600px">
+  <image src="assets/logo/nscattergather-logo-128.png" alt="NScatterGather logo">
+  <h2 align="center">NScatterGather</h2>
 </p>
 
-![License MIT](https://img.shields.io/badge/license-MIT-green)
-![CI](https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master)
+<p align="center">
+  <a href="LICENSE">
+    <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-green" />
+  </a>
 
-<details>
-<summary>Table of Contents</summary>
+  <a href="LICENSE">
+    <img alt="CI Pipeline" src="https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master" />
+  </a>
+</p>
 
-[Intro](#Intro)<br/>
-[When to use](#When-to-use)<br/>
-[How to use](#How-to-use)<br/>
-[Special cases](#Special-cases)<br/>
-[Samples](#Samples)<br/>
+<details  align="center">
+  <summary>Table of Contents</summary>
+
+  [Intro](#Intro)<br/>
+  [When to use](#When-to-use)<br/>
+  [How to use](#How-to-use)<br/>
+  [Special cases](#Special-cases)<br/>
+  [Samples](#Samples)<br/>
 </details>
 
 # Intro
