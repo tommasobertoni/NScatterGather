@@ -2,7 +2,7 @@
   <image src="assets/logo/nscattergather-logo-full.png" alt="NScatterGather logo" width="600px">
 </p>
 
-![License MIT](https://img.shields.io/github/license/tommasobertoni/NScatterGather)
+![License MIT](https://img.shields.io/badge/license-MIT-green)
 ![CI](https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master)
 
 <details>
@@ -14,8 +14,6 @@
 [Special cases](#Special-cases)<br/>
 [Samples](#Samples)<br/>
 </details>
-
-<br/>
 
 # Intro
 
