@@ -1,7 +1,11 @@
 <p align="center">
+  <image src="assets/logo/nscattergather-logo-full.png" alt="NScatterGather logo" width="600px">
+</p>
+
+<!-- <p align="center">
   <image src="assets/logo/nscattergather-logo-128.png" alt="NScatterGather logo">
   <h2 align="center">NScatterGather</h2>
-</p>
+</p> -->
 
 <p align="center">
   <a href="LICENSE">
