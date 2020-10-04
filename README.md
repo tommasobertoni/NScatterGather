@@ -1,4 +1,6 @@
-![Logo](assets/logo/nscattergather-logo-full.png)
+<p align="center">
+  <image src="assets/logo/nscattergather-logo-full.png" alt="NScatterGather logo" width="600px">
+</p>
 
 ![License MIT](https://img.shields.io/github/license/tommasobertoni/NScatterGather)
 ![CI](https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master)
