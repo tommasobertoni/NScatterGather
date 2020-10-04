@@ -12,7 +12,7 @@
     <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-green" />
   </a>
 
-  <a href="LICENSE">
+  <a href="https://github.com/tommasobertoni/NScatterGather/actions?query=workflow%3ACI">
     <img alt="CI Pipeline" src="https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master" />
   </a>
 </p>
