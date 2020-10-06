@@ -2,16 +2,15 @@
   <image src="assets/logo/nscattergather-logo-full.png" alt="NScatterGather logo" width="600px">
 </p>
 
-<!-- <p align="center">
-  <image src="assets/logo/nscattergather-logo-128.png" alt="NScatterGather logo">
-  <h2 align="center">NScatterGather</h2>
-</p> -->
-
 <p align="center">
   <a href="LICENSE">
     <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-green" />
   </a>
-
+  &nbsp;&nbsp;
+  <a href="https://www.nuget.org/packages/NScatterGather">
+    <img alt="NuGet" src="https://img.shields.io/nuget/vpre/nscattergather" />
+  </a>
+  &nbsp;&nbsp;
   <a href="https://github.com/tommasobertoni/NScatterGather/actions?query=workflow%3ACI">
     <img alt="CI Pipeline" src="https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master" />
   </a>
