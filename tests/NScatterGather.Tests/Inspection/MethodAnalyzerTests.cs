@@ -15,6 +15,10 @@ namespace NScatterGather.Inspection
 
             public Task DoTask() => Task.CompletedTask;
 
+            public ValueTask DoValueTask() => new ValueTask();
+
+            public ValueTask<int> DoAndReturnValueTask() => new ValueTask<int>(42);
+
             public Task<int> ReturnTask(int n) => Task.FromResult(n);
 
             public string Multi(int n, string s) => "Don't Panic";
@@ -30,6 +34,8 @@ namespace NScatterGather.Inspection
         private readonly MethodInspection _acceptIntVoidInspection;
         private readonly MethodInspection _echoStringInspection;
         private readonly MethodInspection _doTaskInspection;
+        private readonly MethodInspection _doValueTaskInspection;
+        private readonly MethodInspection _doAndReturnValueTaskInspection;
         private readonly MethodInspection _returnTaskInspection;
         private readonly MethodInspection _multiInspection;
 
@@ -48,6 +54,12 @@ namespace NScatterGather.Inspection
 
             _doTaskInspection = new MethodInspection(
                 t, t.GetMethod(nameof(SomeType.DoTask))!);
+
+            _doValueTaskInspection = new MethodInspection(
+                t, t.GetMethod(nameof(SomeType.DoValueTask))!);
+
+            _doAndReturnValueTaskInspection = new MethodInspection(
+                t, t.GetMethod(nameof(SomeType.DoAndReturnValueTask))!);
 
             _returnTaskInspection = new MethodInspection(
                 t, t.GetMethod(nameof(SomeType.ReturnTask))!);
@@ -128,11 +140,52 @@ namespace NScatterGather.Inspection
             Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoTask)), match);
         }
 
+        [Theory]
+        [InlineData(Check.Request)]
+        [InlineData(Check.RequestAndResponse)]
+        public void Method_returning_valuetask_matches(Check check)
+        {
+            var analyzer = new MethodAnalyzer();
+
+            bool isMatch = check == Check.RequestAndResponse
+                ? analyzer.IsMatch(_doValueTaskInspection, typeof(void), typeof(ValueTask), out var match)
+                : analyzer.IsMatch(_doValueTaskInspection, typeof(void), out match);
+
+            Assert.True(isMatch);
+            Assert.NotNull(match);
+            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoValueTask)), match);
+        }
+
+        [Theory]
+        [InlineData(Check.Request)]
+        [InlineData(Check.RequestAndResponse)]
+        public void Method_returning_valuetask_with_result_matches(Check check)
+        {
+            var analyzer = new MethodAnalyzer();
+
+            bool isMatch = check == Check.RequestAndResponse
+                ? analyzer.IsMatch(_doAndReturnValueTaskInspection, typeof(void), typeof(ValueTask<int>), out var match)
+                : analyzer.IsMatch(_doAndReturnValueTaskInspection, typeof(void), out match);
+
+            Assert.True(isMatch);
+            Assert.NotNull(match);
+            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoAndReturnValueTask)), match);
+        }
+
         [Fact]
         public void Method_returning_task_does_not_return_void()
         {
             var analyzer = new MethodAnalyzer();
             bool isMatch = analyzer.IsMatch(_doTaskInspection, typeof(void), typeof(void), out var match);
+            Assert.False(isMatch);
+            Assert.Null(match);
+        }
+
+        [Fact]
+        public void Method_returning_valuetask_does_not_return_void()
+        {
+            var analyzer = new MethodAnalyzer();
+            bool isMatch = analyzer.IsMatch(_doValueTaskInspection, typeof(void), typeof(void), out var match);
             Assert.False(isMatch);
             Assert.Null(match);
         }

@@ -19,6 +19,11 @@ namespace NScatterGather
             public Task<string> Do(int n) => Task.FromResult(n.ToString());
         }
 
+        class SomePossiblyAsyncType
+        {
+            public ValueTask<string> Do(int n) => new ValueTask<string>(n.ToString());
+        }
+
         class SomeCollidingType
         {
             public string Do(int n) => n.ToString();
@@ -50,6 +55,7 @@ namespace NScatterGather
             var collection = new RecipientsCollection();
             collection.Add<SomeType>();
             collection.Add<SomeAsyncType>();
+            collection.Add<SomePossiblyAsyncType>();
             collection.Add<SomeCollidingType>();
             collection.Add<SomeFaultingType>();
             collection.Add<SomeNeverEndingType>();
@@ -64,9 +70,10 @@ namespace NScatterGather
             var result = await _aggregator.Send(42, cts.Token);
 
             Assert.NotNull(result);
-            Assert.Equal(2, result.Completed.Count);
+            Assert.Equal(3, result.Completed.Count);
             Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.recipientType));
             Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.recipientType));
 
             Assert.Single(result.Faulted);
             Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.recipientType));
@@ -82,8 +89,9 @@ namespace NScatterGather
             var result = await _aggregator.Send<int, string>(42, cts.Token);
 
             Assert.NotNull(result);
-            Assert.Equal(1, result.Completed.Count);
+            Assert.Equal(2, result.Completed.Count);
             Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.recipientType));
 
             Assert.Single(result.Faulted);
             Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.recipientType));
