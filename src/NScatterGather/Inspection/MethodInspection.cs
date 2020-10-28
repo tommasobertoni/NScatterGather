@@ -7,10 +7,6 @@ namespace NScatterGather.Inspection
 {
     internal class MethodInspection
     {
-        private static readonly Type _voidType = typeof(void);
-        private static readonly Type _taskType = typeof(Task);
-        private static readonly Type _valueTaskType = typeof(ValueTask);
-
         public Type InspectedType { get; }
 
         public MethodInfo InspectedMethod { get; }
@@ -34,10 +30,9 @@ namespace NScatterGather.Inspection
             Parameters = method.GetParameters();
             ReturnType = method.ReturnType;
 
-            ReturnsAResponse =
-                ReturnType != _voidType &&
-                ReturnType != _taskType &&
-                ReturnType != _valueTaskType;
+            ReturnsAResponse = ReturnType.IsAwaitable()
+                ? ReturnType.IsAwaitableWithResult()
+                : ReturnType != typeof(void);
         }
 
         internal void Deconstruct(

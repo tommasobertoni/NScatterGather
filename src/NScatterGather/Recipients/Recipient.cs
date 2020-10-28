@@ -79,12 +79,10 @@ namespace NScatterGather.Recipients
 
                 var response = method.Invoke(_instance, new object[] { request! });
 
-                if (response is Task taskResponse)
+                if (response.IsAwaitableWithResult())
                 {
-                    await taskResponse;
-                    var resultProp = taskResponse.GetType().GetProperty(nameof(Task<object>.Result));
-                    var responseValue = resultProp!.GetValue(taskResponse);
-                    return responseValue;
+                    var awaitedResponse = await (dynamic)response;
+                    return awaitedResponse;
                 }
 
                 return response;
@@ -109,12 +107,10 @@ namespace NScatterGather.Recipients
 
                 var response = method.Invoke(_instance, new object[] { request! });
 
-                if (response is Task taskResponse)
+                if (response.IsAwaitableWithResult())
                 {
-                    await taskResponse;
-                    var resultProp = taskResponse.GetType().GetProperty(nameof(Task<object>.Result));
-                    var responseValue = (TResponse)resultProp!.GetValue(taskResponse);
-                    return responseValue;
+                    var awaitedResponse = await (dynamic)response;
+                    return awaitedResponse;
                 }
 
                 return (TResponse)response;

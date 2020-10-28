@@ -8,10 +8,6 @@ namespace NScatterGather.Inspection
 {
     internal class MethodAnalyzer
     {
-        private static readonly Type _voidType = typeof(void);
-        private static readonly Type _taskType = typeof(Task);
-        private static readonly Type _valueTaskType = typeof(ValueTask);
-
         public bool IsMatch(
             MethodInspection inspection,
             Type requestType,
@@ -21,7 +17,7 @@ namespace NScatterGather.Inspection
 
             var (_, method, parameters, _) = inspection;
 
-            if (parameters.Count == 0 && requestType == _voidType)
+            if (parameters.Count == 0 && requestType == typeof(void))
             {
                 match = method;
                 return true;
@@ -61,31 +57,16 @@ namespace NScatterGather.Inspection
                 return true;
             }
 
-            // The return type may be Task<TResponse>!
+            // The return type may be an awaitable!
+            // (Task<TResponse>, ValueTask<TResponse>, ...)
 
-            var isReturningTask = _taskType.IsAssignableFrom(returnType);
-            var isReturningValueTask = _valueTaskType.IsAssignableFrom(returnType);
-
-            if (!(isReturningTask || isReturningValueTask))
+            if (!returnType.IsAwaitableWithResult(out var awaitResultType))
                 return false;
 
-            // Since it's returning an awaitable (Task/ValueTask)
-            // let's check the type of the promise.
-
-            if (!returnType.IsGenericType)
+            if (awaitResultType != responseType)
                 return false;
 
-            var genericArguments = returnType.GetGenericArguments();
-
-            if (genericArguments.Length != 1)
-                return false;
-
-            var theGenericArgument = genericArguments.First();
-
-            if (theGenericArgument != responseType)
-                return false;
-
-            // It's a match: Task/ValueTask of TResponse.
+            // It's a match: Task/ValueTask/Awaitable of TResponse.
 
             match = method;
             return true;
