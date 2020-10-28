@@ -11,6 +11,7 @@ namespace NScatterGather.Samples.Samples
             var collection = new RecipientsCollection();
             collection.Add<Foo>();
             collection.Add<Bar>();
+            collection.Add<Baz>();
 
             var aggregator = new Aggregator(collection);
 
@@ -20,20 +21,24 @@ namespace NScatterGather.Samples.Samples
             // before aggregating the response.
             var response1 = await aggregator.Send(42);
 
-            var results = response1.AsResultsList(); // 0000002a-0001-0002-0304-050607080900, 84L
+            var results = response1.AsResultsList(); // "42", 0000002a-0001-0002-0304-050607080900, 84L
             Console.WriteLine($"" +
                 $"{results[0]} ({results[0].GetType().Name}), " +
-                $"{results[1]} ({results[1].GetType().Name})");
+                $"{results[1]} ({results[1].GetType().Name}), " +
+                $"{results[2]} ({results[2].GetType().Name})");
 
             // The aggregator provides a "all methods are async" abstraction
             // so that when using the Send<TRequest, TResponse> method
             // all the recipients that return either TResponse, Task<TResponse>
             // or ValueTask<TResponse> get invoked.
-            var response2 = await aggregator.Send<int, Guid>(42);
 
+            var response2 = await aggregator.Send<int, Guid>(42);
             var guidResults = response2.AsResultsList();
-            Console.WriteLine($"" +
-                $"{guidResults[0]} ({guidResults[0].GetType().Name})");
+            Console.WriteLine($"{guidResults[0]} ({guidResults[0].GetType().Name})");
+
+            var response3 = await aggregator.Send<int, string>(42);
+            var stringResults = response3.AsResultsList();
+            Console.WriteLine($"{stringResults[0]} ({stringResults[0].GetType().Name})");
         }
 
         class Foo
@@ -48,6 +53,17 @@ namespace NScatterGather.Samples.Samples
                 await Task.Yield();
                 var guid = new Guid(n, 1, 2, new byte[] { 3, 4, 5, 6, 7, 8, 9, 0 });
                 return guid;
+            }
+        }
+
+        class Baz
+        {
+            public async ValueTask<string> CreateFrom(int n)
+            {
+                if (n % 2 == 0)
+                    await Task.Yield();
+
+                return n.ToString();
             }
         }
     }
