@@ -2,23 +2,57 @@ name: CI
 
 on:
   push:
-    branches: [master, dev]
+    branches: [main, dev]
   pull_request:
-    branches: [master, dev]
+    branches: [main, dev]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.301
+          dotnet-version: 3.1.x
       - name: Install dependencies
-        run: dotnet restore
+        run: dotnet restore src/NScatterGather/NScatterGather.csproj
       - name: Build
-        run: dotnet build --configuration Release --no-restore
-      - name: Test
-        run: dotnet test --no-restore --verbosity detailed
+        run: dotnet build src/NScatterGather/NScatterGather.csproj -c Release --no-restore
+
+  test-netcore:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core 3.1
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+      - name: Setup .NET Core 2.1
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 2.1.x
+      - name: Tests netstandard2.1 on .NET Core 3.1
+        run: |
+          dotnet build src/NScatterGather/NScatterGather.csproj -c Release --framework netstandard2.1
+          dotnet build tests/NScatterGather.Tests/NScatterGather.Tests.csproj -c Release --framework netcoreapp3.1
+          dotnet test --no-build --verbosity normal -c Release --framework netcoreapp3.1
+      - name: Tests netstandard2.0 on .NET Core 2.1
+        run: |
+          dotnet build src/NScatterGather/NScatterGather.csproj -c Release --framework netstandard2.0
+          dotnet build tests/NScatterGather.Tests/NScatterGather.Tests.csproj -c Release --framework netcoreapp2.1
+          dotnet test --no-build --verbosity normal -c Release --framework netcoreapp2.1
+
+  test-netframework:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Framework
+        uses: microsoft/setup-msbuild@v1.0.2
+      - name: Tests netstandard2.0 on .NET Framework 4.6.1
+        run: |
+          dotnet build src/NScatterGather/NScatterGather.csproj -c Release --framework netstandard2.0
+          dotnet build tests/NScatterGather.Tests/NScatterGather.Tests.csproj -c Release --framework net461
+          dotnet test --no-build --verbosity normal -c Release --framework net461
