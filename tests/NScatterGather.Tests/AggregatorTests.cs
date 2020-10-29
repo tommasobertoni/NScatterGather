@@ -66,7 +66,7 @@ namespace NScatterGather
         [Fact(Timeout = 5_000)]
         public async Task Sends_request_and_aggregates_responses()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
             var result = await _aggregator.Send(42, cts.Token);
 
             Assert.NotNull(result);
@@ -85,7 +85,7 @@ namespace NScatterGather
         [Fact(Timeout = 5_000)]
         public async Task Receives_expected_response_types()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
             var result = await _aggregator.Send<int, string>(42, cts.Token);
 
             Assert.NotNull(result);
