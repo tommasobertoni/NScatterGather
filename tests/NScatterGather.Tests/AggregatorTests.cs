@@ -63,7 +63,7 @@ namespace NScatterGather
             _aggregator = new Aggregator(collection);
         }
 
-        [Fact(Timeout = 1_000)]
+        [Fact(Timeout = 5_000)]
         public async Task Sends_request_and_aggregates_responses()
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
@@ -82,7 +82,7 @@ namespace NScatterGather
             Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete);
         }
 
-        [Fact(Timeout = 1_000)]
+        [Fact(Timeout = 5_000)]
         public async Task Receives_expected_response_types()
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
