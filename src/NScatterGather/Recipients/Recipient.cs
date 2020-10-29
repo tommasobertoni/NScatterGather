@@ -81,7 +81,9 @@ namespace NScatterGather.Recipients
 
                 if (response.IsAwaitableWithResult())
                 {
-                    var awaitedResponse = await (dynamic)response;
+                    var awaitedResponse = await Task.Run(async () => await (dynamic)response)
+                        .ConfigureAwait(false);
+
                     return awaitedResponse;
                 }
 
@@ -109,7 +111,9 @@ namespace NScatterGather.Recipients
 
                 if (response.IsAwaitableWithResult())
                 {
-                    var awaitedResponse = await (dynamic)response;
+                    var awaitedResponse = await Task.Run(async () => await (dynamic)response)
+                        .ConfigureAwait(false);
+
                     return awaitedResponse;
                 }
 

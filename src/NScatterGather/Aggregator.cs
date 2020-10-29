@@ -20,7 +20,8 @@ namespace NScatterGather
         {
             var recipients = _recipients.ListRecipientsAccepting<TRequest>();
 
-            var invocations = await Invoke(recipients, request, cancellationToken);
+            var invocations = await Invoke(recipients, request, cancellationToken)
+                .ConfigureAwait(false);
 
             return new AggregatedResponse<object?>(invocations);
         }
@@ -41,7 +42,7 @@ namespace NScatterGather
                 return invocations;
 
             using (var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken))
-                await Task.WhenAny(allTasksCompleted, cancellation.Task);
+                await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
             return invocations;
         }
@@ -52,7 +53,8 @@ namespace NScatterGather
         {
             var recipients = _recipients.ListRecipientsReplyingWith<TRequest, TResponse>();
 
-            var invocations = await Invoke<TRequest, TResponse>(recipients, request, cancellationToken);
+            var invocations = await Invoke<TRequest, TResponse>(recipients, request, cancellationToken)
+                .ConfigureAwait(false);
 
             return new AggregatedResponse<TResponse>(invocations);
         }
@@ -73,7 +75,7 @@ namespace NScatterGather
                 return invocations;
 
             using (var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken))
-                await Task.WhenAny(allTasksCompleted, cancellation.Task);
+                await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
             return invocations;
         }
