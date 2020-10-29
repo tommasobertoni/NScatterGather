@@ -11,7 +11,7 @@ namespace NScatterGather.Inspection
         public bool IsMatch(
             MethodInspection inspection,
             Type requestType,
-            [MaybeNullWhen(false)] out MethodInfo match)
+            [NotNullWhen(true)] out MethodInfo? match)
         {
             match = null;
 
@@ -39,7 +39,7 @@ namespace NScatterGather.Inspection
             MethodInspection inspection,
             Type requestType,
             Type responseType,
-            [MaybeNullWhen(false)] out MethodInfo match)
+            [NotNullWhen(true)] out MethodInfo? match)
         {
             match = null;
 

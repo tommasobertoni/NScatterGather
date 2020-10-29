@@ -38,7 +38,7 @@ namespace NScatterGather
             var tasks = invocations.Select(x => x.Task);
             var allTasksCompleted = Task.WhenAll(tasks);
 
-            if (allTasksCompleted.IsCompletedSuccessfully)
+            if (allTasksCompleted.IsCompletedSuccessfully())
                 return invocations;
 
             using (var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken))
@@ -71,7 +71,7 @@ namespace NScatterGather
             var tasks = invocations.Select(x => x.Task);
             var allTasksCompleted = Task.WhenAll(tasks);
 
-            if (allTasksCompleted.IsCompletedSuccessfully)
+            if (allTasksCompleted.IsCompletedSuccessfully())
                 return invocations;
 
             using (var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken))

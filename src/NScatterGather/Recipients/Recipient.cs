@@ -75,18 +75,7 @@ namespace NScatterGather.Recipients
 
             try
             {
-                await Task.Yield();
-
-                var response = method.Invoke(_instance, new object[] { request! });
-
-                if (response.IsAwaitableWithResult())
-                {
-                    var awaitedResponse = await Task.Run(async () => await (dynamic)response)
-                        .ConfigureAwait(false);
-
-                    return awaitedResponse;
-                }
-
+                var response = await Invoke(method, request);
                 return response;
             }
             catch (TargetInvocationException tIEx)
@@ -101,29 +90,34 @@ namespace NScatterGather.Recipients
             if (!_inspector.TryGetMethodReturning<TRequest, TResponse>(out var method))
                 throw new InvalidOperationException(
                     $"Type '{_type.Name}' doesn't support accepting " +
-                    $"requests of type '{typeof(TRequest).Name}' and returning '{typeof(TResponse).Name}'.");
+                    $"requests of type '{typeof(TRequest).Name}' and " +
+                    $"returning '{typeof(TResponse).Name}'.");
 
             try
             {
-                await Task.Yield();
-
-                var response = method.Invoke(_instance, new object[] { request! });
-
-                if (response.IsAwaitableWithResult())
-                {
-                    var awaitedResponse = await Task.Run(async () => await (dynamic)response)
-                        .ConfigureAwait(false);
-
-                    return awaitedResponse;
-                }
-
+                var response = await Invoke(method, request);
                 return (TResponse)response;
             }
             catch (TargetInvocationException tIEx)
             {
                 ExceptionDispatchInfo.Capture(tIEx.InnerException).Throw();
-                return default; // Unreachable
+                return default!; // Unreachable
             }
+        }
+
+        private async Task<object> Invoke(MethodInfo method, object? request)
+        {
+            await Task.Yield();
+
+            var response = method.Invoke(_instance, new object[] { request! });
+
+            if (!response.IsAwaitableWithResult())
+                return response;
+
+            var awaitedResponse = await Task.Run(async () => await (dynamic)response)
+                .ConfigureAwait(false);
+
+            return awaitedResponse;
         }
     }
 }

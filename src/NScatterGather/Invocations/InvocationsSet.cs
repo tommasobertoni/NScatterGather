@@ -35,7 +35,7 @@ namespace NScatterGather.Invocations
 
         public void Add(Invocation<TResult> invocation)
         {
-            if (invocation.Task.IsCompletedSuccessfully)
+            if (invocation.Task.IsCompletedSuccessfully())
                 _completed.Add(invocation);
             else if (invocation.Task.IsFaulted)
                 _faulted.Add(invocation);

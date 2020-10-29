@@ -42,12 +42,12 @@ namespace NScatterGather.Inspection
             TryGetMethodAccepting(requestType, out _);
 
         public bool TryGetMethodAccepting<TRequest>(
-            [MaybeNullWhen(false)] out MethodInfo method) =>
+            [NotNullWhen(true)] out MethodInfo? method) =>
             TryGetMethodAccepting(typeof(TRequest), out method);
 
         public bool TryGetMethodAccepting(
             Type requestType,
-            [MaybeNullWhen(false)] out MethodInfo method)
+            [NotNullWhen(true)] out MethodInfo? method)
         {
             if (requestType is null) throw new ArgumentNullException(nameof(requestType));
 
@@ -105,13 +105,13 @@ namespace NScatterGather.Inspection
             TryGetMethodReturning(requestType, responseType, out _);
 
         public bool TryGetMethodReturning<TRequest, TResponse>(
-            [MaybeNullWhen(false)] out MethodInfo method) =>
+            [NotNullWhen(true)] out MethodInfo? method) =>
             TryGetMethodReturning(typeof(TRequest), typeof(TResponse), out method);
 
         public bool TryGetMethodReturning(
             Type requestType,
             Type responseType,
-            [MaybeNullWhen(false)] out MethodInfo method)
+            [NotNullWhen(true)] out MethodInfo? method)
         {
             if (requestType is null) throw new ArgumentNullException(nameof(requestType));
             if (responseType is null) throw new ArgumentNullException(nameof(responseType));
