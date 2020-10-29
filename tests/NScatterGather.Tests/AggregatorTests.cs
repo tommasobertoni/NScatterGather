@@ -71,15 +71,15 @@ namespace NScatterGather
 
             Assert.NotNull(result);
             Assert.Equal(3, result.Completed.Count);
-            Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.recipientType));
-            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.recipientType));
-            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.RecipientType));
 
             Assert.Single(result.Faulted);
-            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.RecipientType));
 
             Assert.Single(result.Incomplete);
-            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete);
+            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete.Select(x => x.RecipientType));
         }
 
         [Fact(Timeout = 5_000)]
@@ -90,14 +90,14 @@ namespace NScatterGather
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Completed.Count);
-            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.recipientType));
-            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.RecipientType));
 
             Assert.Single(result.Faulted);
-            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.RecipientType));
 
             Assert.Single(result.Incomplete);
-            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete);
+            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete.Select(x => x.RecipientType));
         }
     }
 }

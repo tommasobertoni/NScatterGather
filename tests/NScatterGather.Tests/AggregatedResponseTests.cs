@@ -9,21 +9,21 @@ namespace NScatterGather
 {
     public class AggregatedResponseTests
     {
-        private readonly Invocation<int>[] _invocations;
+        private readonly LiveInvocationHolder<int>[] _invocations;
         private readonly Exception _ex;
 
         public AggregatedResponseTests()
         {
             _ex = new Exception();
 
-            var invocation = new Invocation<int>(
-                new Recipient(typeof(object)), Task.FromResult(42));
+            var invocation = new LiveInvocationHolder<int>(
+                new Recipient(typeof(object)), () => Task.FromResult(42));
 
-            var invocationFaulted = new Invocation<int>(
-                new Recipient(typeof(bool)), Task.FromException<int>(_ex));
+            var invocationFaulted = new LiveInvocationHolder<int>(
+                new Recipient(typeof(bool)), () => Task.FromException<int>(_ex));
 
-            var invocationIncomplete = new Invocation<int>(
-                new Recipient(typeof(long)), GetInfiniteTask<int>());
+            var invocationIncomplete = new LiveInvocationHolder<int>(
+                new Recipient(typeof(long)), () => GetInfiniteTask<int>());
 
             _invocations = new[] { invocation, invocationFaulted, invocationIncomplete };
 
@@ -51,13 +51,13 @@ namespace NScatterGather
         {
             var response = new AggregatedResponse<int>(_invocations);
 
-            Assert.Equal(typeof(object), response.Completed.First().recipientType);
-            Assert.Equal(42, response.Completed.First().result);
+            Assert.Equal(typeof(object), response.Completed.First().RecipientType);
+            Assert.Equal(42, response.Completed.First().Result);
 
-            Assert.Equal(typeof(bool), response.Faulted.First().recipientType);
-            Assert.Equal(_ex, response.Faulted.First().exception);
+            Assert.Equal(typeof(bool), response.Faulted.First().RecipientType);
+            Assert.Equal(_ex, response.Faulted.First().Exception);
 
-            Assert.Equal(typeof(long), response.Incomplete.First());
+            Assert.Equal(typeof(long), response.Incomplete.First().RecipientType);
         }
 
         [Fact]
@@ -73,18 +73,18 @@ namespace NScatterGather
 
     public class AggregatedResponseExtensionsTests
     {
-        private readonly Invocation<int>[] _invocations;
+        private readonly LiveInvocationHolder<int>[] _invocations;
 
         public AggregatedResponseExtensionsTests()
         {
-            var invocation = new Invocation<int>(
-                new Recipient(typeof(object)), Task.FromResult(42));
+            var invocation = new LiveInvocationHolder<int>(
+                new Recipient(typeof(object)), () => Task.FromResult(42));
 
-            var invocationFaulted = new Invocation<int>(
-                new Recipient(typeof(bool)), Task.FromException<int>(new Exception()));
+            var invocationFaulted = new LiveInvocationHolder<int>(
+                new Recipient(typeof(bool)), () => Task.FromException<int>(new Exception()));
 
-            var invocationIncomplete = new Invocation<int>(
-                new Recipient(typeof(long)), GetInfiniteTask<int>());
+            var invocationIncomplete = new LiveInvocationHolder<int>(
+                new Recipient(typeof(long)), () => GetInfiniteTask<int>());
 
             _invocations = new[] { invocation, invocationFaulted, invocationIncomplete };
 

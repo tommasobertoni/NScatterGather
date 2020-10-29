@@ -18,7 +18,7 @@ namespace NScatterGather.Invocations
         public void Constructor_parameters_are_used()
         {
             var task = Task.FromResult(42);
-            var invocation = new Invocation<int>(_recipient, task);
+            var invocation = new LiveInvocationHolder<int>(_recipient, () => task);
 
             Assert.NotNull(invocation.Recipient);
             Assert.Same(_recipient, invocation.Recipient);
@@ -30,21 +30,14 @@ namespace NScatterGather.Invocations
         public void Error_if_recipient_parameter_is_null()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new Invocation<int>(null!, Task.FromResult(42)));
-        }
-
-        [Fact]
-        public void Error_if_task_parameter_is_null()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                new Invocation<int>(_recipient, null!));
+                new LiveInvocationHolder<int>(null!, () => Task.FromResult(42)));
         }
 
         [Fact]
         public void Can_be_deconstructed()
         {
             var t = Task.FromResult(42);
-            var invocation = new Invocation<int>(_recipient, t);
+            var invocation = new LiveInvocationHolder<int>(_recipient, () => t);
 
             var (recipient, task) = invocation;
 

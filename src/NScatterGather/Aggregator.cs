@@ -26,13 +26,13 @@ namespace NScatterGather
             return new AggregatedResponse<object?>(invocations);
         }
 
-        private async Task<IReadOnlyList<Invocation<object?>>> Invoke<TRequest>(
+        private async Task<IReadOnlyList<LiveInvocationHolder<object?>>> Invoke<TRequest>(
             IReadOnlyList<Recipient> recipients,
             TRequest request,
             CancellationToken cancellationToken)
         {
             var invocations = recipients
-                .Select(p => new Invocation<object?>(p, p.Accept(request)))
+                .Select(p => new LiveInvocationHolder<object?>(p, () => p.Accept(request)))
                 .ToArray();
 
             var tasks = invocations.Select(x => x.Task);
@@ -59,13 +59,13 @@ namespace NScatterGather
             return new AggregatedResponse<TResponse>(invocations);
         }
 
-        private async Task<IReadOnlyList<Invocation<TResponse>>> Invoke<TRequest, TResponse>(
+        private async Task<IReadOnlyList<LiveInvocationHolder<TResponse>>> Invoke<TRequest, TResponse>(
             IReadOnlyList<Recipient> recipients,
             TRequest request,
             CancellationToken cancellationToken)
         {
             var invocations = recipients
-                .Select(p => new Invocation<TResponse>(p, p.ReplyWith<TRequest, TResponse>(request)))
+                .Select(p => new LiveInvocationHolder<TResponse>(p, () => p.ReplyWith<TRequest, TResponse>(request)))
                 .ToArray();
 
             var tasks = invocations.Select(x => x.Task);
