@@ -21,14 +21,15 @@ namespace NScatterGather.Invocations
         public LiveInvocationHolder(Recipient recipient, Func<Task<TResult>> invocation)
         {
             Recipient = recipient ?? throw new ArgumentNullException(nameof(recipient));
-            
+
             StartedAt = DateTime.UtcNow;
 
             Task = invocation();
 
             Task.ContinueWith(
                 _ => FinishedAt = DateTime.UtcNow,
-                TaskContinuationOptions.OnlyOnRanToCompletion);
+                TaskContinuationOptions.ExecuteSynchronously |
+                TaskContinuationOptions.NotOnCanceled);
         }
 
         public void Deconstruct(
