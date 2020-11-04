@@ -107,8 +107,6 @@ namespace NScatterGather.Recipients
 
         private async Task<object> Invoke(MethodInfo method, object? request)
         {
-            await Task.Yield();
-
             var response = method.Invoke(_instance, new object[] { request! });
 
             if (!response.IsAwaitableWithResult())

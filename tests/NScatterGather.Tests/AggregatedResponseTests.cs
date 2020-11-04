@@ -1,31 +1,31 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using NScatterGather.Invocations;
 using NScatterGather.Recipients;
+using NScatterGather.Run;
 using Xunit;
 
 namespace NScatterGather
 {
     public class AggregatedResponseTests
     {
-        private readonly LiveInvocationHolder<int>[] _invocations;
+        private readonly RecipientRunner<int>[] _runners;
         private readonly Exception _ex;
 
         public AggregatedResponseTests()
         {
             _ex = new Exception();
 
-            var invocation = new LiveInvocationHolder<int>(
-                new Recipient(typeof(object)), () => Task.FromResult(42));
+            var runner = new RecipientRunner<int>(new Recipient(typeof(object)));
+            runner.Run(_ => Task.FromResult(42));
 
-            var invocationFaulted = new LiveInvocationHolder<int>(
-                new Recipient(typeof(bool)), () => Task.FromException<int>(_ex));
+            var runnerFaulted = new RecipientRunner<int>(new Recipient(typeof(bool)));
+            runnerFaulted.Run(_ => Task.FromException<int>(new Exception()));
 
-            var invocationIncomplete = new LiveInvocationHolder<int>(
-                new Recipient(typeof(long)), () => GetInfiniteTask<int>());
+            var runnerIncomplete = new RecipientRunner<int>(new Recipient(typeof(long)));
+            runnerIncomplete.Run(_ => GetInfiniteTask<int>());
 
-            _invocations = new[] { invocation, invocationFaulted, invocationIncomplete };
+            _runners = new[] { runner, runnerFaulted, runnerIncomplete };
 
             // Local functions.
 
@@ -39,8 +39,8 @@ namespace NScatterGather
         [Fact]
         public void Can_be_created()
         {
-            var response = new AggregatedResponse<int>(_invocations);
-            Assert.Equal(_invocations.Length, response.TotalInvocationsCount);
+            var response = new AggregatedResponse<int>(_runners);
+            Assert.Equal(_runners.Length, response.TotalInvocationsCount);
             Assert.Single(response.Completed);
             Assert.Single(response.Faulted);
             Assert.Single(response.Incomplete);
@@ -49,7 +49,7 @@ namespace NScatterGather
         [Fact]
         public void Invocations_are_grouped_correctly()
         {
-            var response = new AggregatedResponse<int>(_invocations);
+            var response = new AggregatedResponse<int>(_runners);
 
             Assert.Equal(typeof(object), response.Completed.First().RecipientType);
             Assert.Equal(42, response.Completed.First().Result);
@@ -63,7 +63,7 @@ namespace NScatterGather
         [Fact]
         public void Can_be_deconstructed()
         {
-            var response = new AggregatedResponse<int>(_invocations);
+            var response = new AggregatedResponse<int>(_runners);
             var (completed, faulted, incomplete) = response;
             Assert.Single(completed);
             Assert.Single(faulted);
@@ -73,20 +73,20 @@ namespace NScatterGather
 
     public class AggregatedResponseExtensionsTests
     {
-        private readonly LiveInvocationHolder<int>[] _invocations;
+        private readonly RecipientRunner<int>[] _runners;
 
         public AggregatedResponseExtensionsTests()
         {
-            var invocation = new LiveInvocationHolder<int>(
-                new Recipient(typeof(object)), () => Task.FromResult(42));
+            var runner = new RecipientRunner<int>(new Recipient(typeof(object)));
+            runner.Run(_ => Task.FromResult(42));
 
-            var invocationFaulted = new LiveInvocationHolder<int>(
-                new Recipient(typeof(bool)), () => Task.FromException<int>(new Exception()));
+            var runnerFaulted = new RecipientRunner<int>(new Recipient(typeof(bool)));
+            runnerFaulted.Run(_ => Task.FromException<int>(new Exception()));
 
-            var invocationIncomplete = new LiveInvocationHolder<int>(
-                new Recipient(typeof(long)), () => GetInfiniteTask<int>());
+            var runnerIncomplete = new RecipientRunner<int>(new Recipient(typeof(long)));
+            runnerIncomplete.Run(_ => GetInfiniteTask<int>());
 
-            _invocations = new[] { invocation, invocationFaulted, invocationIncomplete };
+            _runners = new[] { runner, runnerFaulted, runnerIncomplete };
 
             // Local functions.
 
@@ -110,7 +110,7 @@ namespace NScatterGather
         [Fact]
         public void Can_be_projected_onto_results_dictionary()
         {
-            var response = new AggregatedResponse<int>(_invocations);
+            var response = new AggregatedResponse<int>(_runners);
             var results = response.AsResultsDictionary();
             Assert.NotNull(results);
             Assert.Single(results.Keys);
@@ -122,7 +122,7 @@ namespace NScatterGather
         [Fact]
         public void Can_be_projected_onto_results_list()
         {
-            var response = new AggregatedResponse<int>(_invocations);
+            var response = new AggregatedResponse<int>(_runners);
             var results = response.AsResultsList();
             Assert.NotNull(results);
             Assert.Single(results, 42);
