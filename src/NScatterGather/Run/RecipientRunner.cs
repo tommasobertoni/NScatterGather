@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using NScatterGather.Recipients;
+using static System.Threading.Tasks.TaskContinuationOptions;
 
 namespace NScatterGather.Run
 {
@@ -39,53 +40,35 @@ namespace NScatterGather.Run
 
             StartedAt = DateTime.UtcNow;
 
-            var runnerTask = RunInvocation(invocation);
-
-            UpdateRunnerPropertiesWhenCompleted(runnerTask);
+            var runnerTask = Task.Run(async () => await invocation(Recipient));
 
             var tcs = new TaskCompletionSource<bool>();
-            runnerTask.ContinueWith(t => tcs.SetResult(!t.IsFaulted));
+
+            runnerTask.ContinueWith(completedTask =>
+            {
+                InspectAndExtract(completedTask);
+                tcs.SetResult(!completedTask.IsFaulted);
+            }, ExecuteSynchronously | NotOnCanceled);
+
+            // This task won't throw if the invocation failed with an exception.
             return tcs.Task;
         }
 
-        private void UpdateRunnerPropertiesWhenCompleted(
-            Task<(TResult, DateTime)> runnerTask)
+        private void InspectAndExtract(Task<TResult> task)
         {
-            var options =
-                TaskContinuationOptions.ExecuteSynchronously |
-                TaskContinuationOptions.NotOnCanceled;
+            if (task.IsCompleted)
+                FinishedAt = DateTime.UtcNow;
 
-            runnerTask.ContinueWith(InspectAndExtract, options);
-
-            // Local functions.
-
-            void InspectAndExtract(Task<(TResult, DateTime)> task)
+            if (task.IsCompletedSuccessfully())
             {
-                if (task.IsFaulted)
-                {
-                    Faulted = true;
-                    Exception = ExtractException(task.Exception);
-                    FinishedAt = DateTime.UtcNow;
-                }
-                else if (task.IsCompletedSuccessfully())
-                {
-                    CompletedSuccessfully = true;
-                    var (result, finishedAt) = task.Result;
-                    Result = result;
-                    FinishedAt = finishedAt;
-                }
+                CompletedSuccessfully = true;
+                Result = task.Result;
             }
-        }
-
-        private async Task<(TResult, DateTime)> RunInvocation(
-            Func<Recipient, Task<TResult>> invocation)
-        {
-            await Task.Yield();
-
-            var result = await invocation(Recipient);
-            var finishedAt = DateTime.UtcNow;
-
-            return (result, finishedAt);
+            else if (task.IsFaulted)
+            {
+                Faulted = true;
+                Exception = ExtractException(task.Exception);
+            }
         }
 
         private Exception? ExtractException(Exception? exception)
