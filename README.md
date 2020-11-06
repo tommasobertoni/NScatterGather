@@ -1,22 +1,25 @@
 <p align="center">
-  <image src="assets/logo/nscattergather-logo-full.png" alt="NScatterGather logo" width="600px">
+  <image src="assets/logo/nscattergather-logo-128.png" alt="NScatterGather logo" />
 </p>
+
+<h1 align="center">
+  NScatterGather
+</h1>
 
 <p align="center">
-  <a href="LICENSE">
-    <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-green" />
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://www.nuget.org/packages/NScatterGather">
-    <img alt="NuGet" src="https://img.shields.io/nuget/vpre/nscattergather" />
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://github.com/tommasobertoni/NScatterGather/actions?query=workflow%3ACI">
-    <img alt="CI Pipeline" src="https://github.com/tommasobertoni/NScatterGather/workflows/CI/badge.svg?branch=master" />
-  </a>
+  <a href="https://www.nuget.org/packages/NScatterGather" alt="nuget">
+    <img src="https://img.shields.io/nuget/v/NScatterGather" /></a>
+  <a href="https://docs.microsoft.com/en-us/dotnet/standard/net-standard#net-implementation-support" alt="netstandard">
+    <img src="https://img.shields.io/badge/netstandard-2.1-blue" /></a>
+  <a href="https://github.com/tommasobertoni/NScatterGather/actions?query=workflow%3ACI+branch%3Amain" alt="ci">
+    <img src="https://img.shields.io/github/workflow/status/tommasobertoni/NScatterGather/CI/main" /></a>
+  <a href="https://coveralls.io/github/tommasobertoni/NScatterGather?branch=main" alt="coverage">
+    <img src="https://img.shields.io/coveralls/github/tommasobertoni/NScatterGather/main" /></a>
+  <a href="LICENSE" alt="license">
+    <img src="https://img.shields.io/badge/license-MIT-green" /></a>
 </p>
 
-<details  align="center">
+<details align="center">
   <summary>Table of Contents</summary>
 
   [Intro](#Intro)<br/>
@@ -28,7 +31,7 @@
 
 # Intro
 
-The Scatter-Gather pattern: send a request message to multiple recipients, and then aggregate the results into a single response.
+The Scatter-Gather pattern: send a request to multiple recipients, and aggregate the results into a single response.
 
 ![scatter-gather-diagram](assets/images/scatter-gather-diagram.png)
 
