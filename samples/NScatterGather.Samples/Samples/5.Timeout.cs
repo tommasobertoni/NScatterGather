@@ -29,7 +29,7 @@ namespace NScatterGather.Samples.Samples
             Console.WriteLine($"Completed {response.Completed.Count}");
             Console.WriteLine(
                 $"Incomplete {response.Incomplete.Count}: " +
-                $"{response.Incomplete[0].Name}");
+                $"{response.Incomplete[0].RecipientType.Name}");
         }
 
         class Foo

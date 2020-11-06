@@ -63,41 +63,41 @@ namespace NScatterGather
             _aggregator = new Aggregator(collection);
         }
 
-        [Fact(Timeout = 1_000)]
+        [Fact(Timeout = 5_000)]
         public async Task Sends_request_and_aggregates_responses()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
             var result = await _aggregator.Send(42, cts.Token);
 
             Assert.NotNull(result);
             Assert.Equal(3, result.Completed.Count);
-            Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.recipientType));
-            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.recipientType));
-            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.RecipientType));
 
             Assert.Single(result.Faulted);
-            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.RecipientType));
 
             Assert.Single(result.Incomplete);
-            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete);
+            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete.Select(x => x.RecipientType));
         }
 
-        [Fact(Timeout = 1_000)]
+        [Fact(Timeout = 5_000)]
         public async Task Receives_expected_response_types()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
             var result = await _aggregator.Send<int, string>(42, cts.Token);
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Completed.Count);
-            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.recipientType));
-            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.RecipientType));
 
             Assert.Single(result.Faulted);
-            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.recipientType));
+            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.RecipientType));
 
             Assert.Single(result.Incomplete);
-            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete);
+            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete.Select(x => x.RecipientType));
         }
     }
 }

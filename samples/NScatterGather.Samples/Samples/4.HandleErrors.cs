@@ -23,8 +23,8 @@ namespace NScatterGather.Samples.Samples
             Console.WriteLine($"Completed {response.Completed.Count}");
             Console.WriteLine(
                 $"Faulted {response.Faulted.Count}: " +
-                $"{response.Faulted[0].recipientType.Name} => " +
-                $"{response.Faulted[0].exception.Message}");
+                $"{response.Faulted[0].RecipientType.Name} => " +
+                $"{response.Faulted[0].Exception.Message}");
         }
 
         class Foo

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NScatterGather.Invocations;
 using NScatterGather.Recipients;
+using NScatterGather.Run;
 
 namespace NScatterGather
 {
@@ -26,25 +27,26 @@ namespace NScatterGather
             return new AggregatedResponse<object?>(invocations);
         }
 
-        private async Task<IReadOnlyList<Invocation<object?>>> Invoke<TRequest>(
+        private async Task<IReadOnlyList<RecipientRunner<object?>>> Invoke<TRequest>(
             IReadOnlyList<Recipient> recipients,
             TRequest request,
             CancellationToken cancellationToken)
         {
-            var invocations = recipients
-                .Select(p => new Invocation<object?>(p, p.Accept(request)))
+            var runners = recipients.Select(r => new RecipientRunner<object?>(r)).ToArray();
+
+            var tasks = runners
+                .Select(runner => runner.Run(x => x.Accept(request)))
                 .ToArray();
 
-            var tasks = invocations.Select(x => x.Task);
             var allTasksCompleted = Task.WhenAll(tasks);
 
-            if (allTasksCompleted.IsCompletedSuccessfully)
-                return invocations;
+            if (allTasksCompleted.IsCompletedSuccessfully())
+                return runners;
 
             using (var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken))
                 await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
-            return invocations;
+            return runners;
         }
 
         public async Task<AggregatedResponse<TResponse>> Send<TRequest, TResponse>(
@@ -53,31 +55,32 @@ namespace NScatterGather
         {
             var recipients = _recipients.ListRecipientsReplyingWith<TRequest, TResponse>();
 
-            var invocations = await Invoke<TRequest, TResponse>(recipients, request, cancellationToken)
+            var runners = await Invoke<TRequest, TResponse>(recipients, request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return new AggregatedResponse<TResponse>(invocations);
+            return new AggregatedResponse<TResponse>(runners);
         }
 
-        private async Task<IReadOnlyList<Invocation<TResponse>>> Invoke<TRequest, TResponse>(
+        private async Task<IReadOnlyList<RecipientRunner<TResponse>>> Invoke<TRequest, TResponse>(
             IReadOnlyList<Recipient> recipients,
             TRequest request,
             CancellationToken cancellationToken)
         {
-            var invocations = recipients
-                .Select(p => new Invocation<TResponse>(p, p.ReplyWith<TRequest, TResponse>(request)))
+            var runners = recipients.Select(r => new RecipientRunner<TResponse>(r)).ToArray();
+
+            var tasks = runners
+                .Select(runner => runner.Run(x => x.ReplyWith<TRequest, TResponse>(request)))
                 .ToArray();
 
-            var tasks = invocations.Select(x => x.Task);
             var allTasksCompleted = Task.WhenAll(tasks);
 
-            if (allTasksCompleted.IsCompletedSuccessfully)
-                return invocations;
+            if (allTasksCompleted.IsCompletedSuccessfully())
+                return runners;
 
             using (var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken))
                 await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
-            return invocations;
+            return runners;
         }
     }
 }
