@@ -92,8 +92,24 @@ var incomplete = response.Incomplete[0];
 // Type recipientType = incomplete;
 ```
 
-The recipients for a request, and optionally a response type, are identifyed via reflection: **no binding contracts** are used _(e.g. `IRecipient`)_.<br/>
-This allows for less friction in both the implementation and the maintenance of the integrations, and, furthermore, to identify the target methods by conventions (i.e. sync/async).
+## Embrace [duck typing](https://stackoverflow.com/a/4205163/3743963)
+
+**No binding contracts** are used _(e.g. `IRecipient`)_.<br/>
+A recipient is invoked if it defines a method matching the request:
+```csharp
+class Foo
+{
+    public string ThisIsInvoked(int n) => n.ToString();
+}
+
+class Bar
+{
+    public Task<string> ThisIsInvokedToo(int n) => Task.FromResult(n.ToString());
+}
+
+// Invoke each recipient that accepts an int.
+_ = await aggregator.Send(42);
+```
 
 # Special cases
 
@@ -101,7 +117,7 @@ This allows for less friction in both the implementation and the maintenance of 
 
 The `Aggregator` exposes async-only methods for sending requests.
 
-By convention, even if the consumer requested only results of type `TResponse`, a recipient that returns `Task<TResponse>` (or `ValueTask<TResponse>`) will still be invoked and its result awaited:
+Even if the consumer requested only results of type `TResponse`, a recipient that returns `Task<TResponse>` (or `ValueTask<TResponse>`) will still be invoked and its result awaited:
 
 ```csharp
 class Foo { public int Echo(int n) => n; }
