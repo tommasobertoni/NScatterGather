@@ -15,12 +15,17 @@ namespace NScatterGather.Recipients
         private readonly ConcurrentBag<Recipient> _recipients = new ConcurrentBag<Recipient>();
         private readonly TypeInspectorRegistry _registry;
 
+        public IReadOnlyList<Type> RecipientTypes => _recipients.Select(x => x.Type).ToArray();
+
         public event ConflictHandler? OnConflict;
 
         public event ErrorHandler? OnError;
 
-        public RecipientsCollection() =>
-            _registry = new TypeInspectorRegistry();
+        public RecipientsCollection()
+            : this(new TypeInspectorRegistry()) { }
+
+        internal RecipientsCollection(TypeInspectorRegistry registry) =>
+            _registry = registry;
 
         public void Add<T>() =>
             Add(typeof(T));
@@ -41,6 +46,12 @@ namespace NScatterGather.Recipients
 
             var inspector = _registry.Register(instance.GetType());
             _recipients.Add(new Recipient(instance, inspector));
+        }
+
+        internal void Add(Recipient recipient)
+        {
+            _ = _registry.Register(recipient.Type);
+            _recipients.Add(recipient);
         }
 
         internal IReadOnlyList<Recipient> ListRecipientsAccepting<TRequest>()
@@ -104,6 +115,16 @@ namespace NScatterGather.Recipients
                     return false;
                 }
             }
+        }
+
+        public RecipientsCollection Clone()
+        {
+            var clone = new RecipientsCollection(_registry);
+
+            foreach (var recipient in _recipients)
+                clone.Add(recipient);
+
+            return clone;
         }
     }
 }

@@ -58,7 +58,7 @@ namespace NScatterGather.Recipients
         [Fact]
         public void Error_if_type_is_null()
         {
-            Assert.Throws<ArgumentNullException>(() => _collection.Add(null!));
+            Assert.Throws<ArgumentNullException>(() => _collection.Add((null as object)!));
         }
 
         [Fact]
@@ -155,6 +155,20 @@ namespace NScatterGather.Recipients
 
             var two = _collection.ListRecipientsReplyingWith<int, string>();
             Assert.Equal(2, two.Count);
+        }
+
+        [Fact]
+        public void Can_be_cloned()
+        {
+            _collection.Add<SomeType>();
+            _collection.Add<SomeOtherType>();
+
+            Assert.NotEmpty(_collection.RecipientTypes);
+
+            var clone = _collection.Clone();
+
+            foreach (var type in _collection.RecipientTypes)
+                Assert.Contains(type, clone.RecipientTypes);
         }
     }
 }
