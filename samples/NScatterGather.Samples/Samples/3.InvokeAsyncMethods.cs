@@ -23,9 +23,9 @@ namespace NScatterGather.Samples.Samples
 
             var results = response1.AsResultsList(); // "42", 0000002a-0001-0002-0304-050607080900, 84L
             Console.WriteLine($"" +
-                $"{results[0]} ({results[0].GetType().Name}), " +
-                $"{results[1]} ({results[1].GetType().Name}), " +
-                $"{results[2]} ({results[2].GetType().Name})");
+                $"{results[0]} ({results[0]?.GetType().Name}), " +
+                $"{results[1]} ({results[1]?.GetType().Name}), " +
+                $"{results[2]} ({results[2]?.GetType().Name})");
 
             // The aggregator provides a "all methods are async" abstraction
             // so that when using the Send<TRequest, TResponse> method

@@ -17,12 +17,12 @@ namespace NScatterGather.Samples.Samples
 
             // The Send<TRequest> method checks only the input
             // parameter of the methods:
-            AggregatedResponse<object> all = await aggregator.Send(42);
+            AggregatedResponse<object?> all = await aggregator.Send(42);
 
             var allResults = all.AsResultsList(); // 42L, "42"
             Console.WriteLine($"" +
-                $"{allResults[0]} ({allResults[0].GetType().Name}), " +
-                $"{allResults[1]} ({allResults[1].GetType().Name})");
+                $"{allResults[0]} ({allResults[0]?.GetType().Name}), " +
+                $"{allResults[1]} ({allResults[1]?.GetType().Name})");
 
             // Instead the Send<TRequest, TResponse> method checks
             // also the return type of the methods, allowing to filter
@@ -30,7 +30,7 @@ namespace NScatterGather.Samples.Samples
             AggregatedResponse<string> onlyStrings = await aggregator.Send<int, string>(42);
 
             var onlyStringsResults = onlyStrings.AsResultsList(); // "42"
-            Console.WriteLine($"{onlyStringsResults[0]} ({allResults[0].GetType().Name})");
+            Console.WriteLine($"{onlyStringsResults[0]} ({allResults[0]?.GetType().Name})");
         }
 
         class Foo
