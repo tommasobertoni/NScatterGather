@@ -10,7 +10,7 @@
   <a href="https://www.nuget.org/packages/NScatterGather" alt="nuget">
     <img src="https://img.shields.io/nuget/v/NScatterGather" /></a>
   <a href="https://docs.microsoft.com/en-us/dotnet/standard/net-standard#net-implementation-support" alt="netstandard">
-    <img src="https://img.shields.io/badge/netstandard-2.1-blue" /></a>
+    <img src="https://img.shields.io/badge/netstandard-2.0-blue" /></a>
   <a href="https://github.com/tommasobertoni/NScatterGather/actions?query=workflow%3ACI+branch%3Amain" alt="ci">
     <img src="https://img.shields.io/github/workflow/status/tommasobertoni/NScatterGather/CI/main" /></a>
   <a href="https://coveralls.io/github/tommasobertoni/NScatterGather?branch=main" alt="coverage">
