@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <!-- Dependencies -->
-    <PackageReference Include="IsAwaitable" Version="1.2.0" />
+    <PackageReference Include="IsAwaitable" Version="1.3.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 
