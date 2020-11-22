@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using IsAwaitable.Analysis;
 using NScatterGather.Inspection;
 
 namespace NScatterGather.Recipients
@@ -32,7 +33,7 @@ namespace NScatterGather.Recipients
 
             try
             {
-                _instance = Activator.CreateInstance(_type);
+                _instance = Activator.CreateInstance(_type)!;
             }
             catch (MissingMethodException mMEx)
             {
@@ -75,7 +76,7 @@ namespace NScatterGather.Recipients
 
             try
             {
-                var response = await Invoke(method, request);
+                var response = await Invoke(method, request).ConfigureAwait(false);
                 return response;
             }
             catch (TargetInvocationException tIEx)
@@ -110,12 +111,41 @@ namespace NScatterGather.Recipients
             var response = method.Invoke(_instance, new object[] { request! });
 
             if (!response.IsAwaitableWithResult())
-                return response;
+                return response!;
 
-            var awaitedResponse = await Task.Run(async () => await (dynamic)response)
-                .ConfigureAwait(false);
+            // Fun fact: when the invoked method returns (asynchronously)
+            // a non-public type (e.g. anonymous, internal...), the
+            // 'dynamic await' approach will fail with the following exception:
+            // `RuntimeBinderException: Cannot implicitly convert type 'void' to 'object'`.
+            //
+            // This happens because the dynamic binding treats them as the closest public
+            // inherited type it knows about.
+            // https://stackoverflow.com/questions/31778977/why-cant-i-access-properties-of-an-anonymous-type-returned-from-a-function-via/31779069#31779069
+            //
+            // If the method returned a `Task<T>`, the result of the dynamic binding
+            // will be a `Task`, i.e. the closest public inherited type.
+            //
+            // Since `Task` is awaitable, but has no result, the runtime will try to:
+            // ```
+            // dynamic awaiter = ((dynamic)response).GetAwaiter();
+            // var result = awaiter.GetResult();
+            // ```
+            // but `GetResult()` returns `void`! And that's why the exception.
+            //
+            // Solution: treat it like a Task, then extract the result via method invocation.
 
-            return awaitedResponse;
+            await (dynamic)response;
+
+            // At this point the task is completed.
+
+            var description = Awaitable.Describe(response);
+
+            if (description is null)
+                throw new Exception("Couldn't extract async response.");
+
+            var awaiter = description.GetAwaiterMethod.Invoke(response, null);
+            var awaitedResult = description.AwaiterDescriptor.GetResultMethod.Invoke(awaiter, null);
+            return awaitedResult;
         }
     }
 }
