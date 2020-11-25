@@ -1,25 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using NScatterGather.Invocations;
 using NScatterGather.Run;
 
 namespace NScatterGather
 {
-    public class AggregatedResponse<TResponse>
+    internal class AggregatedResponseFactory
     {
-        public int TotalInvocationsCount =>
-            Completed.Count +
-            Faulted.Count +
-            Incomplete.Count;
-
-        public IReadOnlyList<CompletedInvocation<TResponse>> Completed { get; }
-
-        public IReadOnlyList<FaultedInvocation> Faulted { get; }
-
-        public IReadOnlyList<IncompleteInvocation> Incomplete { get; }
-
-        internal AggregatedResponse(
+        public static AggregatedResponse<TResponse> CreateFrom<TResponse>(
             IEnumerable<RecipientRunner<TResponse>> invocations)
         {
             var completed = new List<CompletedInvocation<TResponse>>();
@@ -50,18 +38,40 @@ namespace NScatterGather
                     incomplete.Add(new IncompleteInvocation(invocation.Recipient.Type));
             }
 
-            Completed = completed.AsReadOnly();
-            Faulted = faulted.AsReadOnly();
-            Incomplete = incomplete.AsReadOnly();
+            return new AggregatedResponse<TResponse>(completed, faulted, incomplete);
         }
 
-        private TimeSpan GetDuration(
+        private static TimeSpan GetDuration<TResponse>(
             RecipientRunner<TResponse> invocation)
         {
             if (invocation.StartedAt.HasValue && invocation.FinishedAt.HasValue)
                 return invocation.FinishedAt.Value - invocation.StartedAt.Value;
 
             return default;
+        }
+    }
+
+    public class AggregatedResponse<TResponse>
+    {
+        public int TotalInvocationsCount =>
+            Completed.Count +
+            Faulted.Count +
+            Incomplete.Count;
+
+        public IReadOnlyList<CompletedInvocation<TResponse>> Completed { get; }
+
+        public IReadOnlyList<FaultedInvocation> Faulted { get; }
+
+        public IReadOnlyList<IncompleteInvocation> Incomplete { get; }
+
+        internal AggregatedResponse(
+            IReadOnlyList<CompletedInvocation<TResponse>> completed,
+            IReadOnlyList<FaultedInvocation> faulted,
+            IReadOnlyList<IncompleteInvocation> incomplete)
+        {
+            Completed = completed;
+            Faulted = faulted;
+            Incomplete = incomplete;
         }
 
         public void Deconstruct(

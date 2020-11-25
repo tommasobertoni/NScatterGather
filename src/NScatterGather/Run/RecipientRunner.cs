@@ -13,7 +13,7 @@ namespace NScatterGather.Run
 
         public bool CompletedSuccessfully { get; private set; }
 
-        [AllowNull]
+        [MaybeNull, AllowNull]
         public TResult Result { get; private set; }
 
         public bool Faulted { get; private set; }

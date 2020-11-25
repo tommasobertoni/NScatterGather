@@ -6,7 +6,7 @@ namespace NScatterGather.Invocations
     {
         public Type RecipientType { get; }
 
-        public IncompleteInvocation(
+        internal IncompleteInvocation(
             Type recipientType)
         {
             RecipientType = recipientType;

@@ -10,7 +10,7 @@ namespace NScatterGather.Invocations
 
         public TimeSpan Duration { get; }
 
-        public FaultedInvocation(
+        internal FaultedInvocation(
             Type recipientType,
             Exception? exception,
             TimeSpan duration)

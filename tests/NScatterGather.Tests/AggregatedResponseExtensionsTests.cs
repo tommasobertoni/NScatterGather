@@ -46,7 +46,7 @@ namespace NScatterGather
         [Fact]
         public void Can_be_projected_onto_results_dictionary()
         {
-            var response = new AggregatedResponse<int>(_runners);
+            var response = AggregatedResponseFactory.CreateFrom(_runners);
             var results = response.AsResultsDictionary();
             Assert.NotNull(results);
             Assert.Single(results.Keys);
@@ -58,7 +58,7 @@ namespace NScatterGather
         [Fact]
         public void Can_be_projected_onto_results_list()
         {
-            var response = new AggregatedResponse<int>(_runners);
+            var response = AggregatedResponseFactory.CreateFrom(_runners);
             var results = response.AsResultsList();
             Assert.NotNull(results);
             Assert.Single(results, 42);

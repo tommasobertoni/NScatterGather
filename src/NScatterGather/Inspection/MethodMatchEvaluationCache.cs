@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NScatterGather.Inspection
 {
@@ -24,12 +25,12 @@ namespace NScatterGather.Inspection
             return _cache.TryAdd(hash, evaluation);
         }
 
-        public bool TryFindEvaluation<TRequest>(out MethodMatchEvaluation evaluation) =>
+        public bool TryFindEvaluation<TRequest>([NotNullWhen(true)] out MethodMatchEvaluation? evaluation) =>
             TryFindEvaluation(typeof(TRequest), out evaluation);
 
         public bool TryFindEvaluation(
             Type requestType,
-            out MethodMatchEvaluation evaluation)
+            [NotNullWhen(true)] out MethodMatchEvaluation? evaluation)
         {
             if (requestType is null) throw new ArgumentNullException(nameof(requestType));
 
@@ -57,13 +58,13 @@ namespace NScatterGather.Inspection
             return _cache.TryAdd(hash, evaluation);
         }
 
-        public bool TryFindEvaluation<TRequest, TResponse>(out MethodMatchEvaluation evaluation) =>
+        public bool TryFindEvaluation<TRequest, TResponse>([NotNullWhen(true)] out MethodMatchEvaluation? evaluation) =>
             TryFindEvaluation(typeof(TRequest), typeof(TResponse), out evaluation);
 
         public bool TryFindEvaluation(
             Type requestType,
             Type responseType,
-            out MethodMatchEvaluation evaluation)
+            [NotNullWhen(true)] out MethodMatchEvaluation? evaluation)
         {
             if (requestType is null) throw new ArgumentNullException(nameof(requestType));
             if (responseType is null) throw new ArgumentNullException(nameof(responseType));

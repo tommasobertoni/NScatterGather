@@ -39,7 +39,7 @@ namespace NScatterGather
         [Fact]
         public void Can_be_created()
         {
-            var response = new AggregatedResponse<int>(_runners);
+            var response = AggregatedResponseFactory.CreateFrom(_runners);
             Assert.Equal(_runners.Length, response.TotalInvocationsCount);
             Assert.Single(response.Completed);
             Assert.Single(response.Faulted);
@@ -49,7 +49,7 @@ namespace NScatterGather
         [Fact]
         public void Invocations_are_grouped_correctly()
         {
-            var response = new AggregatedResponse<int>(_runners);
+            var response = AggregatedResponseFactory.CreateFrom(_runners);
 
             Assert.Equal(typeof(object), response.Completed.First().RecipientType);
             Assert.Equal(42, response.Completed.First().Result);
@@ -63,7 +63,7 @@ namespace NScatterGather
         [Fact]
         public void Can_be_deconstructed()
         {
-            var response = new AggregatedResponse<int>(_runners);
+            var response = AggregatedResponseFactory.CreateFrom(_runners);
             var (completed, faulted, incomplete) = response;
             Assert.Single(completed);
             Assert.Single(faulted);
