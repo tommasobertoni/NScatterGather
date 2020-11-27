@@ -11,26 +11,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1.7.2
         with:
-          dotnet-version: 3.1.x
+          dotnet-version: 5.0.x
       - name: Install dependencies
         run: dotnet restore src/NScatterGather/NScatterGather.csproj
       - name: Build
         run: dotnet build src/NScatterGather/NScatterGather.csproj -c Release --no-restore
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET 5 SDK and runtime
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 5.0.x
+      - name: Tests net5.0 on .NET 5
+        run: |
+          dotnet build src/NScatterGather/NScatterGather.csproj -c Release --framework net5.0
+          dotnet build tests/NScatterGather.Tests/NScatterGather.Tests.csproj -c Release --framework net5.0
+          dotnet test --no-build --verbosity normal -c Release --framework net5.0
 
   test-netcore:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup .NET Core 3.1
-        uses: actions/setup-dotnet@v1
+      - name: Setup .NET 5 SDK
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 5.0.x
+      - name: Setup .NET 3.1 runtime
+        uses: actions/setup-dotnet@v1.7.2
         with:
           dotnet-version: 3.1.x
-      - name: Setup .NET Core 2.1
-        uses: actions/setup-dotnet@v1
+      - name: Setup .NET 2.1 runtime
+        uses: actions/setup-dotnet@v1.7.2
         with:
           dotnet-version: 2.1.x
       - name: Tests netstandard2.1 on .NET Core 3.1
@@ -44,12 +63,16 @@ jobs:
           dotnet build tests/NScatterGather.Tests/NScatterGather.Tests.csproj -c Release --framework netcoreapp2.1
           dotnet test --no-build --verbosity normal -c Release --framework netcoreapp2.1
 
-  test-netframework:
+  test-netframework-legacy:
     needs: build
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup .NET Framework
+      - name: Setup .NET 5 SDK
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 5.0.x
+      - name: Setup .NET Framework runtime
         uses: microsoft/setup-msbuild@v1.0.2
       - name: Tests netstandard2.0 on .NET Framework 4.6.1
         run: |
