@@ -37,7 +37,7 @@ var json = JsonSerializer.Serialize(vm, new JsonSerializerOptions { WriteIndente
 
 Console.WriteLine(json);
 
-#region Mapping
+// Mapping.
 
 static void MapEmployeeTo(EmployeeData employeeData, ViewModel vm)
 {
@@ -82,5 +82,3 @@ class ViewModel
 
     public IReadOnlyList<Repository>? Repositories { get; set; }
 }
-
-#endregion

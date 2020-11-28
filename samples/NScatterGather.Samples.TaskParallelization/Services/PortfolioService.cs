@@ -32,48 +32,9 @@ namespace NScatterGather.Samples.TaskParallelization
         }
     }
 
-    class PortfolioData
-    {
-        public IReadOnlyList<Project> Projects { get; }
+    record PortfolioData(IReadOnlyList<Project> Projects, IReadOnlyList<Repository> Repositories);
 
-        public IReadOnlyList<Repository> Repositories { get; }
+    record Project(string Name, DateTime Started);
 
-        public PortfolioData(
-            IReadOnlyList<Project> projects,
-            IReadOnlyList<Repository> repositories)
-        {
-            Projects = projects;
-            Repositories = repositories;
-        }
-    }
-
-    class Project
-    {
-        public string Name { get; }
-
-        public DateTime Started { get; }
-
-        public Project(
-            string name,
-            DateTime started)
-        {
-            Name = name;
-            Started = started;
-        }
-    }
-
-    class Repository
-    {
-        public string Name { get; }
-
-        public string Url { get; }
-
-        public Repository(
-            string name,
-            string url)
-        {
-            Name = name;
-            Url = url;
-        }
-    }
+    record Repository(string Name, string Url);
 }

@@ -13,18 +13,5 @@ namespace NScatterGather.Samples.TaskParallelization
         }
     }
 
-    class EmployeeData
-    {
-        public string? FullName { get; }
-
-        public int Age { get; }
-
-        public EmployeeData(
-            string fullName,
-            int age)
-        {
-            FullName = fullName;
-            Age = age;
-        }
-    }
+    record EmployeeData(string? FullName, int Age);
 }

@@ -25,52 +25,9 @@ namespace NScatterGather.Samples.TaskParallelization
         }
     }
 
-    class OrganizationData
-    {
-        public Company Company { get; }
+    record OrganizationData(Company Company, IReadOnlyList<Team> Teams);
 
-        public IReadOnlyList<Team> Teams { get; }
+    record Company(string Name, DateTime Founded);
 
-        public OrganizationData(
-            Company company,
-            IReadOnlyList<Team> teams)
-        {
-            Company = company;
-            Teams = teams;
-        }
-    }
-
-    class Company
-    {
-        public string Name { get; }
-
-        public DateTime Founded { get; }
-
-        public Company(
-            string name,
-            DateTime founded)
-        {
-            Name = name;
-            Founded = founded;
-        }
-    }
-
-    class Team
-    {
-        public string Name { get; }
-
-        public int Size { get; }
-
-        public DateTime Created { get; }
-
-        public Team(
-            string name,
-            int size,
-            DateTime created)
-        {
-            Name = name;
-            Size = size;
-            Created = created;
-        }
-    }
+    record Team(string Name, int Size, DateTime Created);
 }

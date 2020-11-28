@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NScatterGather;
-using NScatterGather.Invocations;
 using NScatterGather.Recipients;
 using NScatterGather.Samples.CompetingTasks;
-using static System.Console;
+using Spectre.Console;
 
 // Run.
 
@@ -14,59 +14,105 @@ var aggregator = new Aggregator(recipients);
 
 var catalog = new Catalog();
 
-WriteLine();
+var evaluations = await EvaluateCatalog(aggregator, catalog);
 
-foreach (var product in catalog.Products)
+PrettyPrint(evaluations);
+
+// Evaluation.
+
+static async Task<IReadOnlyList<Evaluation>> EvaluateCatalog(Aggregator aggregator, Catalog catalog)
 {
-    var response = await aggregator.Send<string, decimal?>(product.Id);
+    var evaluations = new List<Evaluation>();
 
-    PrettyPrint(product, response);
+    AnsiConsole.Render(new Markup("[silver italic]Pricing:[/] "));
 
-    WriteLine();
-    WriteLine("---------------------------------------");
-    WriteLine();
-}
-
-#region Pretty print
-
-static void PrettyPrint(
-    Product product,
-    AggregatedResponse<decimal?> response)
-{
-    WriteLine($"Product: '{product.Name}'");
-    WriteLine();
-
-    if (IsProductOutOfStock(response.Completed))
+    foreach (var product in catalog.Products)
     {
-        WriteLine("  Out of stock.");
-        return;
+        AnsiConsole.Render(new Markup($"[silver italic]{product.Name}, [/]"));
+
+        var response = await aggregator.Send<string, decimal?>(product.Id);
+        evaluations.Add(new Evaluation(product, response));
     }
 
-    var bestPrice = response.Completed.Where(x => x.Result.HasValue).Min(x => x.Result!.Value);
+    AnsiConsole.WriteLine();
 
-    foreach (var invocation in response.Completed.Where(x => x.Result.HasValue).OrderBy(x => x.Duration))
+    return evaluations;
+}
+
+static bool IsPriced(Evaluation evaluation)
+{
+    if (!evaluation.Response.Completed.Any())
+        return false;
+
+    return evaluation.Response.Completed.Any(x => x.Result is not null);
+}
+
+static bool IsProductOutOfStock(Evaluation evaluation)
+{
+    if (!evaluation.Response.Completed.Any())
+        return true;
+
+    return evaluation.Response.Completed.All(x => x.Result is null);
+}
+
+// Pretty print.
+
+static void PrettyPrint(IReadOnlyList<Evaluation> evaluations)
+{
+    var table = new Table()
+        .SimpleBorder()
+        .BorderStyle("steelblue1")
+        .AddColumn(new TableColumn("Product").LeftAligned())
+        .AddColumn(new TableColumn("Price").RightAligned())
+        .AddColumn(new TableColumn("Supplier").RightAligned());
+
+    var isFirstEvaluation = true;
+
+    foreach (var evaluation in evaluations)
     {
-        var supplierName = GetSupplierName(invocation.RecipientType);
-        var supplierPrice = invocation.Result!.Value;
+        if (!isFirstEvaluation)
+            table.AddEmptyRow().AddEmptyRow();
 
-        var output = $"  ${invocation.Result!.Value} (supplier: {supplierName})";
+        if (IsProductOutOfStock(evaluation))
+        {
+            table.AddRow(
+                new Markup(evaluation.Product.Name).LeftAligned(),
+                new Markup("[red]Out of stock[/]").RightAligned());
+        }
+        else if (IsPriced(evaluation))
+        {
+            var resultsWithPrice = evaluation.Response.Completed.Where(x => x.Result.HasValue).ToArray();
+            var bestPrice = resultsWithPrice.Min(x => x.Result!.Value);
 
-        if (supplierPrice == bestPrice)
-            output += $" -- best";
+            var isFirstPrice = true;
 
-        WriteLine(output);
+            foreach (var invocation in resultsWithPrice.OrderBy(x => x.Duration))
+            {
+                var productName = isFirstPrice ? evaluation.Product.Name : string.Empty;
+                var supplierName = GetSupplierName(invocation.RecipientType);
+                var supplierPrice = invocation.Result!.Value;
+                var isBestPrice = supplierPrice == bestPrice;
+                var resultColor = isBestPrice ? "green3_1" : "red";
+
+                table.AddRow(
+                    new Markup(productName).LeftAligned(),
+                    new Markup($"[{resultColor}]${supplierPrice}[/]").RightAligned(),
+                    new Markup($"[{resultColor}]{supplierName}[/]").RightAligned());
+
+                isFirstPrice = false;
+            }
+        }
+
+        isFirstEvaluation = false;
     }
+
+    AnsiConsole.Render(table);
 }
 
-static bool IsProductOutOfStock(IReadOnlyList<CompletedInvocation<decimal?>> invocations)
-{
-    return invocations.All(x => x.Result == null);
-}
+static string GetSupplierName(Type recipientType) =>
+    recipientType.Name.Replace("Supplier", string.Empty);
 
-static object GetSupplierName(Type recipientType)
-{
-    return recipientType.Name.Replace("Supplier", "");
-}
+// Config.
 
 static RecipientsCollection CollectRecipients()
 {
@@ -77,4 +123,4 @@ static RecipientsCollection CollectRecipients()
     return collection;
 }
 
-#endregion
+record Evaluation(Product Product, AggregatedResponse<decimal?> Response);
