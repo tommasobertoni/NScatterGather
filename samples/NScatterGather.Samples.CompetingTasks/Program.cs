@@ -60,7 +60,7 @@ static bool IsProductOutOfStock(Evaluation evaluation)
 static void PrettyPrint(IReadOnlyList<Evaluation> evaluations)
 {
     var table = new Table()
-        .SimpleBorder()
+        .HorizontalBorder()
         .BorderStyle("steelblue1")
         .AddColumn(new TableColumn("Product").LeftAligned())
         .AddColumn(new TableColumn("Price").RightAligned())

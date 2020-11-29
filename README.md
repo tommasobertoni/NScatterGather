@@ -43,7 +43,7 @@ This pattern helps to limit the coupling between the consumer and the recipients
 
 The recipients compete in order to provide the best, or the fastest, response to the request. The consumer will then pick the best value from the aggregated response.
 
-_e.g._ Get an item's price from a collection of suppliers:
+[sample:](samples/NScatterGather.Samples.CompetingTasks/) get an item's best price from a collection of suppliers:
 
 ![competing-tasks-diagram](assets/images/competing-tasks-diagram.png)
 
@@ -51,7 +51,7 @@ _e.g._ Get an item's price from a collection of suppliers:
 
 Different operations are computed concurrently, and their results combined or used together. The result types could be different.
 
-_e.g._ Get a user's data from different services, and then compose a view model:
+[sample:](samples/NScatterGather.Samples.TaskParallelization/) get a user's data from different services, and then compose into a model:
 
 ![tasks-parallelization-diagram](assets/images/tasks-parallelization-diagram.png)
 
@@ -73,15 +73,16 @@ var aggregator = new Aggregator(collection);
 AggregatedResponse<object> objects = await aggregator.Send(42);
 
 // The following overload can be used when
-// the return type is either known or binding:
+// the return type is either known or binding.
+// Only the recipients that accept an int and
+// return a string will be invoked:
 AggregatedResponse<string> strings = await aggregator.Send<int, string>(42);
-
-// In the second case, only the recipients that accept
-// an int and return a string will be invoked.
 ```
 
-Inspect the `AggregatedResponse` containing the results of the scatter-gather operation, grouped by completed, faulted and incomplete:
+Inspect the `AggregatedResponse` containing the results of the scatter-gather operation, grouped by _completed_, _faulted_ and _incomplete_:
 ```csharp
+var response = await aggregator.Send<int, string>(42, cancellationToken);
+
 var completed = response.Completed[0];
 // (Type recipientType, string result) = completed;
 
@@ -104,10 +105,10 @@ class Foo
 
 class Bar
 {
-    public Task<string> ThisIsInvokedToo(int n) => Task.FromResult(n.ToString());
+    public int ThisIsInvokedToo(int n) => n * 2;
 }
 
-// Invoke each recipient that accepts an int.
+// Invoke every recipient that accepts an int.
 _ = await aggregator.Send(42);
 ```
 
@@ -117,7 +118,7 @@ _ = await aggregator.Send(42);
 
 The `Aggregator` exposes async-only methods for sending requests.
 
-Even if the consumer requested only results of type `TResponse`, a recipient that returns `Task<TResponse>` (or `ValueTask<TResponse>`) will still be invoked and its result awaited:
+Even if the consumer requested only results of type `TResponse`, a recipient that returns `Task<TResponse>`, or `ValueTask<TResponse>`, or any task-like type, will still be invoked and its result awaited:
 
 ```csharp
 class Foo { public int Echo(int n) => n; }
@@ -174,7 +175,7 @@ class Foo { public string Stringify(int n) => n.ToString(); }
 
 class Bar
 {
-    public Task<long> Longify(int n)
+    public async Task<long> Longify(int n)
     {
         await Task.Yield();
         return n * 1L;
