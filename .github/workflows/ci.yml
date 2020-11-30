@@ -79,3 +79,27 @@ jobs:
           dotnet build src/NScatterGather/NScatterGather.csproj -c Release --framework netstandard2.0
           dotnet build tests/NScatterGather.Tests/NScatterGather.Tests.csproj -c Release --framework net461
           dotnet test --no-build --verbosity normal -c Release --framework net461
+
+  coverage:
+    if: ${{ github.event_name == 'push' }}
+    needs: [test, test-netcore, test-netframework-legacy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 5.0.x
+      - run: dotnet build -c Debug src/NScatterGather/NScatterGather.csproj
+      - run: dotnet build -c Debug tests/NScatterGather.Tests/NScatterGather.Tests.csproj --framework net5.0
+      - name: Collect coverage
+        run: dotnet test -c Debug --framework net5.0 /p:CollectCoverage=true /p:CoverletOutput=coverage/ /p:CoverletOutputFormat=lcov
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage.info
+          path: tests/NScatterGather.Tests/coverage/coverage.net5.0.info
+      - name: Upload to Coveralls.io
+        uses: coverallsapp/github-action@v1.1.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: tests/NScatterGather.Tests/coverage/coverage.net5.0.info
