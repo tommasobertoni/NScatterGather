@@ -53,7 +53,7 @@ Different operations are computed concurrently, and their results combined or us
 
 [sample:](samples/NScatterGather.Samples.TaskParallelization/) get a user's data from different services, and then compose into a model:
 
-![tasks-parallelization-diagram](assets/images/tasks-parallelization-diagram.png)
+![tasks-parallelization-diagram](assets/images/task-parallelization-diagram.png)
 
 # How to use
 Use a `RecipientsCollection` to register the eligible recipients:

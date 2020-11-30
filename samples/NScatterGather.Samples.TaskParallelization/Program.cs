@@ -70,13 +70,19 @@ class ViewModel
 {
     public string? Id { get; set; }
 
+    // from EmployeeService
+
     public string? FullName { get; set; }
 
     public int? Age { get; set; }
 
+    // from OrganizationService
+
     public Company? Company { get; set; }
 
     public IReadOnlyList<Team>? Teams { get; set; }
+
+    // from PortfolioService
 
     public IReadOnlyList<Project>? Projects { get; set; }
 
