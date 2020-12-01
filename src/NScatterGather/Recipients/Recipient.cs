@@ -79,7 +79,7 @@ namespace NScatterGather.Recipients
                 var response = await Invoke(method, request).ConfigureAwait(false);
                 return response;
             }
-            catch (TargetInvocationException tIEx)
+            catch (TargetInvocationException tIEx) when (tIEx.InnerException is not null)
             {
                 ExceptionDispatchInfo.Capture(tIEx.InnerException).Throw();
                 return default; // Unreachable
@@ -97,18 +97,21 @@ namespace NScatterGather.Recipients
             try
             {
                 var response = await Invoke(method, request);
-                return (TResponse)response;
+                return (TResponse)response!; // The response type will match TResponse, even on structs.
             }
-            catch (TargetInvocationException tIEx)
+            catch (TargetInvocationException tIEx) when (tIEx.InnerException is not null)
             {
                 ExceptionDispatchInfo.Capture(tIEx.InnerException).Throw();
                 return default!; // Unreachable
             }
         }
 
-        private async Task<object> Invoke(MethodInfo method, object? request)
+        private async Task<object?> Invoke(MethodInfo method, object? request)
         {
             var response = method.Invoke(_instance, new object[] { request! });
+
+            if (response is null)
+                return response;
 
             if (!response.IsAwaitableWithResult())
                 return response!;

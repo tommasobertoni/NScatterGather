@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NScatterGather.Invocations;
 using NScatterGather.Recipients;
 using NScatterGather.Run;
 
@@ -24,7 +23,7 @@ namespace NScatterGather
             var invocations = await Invoke(recipients, request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return new AggregatedResponse<object?>(invocations);
+            return AggregatedResponseFactory.CreateFrom(invocations);
         }
 
         private async Task<IReadOnlyList<RecipientRunner<object?>>> Invoke<TRequest>(
@@ -58,7 +57,7 @@ namespace NScatterGather
             var runners = await Invoke<TRequest, TResponse>(recipients, request, cancellationToken)
                 .ConfigureAwait(false);
 
-            return new AggregatedResponse<TResponse>(runners);
+            return AggregatedResponseFactory.CreateFrom(runners);
         }
 
         private async Task<IReadOnlyList<RecipientRunner<TResponse>>> Invoke<TRequest, TResponse>(

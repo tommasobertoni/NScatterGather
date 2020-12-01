@@ -1,62 +1,32 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using NScatterGather.Samples;
 using NScatterGather.Samples.Samples;
+using Spectre.Console;
 using static System.Console;
 
-namespace NScatterGather.Samples
+await Run<HelloWorld>();
+await Run<FilterOnResponse>();
+await Run<InvokeAsyncMethods>();
+await Run<HandleErrors>();
+await Run<Timeout>();
+
+// Beautify CLI Samples!
+
+static async Task Run<TSample>() where TSample : ISample, new()
 {
-    class Program
-    {
-        static async Task Main()
-        {
-            await Run<HelloWorld>();
-            await Run<FilterOnResponse>();
-            await Run<InvokeAsyncMethods>();
-            await Run<HandleErrors>();
-            await Run<Timeout>();
-        }
+    var sampleName = typeof(TSample).Name;
 
-        #region Beautify CLI Samples!
+    // PascalCase to Title Case
+    var title = Regex.Replace(sampleName, "(\\B[A-Z])", " $1");
 
-        static async Task Run<TSample>() where TSample : ISample, new()
-        {
-            var title = GetTitleFor<TSample>();
-            var header = CreateHeader(title);
+    var rule = new Rule(title)
+        .RuleStyle("steelblue1")
+        .LeftAligned();
 
-            WriteLine(header);
-            await new TSample().Run();
-            WriteLine();
-        }
+    AnsiConsole.Render(rule);
 
-        static string GetTitleFor<TSample>() where TSample : ISample, new()
-        {
-            var sampleName = typeof(TSample).Name;
-            // PascalCase to Title Case
-            var title = Regex.Replace(sampleName, "(\\B[A-Z])", " $1");
-            return title;
-        }
+    await new TSample().Run();
 
-        static string CreateHeader(string title)
-        {
-            const int headerLength = 42;
-            var separator = '=';
-
-            var sb = new StringBuilder();
-            sb.Append(separator);
-            sb.Append(separator);
-            sb.Append(' ');
-            sb.Append(title);
-            sb.Append(' ');
-
-            var remainingChars = headerLength - sb.ToString().Length;
-            var remainingSeparator = new string(separator, remainingChars);
-            sb.Append(remainingSeparator);
-
-            var header = sb.ToString();
-            return header;
-        }
-
-        #endregion
-    }
+    AnsiConsole.WriteLine();
 }

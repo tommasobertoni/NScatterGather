@@ -14,7 +14,7 @@ namespace NScatterGather
 
             var dictionary = aggregatedResponse.Completed.ToDictionary(
                 x => x.RecipientType,
-                x => x.Result);
+                x => x.Result!);
 
             return dictionary;
         }
@@ -25,7 +25,7 @@ namespace NScatterGather
             if (aggregatedResponse is null)
                 throw new ArgumentNullException(nameof(aggregatedResponse));
 
-            var list = aggregatedResponse.Completed.Select(x => x.Result).ToArray();
+            var list = aggregatedResponse.Completed.Select(x => x.Result!).ToArray();
             return list;
         }
     }

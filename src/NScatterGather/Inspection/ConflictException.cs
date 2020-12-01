@@ -10,7 +10,7 @@ namespace NScatterGather.Inspection
 
         public Type? ResponseType { get; }
 
-        public ConflictException(
+        internal ConflictException(
             Type recipientType,
             Type requestType,
             Type? responseType = null)

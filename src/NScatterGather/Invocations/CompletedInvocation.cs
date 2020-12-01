@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NScatterGather.Invocations
 {
@@ -6,13 +7,14 @@ namespace NScatterGather.Invocations
     {
         public Type RecipientType { get; }
 
+        [AllowNull, MaybeNull]
         public TResponse Result { get; }
 
         public TimeSpan Duration { get; }
 
-        public CompletedInvocation(
+        internal CompletedInvocation(
             Type recipientType,
-            TResponse result,
+            [AllowNull] TResponse result,
             TimeSpan duration)
         {
             RecipientType = recipientType;
@@ -22,7 +24,7 @@ namespace NScatterGather.Invocations
 
         public void Deconstruct(
             out Type recipientType,
-            out TResponse result,
+            [MaybeNull] out TResponse result,
             out TimeSpan duration)
         {
             recipientType = RecipientType;
