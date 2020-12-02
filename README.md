@@ -219,3 +219,10 @@ Type recipientType = response.Incomplete[0];
 ```
 
 For more, take a look at the [samples project in solution](samples/NScatterGather.Samples).
+
+## Continuous Integration
+
+[![github-actions](https://img.shields.io/badge/using-GitHub%20Actions-2088FF)](https://github.com/features/actions)
+[![xUnit](https://img.shields.io/badge/using-xUnit-512bd4)](https://xunit.net/)
+[![coverlet](https://img.shields.io/badge/using-coverlet-512bd4)](https://github.com/coverlet-coverage/coverlet)
+[![coveralls.io](https://img.shields.io/badge/using-coveralls.io-c05547)](https://coveralls.io/)
