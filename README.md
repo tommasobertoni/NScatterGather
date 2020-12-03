@@ -218,6 +218,18 @@ Type recipientType = response.Incomplete[0];
 // typeof(Foo)
 ```
 
+### Typeless recipients
+```csharp
+// Register typeless recipients using delegates:
+collection.Add((int n) => n.ToString());
+collection.Add((int n) => n * 2);
+
+// Use them as normal recipients:
+var aggregator = new Aggregator(collection);
+var responseOfInt = await aggregator.Send(42);
+var resultsOfInt = responseOfInt.AsResultsList(); // 84, "42"
+```
+
 For more, take a look at the [samples project in solution](samples/NScatterGather.Samples).
 
 ## Continuous Integration

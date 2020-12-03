@@ -12,9 +12,11 @@ namespace NScatterGather
             if (aggregatedResponse is null)
                 throw new ArgumentNullException(nameof(aggregatedResponse));
 
-            var dictionary = aggregatedResponse.Completed.ToDictionary(
-                x => x.RecipientType,
-                x => x.Result!);
+            var dictionary = aggregatedResponse.Completed
+                .Where(x => x.RecipientType is not null)
+                .ToDictionary(
+                    x => x.RecipientType!,
+                    x => x.Result!);
 
             return dictionary;
         }

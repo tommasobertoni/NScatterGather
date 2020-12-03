@@ -56,9 +56,22 @@ namespace NScatterGather.Recipients
         }
 
         [Fact]
+        public void Can_add_delegate()
+        {
+            _collection.Add((int n) => n.ToString());
+        }
+
+        [Fact]
+        public void Error_if_delegate_is_null()
+        {
+            Func<int, string> func = null!;
+            Assert.Throws<ArgumentNullException>(() => _collection.Add(func));
+        }
+
+        [Fact]
         public void Error_if_type_is_null()
         {
-            Assert.Throws<ArgumentNullException>(() => _collection.Add((null as object)!));
+            Assert.Throws<ArgumentNullException>(() => _collection.Add((null as Type)!));
         }
 
         [Fact]
@@ -80,12 +93,22 @@ namespace NScatterGather.Recipients
             Assert.Empty(empty);
 
             _collection.Add<SomeType>();
-            var one = _collection.ListRecipientsAccepting<int>();
+
+            var one = _collection.ListRecipientsAccepting<int>()
+                .Where(x => x is InstanceRecipient)
+                .Cast<InstanceRecipient>()
+                .ToList();
+
             Assert.Single(one);
             Assert.Equal(typeof(SomeType), one.First().Type);
 
             _collection.Add<SomeOtherType>();
-            var two = _collection.ListRecipientsAccepting<int>();
+
+            var two = _collection.ListRecipientsAccepting<int>()
+                .Where(x => x is InstanceRecipient)
+                .Cast<InstanceRecipient>()
+                .ToList();
+
             Assert.Equal(2, two.Count);
             Assert.Contains(typeof(SomeType), two.Select(x => x.Type));
             Assert.Contains(typeof(SomeOtherType), two.Select(x => x.Type));
@@ -94,7 +117,11 @@ namespace NScatterGather.Recipients
             var stillTwo = _collection.ListRecipientsAccepting<int>();
             Assert.Equal(2, stillTwo.Count);
 
-            var differentOne = _collection.ListRecipientsAccepting<string>();
+            var differentOne = _collection.ListRecipientsAccepting<string>()
+                .Where(x => x is InstanceRecipient)
+                .Cast<InstanceRecipient>()
+                .ToList();
+
             Assert.Single(differentOne);
             Assert.Equal(typeof(SomeDifferentType), differentOne.First().Type);
         }
@@ -106,12 +133,22 @@ namespace NScatterGather.Recipients
             Assert.Empty(empty);
 
             _collection.Add<SomeType>();
-            var one = _collection.ListRecipientsReplyingWith<int, string>();
+
+            var one = _collection.ListRecipientsReplyingWith<int, string>()
+                .Where(x => x is InstanceRecipient)
+                .Cast<InstanceRecipient>()
+                .ToList();
+
             Assert.Single(one);
             Assert.Equal(typeof(SomeType), one.First().Type);
 
             _collection.Add<SomeOtherType>();
-            var two = _collection.ListRecipientsReplyingWith<int, string>();
+
+            var two = _collection.ListRecipientsReplyingWith<int, string>()
+                .Where(x => x is InstanceRecipient)
+                .Cast<InstanceRecipient>()
+                .ToList();
+
             Assert.Equal(2, two.Count);
             Assert.Contains(typeof(SomeType), two.Select(x => x.Type));
             Assert.Contains(typeof(SomeOtherType), two.Select(x => x.Type));
@@ -120,7 +157,11 @@ namespace NScatterGather.Recipients
             var stillTwo = _collection.ListRecipientsReplyingWith<int, string>();
             Assert.Equal(2, stillTwo.Count);
 
-            var differentOne = _collection.ListRecipientsReplyingWith<string, int>();
+            var differentOne = _collection.ListRecipientsReplyingWith<string, int>()
+                .Where(x => x is InstanceRecipient)
+                .Cast<InstanceRecipient>()
+                .ToList();
+
             Assert.Single(differentOne);
             Assert.Equal(typeof(SomeDifferentType), differentOne.First().Type);
         }
@@ -131,7 +172,11 @@ namespace NScatterGather.Recipients
             _collection.Add<SomeType>();
             _collection.Add<CollidingType>();
 
-            var onlyNonCollidingType = _collection.ListRecipientsAccepting<int>();
+            var onlyNonCollidingType = _collection.ListRecipientsAccepting<int>()
+                .Where(x => x is InstanceRecipient)
+                .Cast<InstanceRecipient>()
+                .ToList();
+
             Assert.Single(onlyNonCollidingType);
             Assert.Equal(typeof(SomeType), onlyNonCollidingType.First().Type);
         }
@@ -142,7 +187,11 @@ namespace NScatterGather.Recipients
             _collection.Add<SomeType>();
             _collection.Add<CollidingType>();
 
-            var onlyNonCollidingType = _collection.ListRecipientsReplyingWith<int, string>();
+            var onlyNonCollidingType = _collection.ListRecipientsReplyingWith<int, string>()
+                .Where(x => x is InstanceRecipient)
+                .Cast<InstanceRecipient>()
+                .ToList();
+
             Assert.Single(onlyNonCollidingType);
             Assert.Equal(typeof(SomeType), onlyNonCollidingType.First().Type);
         }

@@ -19,7 +19,7 @@ namespace NScatterGather.Inspection
         {
             var inspector = new TypeInspector(typeof(SomeType));
 
-            Assert.True(inspector.HasMethodAccepting<int>());
+            Assert.True(inspector.HasMethodAccepting(typeof(int)));
             Assert.True(inspector.HasMethodAccepting(typeof(long)));
 
             bool found = inspector.TryGetMethodAccepting<int>(out var method);
@@ -32,7 +32,7 @@ namespace NScatterGather.Inspection
         {
             var inspector = new TypeInspector(typeof(SomeType));
 
-            Assert.True(inspector.HasMethodReturning<int, int>());
+            Assert.True(inspector.HasMethodReturning(typeof(int), typeof(int)));
             Assert.True(inspector.HasMethodReturning(typeof(long), typeof(string)));
 
             bool found = inspector.TryGetMethodReturning<int, int>(out var method);

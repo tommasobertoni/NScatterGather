@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NScatterGather.Invocations;
+using NScatterGather.Recipients;
 using NScatterGather.Run;
 
 namespace NScatterGather
@@ -16,10 +17,13 @@ namespace NScatterGather
 
             foreach (var invocation in invocations)
             {
+                var ir = invocation.Recipient as InstanceRecipient;
+                var recipientType = ir is null ? null : ir.Type;
+
                 if (invocation.CompletedSuccessfully)
                 {
                     var completedInvocation = new CompletedInvocation<TResponse>(
-                        invocation.Recipient.Type,
+                        recipientType,
                         invocation.Result,
                         GetDuration(invocation));
 
@@ -28,14 +32,14 @@ namespace NScatterGather
                 else if (invocation.Faulted)
                 {
                     var faultedInvocation = new FaultedInvocation(
-                        invocation.Recipient.Type,
+                        recipientType,
                         invocation.Exception,
                         GetDuration(invocation));
 
                     faulted.Add(faultedInvocation);
                 }
                 else
-                    incomplete.Add(new IncompleteInvocation(invocation.Recipient.Type));
+                    incomplete.Add(new IncompleteInvocation(recipientType));
             }
 
             return new AggregatedResponse<TResponse>(completed, faulted, incomplete);

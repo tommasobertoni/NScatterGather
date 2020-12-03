@@ -109,8 +109,8 @@ static void PrettyPrint(IReadOnlyList<Evaluation> evaluations)
     AnsiConsole.Render(table);
 }
 
-static string GetSupplierName(Type recipientType) =>
-    recipientType.Name.Replace("Supplier", string.Empty);
+static string GetSupplierName(Type? recipientType) =>
+    recipientType?.Name.Replace("Supplier", string.Empty) ?? "unknown";
 
 // Config.
 

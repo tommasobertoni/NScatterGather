@@ -10,6 +10,7 @@ await Run<FilterOnResponse>();
 await Run<InvokeAsyncMethods>();
 await Run<HandleErrors>();
 await Run<Timeout>();
+await Run<DelegateRecipients>();
 
 // Beautify CLI Samples!
 

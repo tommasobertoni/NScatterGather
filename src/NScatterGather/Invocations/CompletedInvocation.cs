@@ -5,7 +5,7 @@ namespace NScatterGather.Invocations
 {
     public class CompletedInvocation<TResponse>
     {
-        public Type RecipientType { get; }
+        public Type? RecipientType { get; }
 
         [AllowNull, MaybeNull]
         public TResponse Result { get; }
@@ -13,7 +13,7 @@ namespace NScatterGather.Invocations
         public TimeSpan Duration { get; }
 
         internal CompletedInvocation(
-            Type recipientType,
+            Type? recipientType,
             [AllowNull] TResponse result,
             TimeSpan duration)
         {
@@ -23,7 +23,7 @@ namespace NScatterGather.Invocations
         }
 
         public void Deconstruct(
-            out Type recipientType,
+            out Type? recipientType,
             [MaybeNull] out TResponse result,
             out TimeSpan duration)
         {

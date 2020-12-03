@@ -4,14 +4,14 @@ namespace NScatterGather.Invocations
 {
     public class FaultedInvocation
     {
-        public Type RecipientType { get; }
+        public Type? RecipientType { get; }
 
         public Exception? Exception { get; }
 
         public TimeSpan Duration { get; }
 
         internal FaultedInvocation(
-            Type recipientType,
+            Type? recipientType,
             Exception? exception,
             TimeSpan duration)
         {
@@ -21,7 +21,7 @@ namespace NScatterGather.Invocations
         }
 
         public void Deconstruct(
-            out Type recipientType,
+            out Type? recipientType,
             out Exception? exception,
             out TimeSpan duration)
         {
