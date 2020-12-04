@@ -18,6 +18,14 @@ namespace NScatterGather
 
         public async Task<AggregatedResponse<object?>> Send(
             object request,
+            TimeSpan timeout)
+        {
+            using var cts = new CancellationTokenSource(timeout);
+            return await Send(request, cts.Token);
+        }
+
+        public async Task<AggregatedResponse<object?>> Send(
+            object request,
             CancellationToken cancellationToken = default)
         {
             if (request is null)
@@ -51,6 +59,14 @@ namespace NScatterGather
                 await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
             return runners;
+        }
+
+        public async Task<AggregatedResponse<TResponse>> Send<TResponse>(
+            object request,
+            TimeSpan timeout)
+        {
+            using var cts = new CancellationTokenSource(timeout);
+            return await Send<TResponse>(request, cts.Token);
         }
 
         public async Task<AggregatedResponse<TResponse>> Send<TResponse>(
