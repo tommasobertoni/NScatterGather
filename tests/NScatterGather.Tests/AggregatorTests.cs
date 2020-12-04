@@ -86,7 +86,7 @@ namespace NScatterGather
         public async Task Receives_expected_response_types()
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-            var result = await _aggregator.Send<int, string>(42, cts.Token);
+            var result = await _aggregator.Send<string>(42, cts.Token);
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Completed.Count);

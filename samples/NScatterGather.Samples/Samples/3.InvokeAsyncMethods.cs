@@ -32,12 +32,12 @@ namespace NScatterGather.Samples.Samples
             // all the recipients that return either TResponse, Task<TResponse>
             // or ValueTask<TResponse> get invoked.
 
-            var response2 = await aggregator.Send<int, long>(42);
+            var response2 = await aggregator.Send<long>(42);
             var guidResults = response2.AsResultsList();
             Console.WriteLine($"{guidResults[0]} ({guidResults[0].GetType().Name})");
             Console.WriteLine($"{guidResults[0]} ({guidResults[1].GetType().Name})");
 
-            var response3 = await aggregator.Send<int, string>(42);
+            var response3 = await aggregator.Send<string>(42);
             var stringResults = response3.AsResultsList();
             Console.WriteLine($"{stringResults[0]} ({stringResults[0].GetType().Name})");
         }

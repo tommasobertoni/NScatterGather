@@ -96,7 +96,7 @@ namespace NScatterGather.Recipients
             static string? func(int? n) => n?.ToString();
             var recipient = DelegateRecipient.Create<int?, string?>(func);
 
-            Assert.Throws<InvalidOperationException>(() => recipient.Invoke<int, DateTime>(42));
+            Assert.Throws<InvalidOperationException>(() => recipient.Invoke<DateTime>(42));
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace NScatterGather.Recipients
             var recipient = DelegateRecipient.Create<int?, string?>(func);
 
             var input = 42;
-            var result = recipient.Invoke<int, string>(input);
+            var result = recipient.Invoke<string>(input);
 
             Assert.True(invoked);
             Assert.Equal(input.ToString(), result);

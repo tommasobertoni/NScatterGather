@@ -30,7 +30,7 @@ static async Task<IReadOnlyList<Evaluation>> EvaluateCatalog(Aggregator aggregat
     {
         AnsiConsole.Render(new Markup($"[silver italic]{product.Name}, [/]"));
 
-        var response = await aggregator.Send<string, decimal?>(product.Id);
+        var response = await aggregator.Send<decimal?>(product.Id);
         evaluations.Add(new Evaluation(product, response));
     }
 

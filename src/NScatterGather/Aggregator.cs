@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,11 +15,14 @@ namespace NScatterGather
         public Aggregator(RecipientsCollection recipients) =>
             _recipients = recipients;
 
-        public async Task<AggregatedResponse<object?>> Send<TRequest>(
-            TRequest request,
+        public async Task<AggregatedResponse<object?>> Send(
+            object request,
             CancellationToken cancellationToken = default)
         {
-            var recipients = _recipients.ListRecipientsAccepting<TRequest>();
+            if (request is null)
+                throw new ArgumentNullException(nameof(request));
+
+            var recipients = _recipients.ListRecipientsAccepting(request.GetType());
 
             var invocations = await Invoke(recipients, request, cancellationToken)
                 .ConfigureAwait(false);
@@ -26,9 +30,9 @@ namespace NScatterGather
             return AggregatedResponseFactory.CreateFrom(invocations);
         }
 
-        private async Task<IReadOnlyList<RecipientRunner<object?>>> Invoke<TRequest>(
+        private async Task<IReadOnlyList<RecipientRunner<object?>>> Invoke(
             IReadOnlyList<Recipient> recipients,
-            TRequest request,
+            object request,
             CancellationToken cancellationToken)
         {
             var runners = recipients.Select(r => new RecipientRunner<object?>(r)).ToArray();
@@ -48,27 +52,30 @@ namespace NScatterGather
             return runners;
         }
 
-        public async Task<AggregatedResponse<TResponse>> Send<TRequest, TResponse>(
-            TRequest request,
+        public async Task<AggregatedResponse<TResponse>> Send<TResponse>(
+            object request,
             CancellationToken cancellationToken = default)
         {
-            var recipients = _recipients.ListRecipientsReplyingWith<TRequest, TResponse>();
+            if (request is null)
+                throw new ArgumentNullException(nameof(request));
 
-            var runners = await Invoke<TRequest, TResponse>(recipients, request, cancellationToken)
+            var recipients = _recipients.ListRecipientsReplyingWith(request.GetType(), typeof(TResponse));
+
+            var runners = await Invoke<TResponse>(recipients, request, cancellationToken)
                 .ConfigureAwait(false);
 
             return AggregatedResponseFactory.CreateFrom(runners);
         }
 
-        private async Task<IReadOnlyList<RecipientRunner<TResponse>>> Invoke<TRequest, TResponse>(
+        private async Task<IReadOnlyList<RecipientRunner<TResponse>>> Invoke<TResponse>(
             IReadOnlyList<Recipient> recipients,
-            TRequest request,
+            object request,
             CancellationToken cancellationToken)
         {
             var runners = recipients.Select(r => new RecipientRunner<TResponse>(r)).ToArray();
 
             var tasks = runners
-                .Select(runner => runner.Run(x => x.ReplyWith<TRequest, TResponse>(request)))
+                .Select(runner => runner.Run(x => x.ReplyWith<TResponse>(request)))
                 .ToArray();
 
             var allTasksCompleted = Task.WhenAll(tasks);

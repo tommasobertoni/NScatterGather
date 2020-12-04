@@ -131,7 +131,7 @@ namespace NScatterGather.Recipients
         public void Error_if_response_type_not_supported()
         {
             var recipient = new InstanceRecipient(typeof(SomeType));
-            Assert.ThrowsAsync<InvalidOperationException>(() => recipient.ReplyWith<int, Guid>(42));
+            Assert.ThrowsAsync<InvalidOperationException>(() => recipient.ReplyWith<Guid>(42));
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace NScatterGather.Recipients
         {
             var recipient = new InstanceRecipient(typeof(SomeType));
             var input = 42;
-            var response = await recipient.ReplyWith<int, string>(input);
+            var response = await recipient.ReplyWith<string>(input);
             Assert.Equal(input.ToString(), response);
         }
 
@@ -148,7 +148,7 @@ namespace NScatterGather.Recipients
         {
             var recipient = new InstanceRecipient(typeof(SomeAsyncType));
             var input = 42;
-            var response = await recipient.ReplyWith<int, string>(input);
+            var response = await recipient.ReplyWith<string>(input);
             Assert.Equal(input.ToString(), response);
         }
 
@@ -179,7 +179,7 @@ namespace NScatterGather.Recipients
         public void Error_if_returning_task_without_result()
         {
             var recipient = new InstanceRecipient(typeof(SomeAsyncComputingType));
-            Assert.ThrowsAsync<InvalidOperationException>(() => recipient.ReplyWith<int, Task>(42));
+            Assert.ThrowsAsync<InvalidOperationException>(() => recipient.ReplyWith<Task>(42));
         }
     }
 }

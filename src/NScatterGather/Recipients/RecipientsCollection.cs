@@ -68,10 +68,8 @@ namespace NScatterGather.Recipients
             _recipients.Add(recipient);
         }
 
-        internal IReadOnlyList<Recipient> ListRecipientsAccepting<TRequest>()
+        internal IReadOnlyList<Recipient> ListRecipientsAccepting(Type requestType)
         {
-            var requestType = typeof(TRequest);
-
             var validRecipients = _recipients
                 .Where(RecipientCanAccept)
                 .ToArray();
@@ -99,11 +97,8 @@ namespace NScatterGather.Recipients
             }
         }
 
-        internal IReadOnlyList<Recipient> ListRecipientsReplyingWith<TRequest, TResponse>()
+        internal IReadOnlyList<Recipient> ListRecipientsReplyingWith(Type requestType, Type responseType)
         {
-            var requestType = typeof(TRequest);
-            var responseType = typeof(TResponse);
-
             var validRecipients = _recipients
                 .Where(RecipientCanReplyWith)
                 .ToArray();

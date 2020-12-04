@@ -15,11 +15,11 @@ namespace NScatterGather.Recipients
 
         public abstract bool CanReplyWith(Type requestType, Type responseType);
 
-        protected internal abstract object? Invoke<TRequest>(TRequest request);
+        protected internal abstract object? Invoke(object request);
 
-        protected internal abstract object? Invoke<TRequest, TResponse>(TRequest request);
+        protected internal abstract object? Invoke<TResponse>(object request);
 
-        public async Task<object?> Accept<TRequest>(TRequest request)
+        public async Task<object?> Accept(object request)
         {
             try
             {
@@ -34,11 +34,11 @@ namespace NScatterGather.Recipients
             }
         }
 
-        public async Task<TResponse> ReplyWith<TRequest, TResponse>(TRequest request)
+        public async Task<TResponse> ReplyWith<TResponse>(object request)
         {
             try
             {
-                var invocationResult = Invoke<TRequest, TResponse>(request);
+                var invocationResult = Invoke<TResponse>(request);
                 var completedResult = await UnwrapAsyncResult(invocationResult).ConfigureAwait(false);
                 return (TResponse)completedResult!; // The response type will match TResponse, even on structs.
             }

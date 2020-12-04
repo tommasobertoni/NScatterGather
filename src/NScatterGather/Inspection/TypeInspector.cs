@@ -37,10 +37,6 @@ namespace NScatterGather.Inspection
         public bool HasMethodAccepting(Type requestType) =>
             TryGetMethodAccepting(requestType, out _);
 
-        public bool TryGetMethodAccepting<TRequest>(
-            [NotNullWhen(true)] out MethodInfo? method) =>
-            TryGetMethodAccepting(typeof(TRequest), out method);
-
         public bool TryGetMethodAccepting(
             Type requestType,
             [NotNullWhen(true)] out MethodInfo? method)
@@ -96,10 +92,6 @@ namespace NScatterGather.Inspection
 
         public bool HasMethodReturning(Type requestType, Type responseType) =>
             TryGetMethodReturning(requestType, responseType, out _);
-
-        public bool TryGetMethodReturning<TRequest, TResponse>(
-            [NotNullWhen(true)] out MethodInfo? method) =>
-            TryGetMethodReturning(typeof(TRequest), typeof(TResponse), out method);
 
         public bool TryGetMethodReturning(
             Type requestType,

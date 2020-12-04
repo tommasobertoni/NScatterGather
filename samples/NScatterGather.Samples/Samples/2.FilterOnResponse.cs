@@ -27,7 +27,7 @@ namespace NScatterGather.Samples.Samples
             // Instead the Send<TRequest, TResponse> method checks
             // also the return type of the methods, allowing to filter
             // on them and getting typed results:
-            AggregatedResponse<string> onlyStrings = await aggregator.Send<int, string>(42);
+            AggregatedResponse<string> onlyStrings = await aggregator.Send<string>(42);
 
             var onlyStringsResults = onlyStrings.AsResultsList(); // "42"
             Console.WriteLine($"{onlyStringsResults[0]} ({allResults[0]?.GetType().Name})");

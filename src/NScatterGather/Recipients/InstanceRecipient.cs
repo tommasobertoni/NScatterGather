@@ -61,23 +61,23 @@ namespace NScatterGather.Recipients
             return repliesWith;
         }
 
-        protected internal override object? Invoke<TRequest>(TRequest request)
+        protected internal override object? Invoke(object request)
         {
-            if (!_inspector.TryGetMethodAccepting<TRequest>(out var method))
+            if (!_inspector.TryGetMethodAccepting(request.GetType(), out var method))
                 throw new InvalidOperationException(
                     $"Type '{GetRecipientName()}' doesn't support accepting requests " +
-                    $"of type '{typeof(TRequest).Name}'.");
+                    $"of type '{request.GetType().Name}'.");
 
             var response = method.Invoke(_instance, new object?[] { request });
             return response;
         }
 
-        protected internal override object? Invoke<TRequest, TResponse>(TRequest request)
+        protected internal override object? Invoke<TResponse>(object request)
         {
-            if (!_inspector.TryGetMethodReturning<TRequest, TResponse>(out var method))
+            if (!_inspector.TryGetMethodReturning(request.GetType(), typeof(TResponse), out var method))
                 throw new InvalidOperationException(
                     $"Type '{GetRecipientName()}' doesn't support accepting " +
-                    $"requests of type '{typeof(TRequest).Name}' and " +
+                    $"requests of type '{request.GetType().Name}' and " +
                     $"returning '{typeof(TResponse).Name}'.");
 
             var response = method.Invoke(_instance, new object?[] { request });
