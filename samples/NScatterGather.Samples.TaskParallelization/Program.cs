@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using NScatterGather;
-using NScatterGather.Recipients;
 using NScatterGather.Samples.TaskParallelization;
 
 var recipients = CollectRecipients();

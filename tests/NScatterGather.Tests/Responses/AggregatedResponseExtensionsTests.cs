@@ -5,7 +5,7 @@ using NScatterGather.Recipients;
 using NScatterGather.Run;
 using Xunit;
 
-namespace NScatterGather
+namespace NScatterGather.Responses
 {
     public class AggregatedResponseExtensionsTests
     {

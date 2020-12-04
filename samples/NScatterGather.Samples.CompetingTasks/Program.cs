@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NScatterGather;
-using NScatterGather.Recipients;
 using NScatterGather.Samples.CompetingTasks;
 using Spectre.Console;
 

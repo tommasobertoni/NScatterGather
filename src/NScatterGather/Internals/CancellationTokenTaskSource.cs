@@ -8,7 +8,6 @@ namespace NScatterGather
     /// Source: AsyncEx
     /// Repo: https://github.com/StephenCleary/AsyncEx
     /// </summary>
-
     internal sealed class CancellationTokenTaskSource<T> : IDisposable
     {
         private readonly IDisposable? _registration;

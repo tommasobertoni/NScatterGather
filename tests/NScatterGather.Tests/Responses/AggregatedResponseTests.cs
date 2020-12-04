@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using NScatterGather.Recipients;
 using NScatterGather.Run;
 using Xunit;
 
-namespace NScatterGather
+namespace NScatterGather.Responses
 {
     public class AggregatedResponseTests
     {

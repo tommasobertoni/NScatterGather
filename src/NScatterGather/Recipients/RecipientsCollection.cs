@@ -3,8 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using NScatterGather.Inspection;
+using NScatterGather.Recipients;
 
-namespace NScatterGather.Recipients
+namespace NScatterGather
 {
     public delegate void ConflictHandler(ConflictException ex);
 
@@ -63,7 +64,7 @@ namespace NScatterGather.Recipients
         internal void Add(Recipient recipient)
         {
             if (recipient is InstanceRecipient ir)
-            _ = _registry.Register(ir.Type);
+                _ = _registry.Register(ir.Type);
 
             _recipients.Add(recipient);
         }

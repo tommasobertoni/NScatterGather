@@ -1,5 +1,4 @@
-﻿
-namespace NScatterGather.Samples.TaskParallelization
+﻿namespace NScatterGather.Samples.TaskParallelization
 {
     class EmployeeService
     {

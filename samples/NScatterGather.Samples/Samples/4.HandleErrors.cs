@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using NScatterGather.Recipients;
 
 namespace NScatterGather.Samples.Samples
 {

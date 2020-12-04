@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using NScatterGather.Samples;
 using NScatterGather.Samples.Samples;
 using Spectre.Console;
-using static System.Console;
 
 await Run<HelloWorld>();
 await Run<FilterOnResponse>();

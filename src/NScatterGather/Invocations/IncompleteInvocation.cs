@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NScatterGather.Invocations
+namespace NScatterGather
 {
     public class IncompleteInvocation
     {

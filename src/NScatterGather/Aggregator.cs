@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NScatterGather.Recipients;
+using NScatterGather.Responses;
 using NScatterGather.Run;
 
 namespace NScatterGather
