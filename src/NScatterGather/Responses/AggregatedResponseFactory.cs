@@ -16,12 +16,12 @@ namespace NScatterGather.Responses
 
             foreach (var invocation in invocations)
             {
-                var ir = invocation.Recipient as InstanceRecipient;
-                var recipientType = ir is null ? null : ir.Type;
+                var recipientType = invocation.Recipient is InstanceRecipient ir ? ir.Type : null;
 
                 if (invocation.CompletedSuccessfully)
                 {
                     var completedInvocation = new CompletedInvocation<TResponse>(
+                        invocation.Recipient.Name,
                         recipientType,
                         invocation.Result,
                         GetDuration(invocation));
@@ -31,6 +31,7 @@ namespace NScatterGather.Responses
                 else if (invocation.Faulted)
                 {
                     var faultedInvocation = new FaultedInvocation(
+                        invocation.Recipient.Name,
                         recipientType,
                         invocation.Exception,
                         GetDuration(invocation));
@@ -38,7 +39,7 @@ namespace NScatterGather.Responses
                     faulted.Add(faultedInvocation);
                 }
                 else
-                    incomplete.Add(new IncompleteInvocation(recipientType));
+                    incomplete.Add(new IncompleteInvocation(invocation.Recipient.Name, recipientType));
             }
 
             return new AggregatedResponse<TResponse>(completed, faulted, incomplete);

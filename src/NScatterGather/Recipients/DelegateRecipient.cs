@@ -13,7 +13,9 @@ namespace NScatterGather.Recipients
         private readonly Type _inType;
         private readonly Type _outType;
 
-        public static DelegateRecipient Create<TRequest, TResponse>(Func<TRequest, TResponse> @delegate)
+        public static DelegateRecipient Create<TRequest, TResponse>(
+            Func<TRequest, TResponse> @delegate,
+            string? name = null)
         {
             if (@delegate is null)
                  throw new ArgumentNullException(nameof(@delegate));
@@ -25,13 +27,18 @@ namespace NScatterGather.Recipients
                 return response;
             }
 
-            return new DelegateRecipient(delegateInvoker, typeof(TRequest), typeof(TResponse));
+            return new DelegateRecipient(
+                delegateInvoker,
+                inType: typeof(TRequest),
+                outType: typeof(TResponse),
+                name);
         }
 
         internal DelegateRecipient(
             Func<object, object?> @delegate,
             Type inType,
-            Type outType)
+            Type outType,
+            string? name = null) : base(name)
         {
             _delegate = @delegate;
             _inType = inType;

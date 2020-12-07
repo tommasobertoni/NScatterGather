@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using NScatterGather.Inspection;
@@ -13,13 +12,15 @@ namespace NScatterGather
 
     public class RecipientsCollection
     {
-        private readonly ConcurrentBag<Recipient> _recipients = new ConcurrentBag<Recipient>();
+        private readonly List<Recipient> _recipients = new List<Recipient>();
         private readonly TypeInspectorRegistry _registry;
 
         public IReadOnlyList<Type> RecipientTypes => _recipients
             .OfType<InstanceRecipient>()
             .Select(x => x.Type)
             .ToArray();
+
+        internal IReadOnlyList<Recipient> Recipients => _recipients.ToArray();
 
         public event ConflictHandler? OnConflict;
 
@@ -28,36 +29,38 @@ namespace NScatterGather
         public RecipientsCollection()
             : this(new TypeInspectorRegistry()) { }
 
-        internal RecipientsCollection(TypeInspectorRegistry registry) =>
+        internal RecipientsCollection(TypeInspectorRegistry registry)
+        {
             _registry = registry;
+        }
 
-        public void Add<T>() =>
-            Add(typeof(T));
+        public void Add<T>(string? name = null) =>
+            Add(typeof(T), name);
 
-        public void Add(Type recipientType)
+        public void Add(Type recipientType, string? name = null)
         {
             if (recipientType is null)
                 throw new ArgumentNullException(nameof(recipientType));
 
             var inspector = _registry.Register(recipientType);
-            _recipients.Add(new InstanceRecipient(recipientType, inspector));
+            _recipients.Add(new InstanceRecipient(recipientType, name, inspector));
         }
 
-        public void Add(object instance)
+        public void Add(object instance, string? name = null)
         {
             if (instance is null)
                 throw new ArgumentNullException(nameof(instance));
 
             var inspector = _registry.Register(instance.GetType());
-            _recipients.Add(new InstanceRecipient(instance, inspector));
+            _recipients.Add(new InstanceRecipient(instance, name, inspector));
         }
 
-        public void Add<TRequest, TResponse>(Func<TRequest, TResponse> @delegate)
+        public void Add<TRequest, TResponse>(Func<TRequest, TResponse> @delegate, string? name = null)
         {
             if (@delegate is null)
                 throw new ArgumentNullException(nameof(@delegate));
 
-            var recipient = DelegateRecipient.Create(@delegate);
+            var recipient = DelegateRecipient.Create(@delegate, name);
             _recipients.Add(recipient);
         }
 

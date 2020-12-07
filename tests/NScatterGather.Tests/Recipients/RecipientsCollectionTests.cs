@@ -219,5 +219,36 @@ namespace NScatterGather.Recipients
             foreach (var type in _collection.RecipientTypes)
                 Assert.Contains(type, clone.RecipientTypes);
         }
+
+        [Fact]
+        public void Recipients_can_have_a_name()
+        {
+            _collection.Add<SomeType>("Some type");
+            _collection.Add(new SomeOtherType(), "Some other type");
+            _collection.Add((int n) => n.ToString(), "Delegate recipient");
+
+            Assert.Equal(3, _collection.Recipients.Count);
+
+            foreach (var recipient in _collection.Recipients)
+            {
+                if (recipient is InstanceRecipient ir)
+                {
+                    if (ir.Type == typeof(SomeType))
+                        Assert.Equal("Some type", ir.Name);
+                    else if (ir.Type == typeof(SomeOtherType))
+                        Assert.Equal("Some other type", ir.Name);
+                    else
+                        throw new Xunit.Sdk.XunitException();
+                }
+                else if (recipient is DelegateRecipient dr)
+                {
+                    Assert.Equal("Delegate recipient", dr.Name);
+                }
+                else
+                {
+                    throw new Xunit.Sdk.XunitException();
+                }
+            }
+        }
     }
 }

@@ -7,13 +7,14 @@ namespace NScatterGather.Recipients
     {
         public Type Type => _type;
 
-        private readonly Type _type;
         private readonly object _instance;
+        private readonly Type _type;
         private readonly TypeInspector _inspector;
 
         public InstanceRecipient(
             object instance,
-            TypeInspector? inspector = null)
+            string? name = null,
+            TypeInspector? inspector = null) : base(name)
         {
             _instance = instance ?? throw new ArgumentNullException(nameof(instance));
             _type = _instance.GetType();
@@ -22,7 +23,8 @@ namespace NScatterGather.Recipients
 
         public InstanceRecipient(
             Type type,
-            TypeInspector? inspector = null)
+            string? name = null,
+            TypeInspector? inspector = null) : base(name)
         {
             _type = type ?? throw new ArgumentNullException(nameof(type));
             _inspector = inspector ?? new TypeInspector(_type);

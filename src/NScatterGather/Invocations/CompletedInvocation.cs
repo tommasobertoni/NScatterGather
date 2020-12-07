@@ -5,6 +5,8 @@ namespace NScatterGather
 {
     public class CompletedInvocation<TResponse>
     {
+        public string? RecipientName { get; }
+
         public Type? RecipientType { get; }
 
         [AllowNull, MaybeNull]
@@ -13,10 +15,12 @@ namespace NScatterGather
         public TimeSpan Duration { get; }
 
         internal CompletedInvocation(
+            string? recipientName,
             Type? recipientType,
             [AllowNull] TResponse result,
             TimeSpan duration)
         {
+            RecipientName = recipientName;
             RecipientType = recipientType;
             Result = result;
             Duration = duration;

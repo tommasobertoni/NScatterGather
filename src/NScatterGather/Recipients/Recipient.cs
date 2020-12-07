@@ -8,6 +8,13 @@ namespace NScatterGather.Recipients
 {
     internal abstract class Recipient
     {
+        public string? Name { get; }
+
+        public Recipient(string? name = null)
+        {
+            Name = name;
+        }
+
         protected internal abstract string GetRecipientName();
 
         public abstract bool CanAccept(Type requestType);
