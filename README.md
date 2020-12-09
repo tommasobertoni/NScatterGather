@@ -59,8 +59,9 @@ Different operations are computed concurrently, and their results combined or us
 Use a `RecipientsCollection` to register the eligible recipients:
 ```csharp
 var collection = new RecipientsCollection();
-collection.Add<Foo>();
-collection.Add(new Bar());
+collection.Add<Foo>(); // type
+collection.Add(new Bar()); // instance
+collection.Add((int n) => n.ToString()); // delegate
 ```
 
 Use an `Aggregator` for sending the requests to all the available recipients that can support the desired request/response types, and for aggregating the results:
@@ -76,21 +77,21 @@ AggregatedResponse<object> objects = await aggregator.Send(42);
 // the return type is either known or binding.
 // Only the recipients that accept an int and
 // return a string will be invoked:
-AggregatedResponse<string> strings = await aggregator.Send<int, string>(42);
+AggregatedResponse<string> strings = await aggregator.Send<string>(42);
 ```
 
 Inspect the `AggregatedResponse` containing the results of the scatter-gather operation, grouped by _completed_, _faulted_ and _incomplete_:
 ```csharp
-var response = await aggregator.Send<int, string>(42, cancellationToken);
+var response = await aggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(5));
 
 var completed = response.Completed[0];
-// (Type recipientType, string result) = completed;
+// (_, _, string result, TimeSpan duration) = completed;
 
 var faulted = response.Faulted[0];
-// (Type recipientType, Exception ex) = faulted;
+// (_, _, Exception? exception, TimeSpan duration) = faulted;
 
 var incomplete = response.Incomplete[0];
-// Type recipientType = incomplete;
+// (string? recipientName, Type? recipientType) = incomplete;
 ```
 
 ## Embrace [duck typing](https://stackoverflow.com/a/4205163/3743963)
@@ -146,7 +147,7 @@ In this case, the aggregator will be able to invoke the recipient only if the re
 _ = await aggregator.Send(42);
 
 // Method "Triple" will be invoked.
-var response = await aggregator.Send<int, long>(42);
+var response = await aggregator.Send<long>(42);
 ```
 
 # Samples
@@ -165,7 +166,7 @@ var response = await aggregator.Send(42);
 class Foo { public string Stringify(int n) => n.ToString(); }
 class Bar { public long Longify(int n) => n * 1L; }
 
-var onlyStrings = await aggregator.Send<int, string>(42);
+var onlyStrings = await aggregator.Send<string>(42);
 // [ "42" ]
 ```
 
@@ -210,10 +211,7 @@ class Foo
     }
 }
 
-var timeout = TimeSpan.FromSeconds(5);
-using var cts = new CancellationTokenSource(timeout);
-
-var response = await aggregator.Send(42, cts.Token);
+var response = await aggregator.Send(42, timeout: TimeSpan.FromSeconds(5));
 Type recipientType = response.Incomplete[0];
 // typeof(Foo)
 ```
