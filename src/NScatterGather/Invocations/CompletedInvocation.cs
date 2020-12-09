@@ -27,10 +27,12 @@ namespace NScatterGather
         }
 
         public void Deconstruct(
+            out string? recipientName,
             out Type? recipientType,
             [MaybeNull] out TResponse result,
             out TimeSpan duration)
         {
+            recipientName = RecipientName;
             recipientType = RecipientType;
             result = Result;
             duration = Duration;

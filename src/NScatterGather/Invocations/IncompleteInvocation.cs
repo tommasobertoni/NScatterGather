@@ -15,5 +15,13 @@ namespace NScatterGather
             RecipientName = recipientName;
             RecipientType = recipientType;
         }
+
+        public void Deconstruct(
+            out string? recipientName,
+            out Type? recipientType)
+        {
+            recipientName = RecipientName;
+            recipientType = RecipientType;
+        }
     }
 }

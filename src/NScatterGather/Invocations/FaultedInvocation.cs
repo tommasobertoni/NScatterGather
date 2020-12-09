@@ -25,10 +25,12 @@ namespace NScatterGather
         }
 
         public void Deconstruct(
+            out string? recipientName,
             out Type? recipientType,
             out Exception? exception,
             out TimeSpan duration)
         {
+            recipientName = RecipientName;
             recipientType = RecipientType;
             exception = Exception;
             duration = Duration;
