@@ -22,23 +22,13 @@ static async Task<IReadOnlyList<Evaluation>> EvaluateCatalog(Aggregator aggregat
 {
     var evaluations = new List<Evaluation>();
 
-    var progress = AnsiConsole.Progress()
-        .AutoClear(true)
-        .Columns(new ProgressColumn[]
-        {
-            new TaskDescriptionColumn(),
-            new PercentageColumn(),
-            new SpinnerColumn(),
-        });
-
-    await progress.StartAsync(async ctx =>
+    await AnsiConsole.Status()
+        .AutoRefresh(true)
+        .Spinner(Spinner.Known.Arc)
+        .StartAsync("[yellow]Pricing catalog[/]", async ctx =>
     {
-        var task = ctx.AddTask("[yellow]Pricing catalog[/]", new ProgressTaskSettings { MaxValue = catalog.Products.Count });
-
         foreach (var product in catalog.Products)
         {
-            task.Increment(1);
-
             var response = await aggregator.Send<decimal?>(product.Id);
             evaluations.Add(new Evaluation(product, response));
         }
