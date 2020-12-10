@@ -5,7 +5,7 @@ using NScatterGather.Recipients;
 using NScatterGather.Run;
 using Xunit;
 
-namespace NScatterGather
+namespace NScatterGather.Responses
 {
     public class AggregatedResponseExtensionsTests
     {
@@ -13,13 +13,13 @@ namespace NScatterGather
 
         public AggregatedResponseExtensionsTests()
         {
-            var runner = new RecipientRunner<int>(new Recipient(typeof(object)));
+            var runner = new RecipientRunner<int>(new InstanceRecipient(typeof(object)));
             runner.Run(_ => Task.FromResult(42)).Wait();
 
-            var runnerFaulted = new RecipientRunner<int>(new Recipient(typeof(bool)));
+            var runnerFaulted = new RecipientRunner<int>(new InstanceRecipient(typeof(bool)));
             runnerFaulted.Run(_ => Task.FromException<int>(new Exception())).Wait();
 
-            var runnerIncomplete = new RecipientRunner<int>(new Recipient(typeof(long)));
+            var runnerIncomplete = new RecipientRunner<int>(new InstanceRecipient(typeof(long)));
             runnerIncomplete.Run(_ => GetInfiniteTask<int>());
 
             _runners = new[] { runner, runnerFaulted, runnerIncomplete };

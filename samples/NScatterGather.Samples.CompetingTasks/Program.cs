@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NScatterGather;
-using NScatterGather.Recipients;
 using NScatterGather.Samples.CompetingTasks;
 using Spectre.Console;
 
@@ -24,35 +22,19 @@ static async Task<IReadOnlyList<Evaluation>> EvaluateCatalog(Aggregator aggregat
 {
     var evaluations = new List<Evaluation>();
 
-    AnsiConsole.Render(new Markup("[silver italic]Pricing:[/] "));
-
-    foreach (var product in catalog.Products)
+    await AnsiConsole.Status()
+        .AutoRefresh(true)
+        .Spinner(Spinner.Known.Arc)
+        .StartAsync("[yellow]Pricing catalog[/]", async ctx =>
     {
-        AnsiConsole.Render(new Markup($"[silver italic]{product.Name}, [/]"));
-
-        var response = await aggregator.Send<string, decimal?>(product.Id);
-        evaluations.Add(new Evaluation(product, response));
-    }
-
-    AnsiConsole.WriteLine();
+        foreach (var product in catalog.Products)
+        {
+            var response = await aggregator.Send<decimal?>(product.Id);
+            evaluations.Add(new Evaluation(product, response));
+        }
+    });
 
     return evaluations;
-}
-
-static bool IsPriced(Evaluation evaluation)
-{
-    if (!evaluation.Response.Completed.Any())
-        return false;
-
-    return evaluation.Response.Completed.Any(x => x.Result is not null);
-}
-
-static bool IsProductOutOfStock(Evaluation evaluation)
-{
-    if (!evaluation.Response.Completed.Any())
-        return true;
-
-    return evaluation.Response.Completed.All(x => x.Result is null);
 }
 
 // Pretty print.
@@ -89,7 +71,7 @@ static void PrettyPrint(IReadOnlyList<Evaluation> evaluations)
             foreach (var invocation in resultsWithPrice.OrderBy(x => x.Duration))
             {
                 var productName = isFirstPrice ? evaluation.Product.Name : string.Empty;
-                var supplierName = GetSupplierName(invocation.RecipientType);
+                var supplierName = invocation.RecipientName;
                 var supplierPrice = invocation.Result!.Value;
                 var isBestPrice = supplierPrice == bestPrice;
                 var resultColor = isBestPrice ? "green3_1" : "red";
@@ -109,17 +91,30 @@ static void PrettyPrint(IReadOnlyList<Evaluation> evaluations)
     AnsiConsole.Render(table);
 }
 
-static string GetSupplierName(Type recipientType) =>
-    recipientType.Name.Replace("Supplier", string.Empty);
+static bool IsPriced(Evaluation evaluation)
+{
+    if (!evaluation.Response.Completed.Any())
+        return false;
+
+    return evaluation.Response.Completed.Any(x => x.Result is not null);
+}
+
+static bool IsProductOutOfStock(Evaluation evaluation)
+{
+    if (!evaluation.Response.Completed.Any())
+        return true;
+
+    return evaluation.Response.Completed.All(x => x.Result is null);
+}
 
 // Config.
 
 static RecipientsCollection CollectRecipients()
 {
     var collection = new RecipientsCollection();
-    collection.Add<AlibabaSupplier>();
-    collection.Add<AmazonSupplier>();
-    collection.Add<WalmartSupplier>();
+    collection.Add<AlibabaSupplier>("Alibaba");
+    collection.Add<AmazonSupplier>("Amazon");
+    collection.Add<WalmartSupplier>("Walmart");
     return collection;
 }
 

@@ -4,7 +4,7 @@
     <TargetFrameworks>net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
@@ -18,7 +18,7 @@
     <Copyright>Copyright © Tommaso Bertoni 2020</Copyright>
     <PackageProjectUrl>https://github.com/tommasobertoni/NScatterGather</PackageProjectUrl>
     <RepositoryUrl>https://github.com/tommasobertoni/NScatterGather</RepositoryUrl>
-    <PackageTags>scatter-gather scatter gather decoupling dispatch dispatcher aggregate aggregator</PackageTags>
+    <PackageTags>scatter-gather scatter gather decoupling dispatch dispatcher aggregate aggregator mediator</PackageTags>
     <PackageReleaseNotes></PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <Description>Simple, unambitious implementation of the Scatter-Gather pattern in .NET.</Description>
@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <!-- Dependencies -->
-    <PackageReference Include="IsAwaitable" Version="1.3.0" />
+    <PackageReference Include="IsAwaitable" Version="1.3.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 

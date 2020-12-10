@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using NScatterGather.Recipients;
 using NScatterGather.Run;
 using Xunit;
 
-namespace NScatterGather
+namespace NScatterGather.Responses
 {
     public class AggregatedResponseTests
     {
@@ -16,13 +15,13 @@ namespace NScatterGather
         {
             _ex = new Exception("Test ex.");
 
-            var runner = new RecipientRunner<int>(new Recipient(typeof(object)));
+            var runner = new RecipientRunner<int>(new InstanceRecipient(typeof(object)));
             runner.Run(_ => Task.FromResult(42)).Wait();
 
-            var runnerFaulted = new RecipientRunner<int>(new Recipient(typeof(bool)));
+            var runnerFaulted = new RecipientRunner<int>(new InstanceRecipient(typeof(bool)));
             runnerFaulted.Run(_ => Task.FromException<int>(_ex)).Wait();
 
-            var runnerIncomplete = new RecipientRunner<int>(new Recipient(typeof(long)));
+            var runnerIncomplete = new RecipientRunner<int>(new InstanceRecipient(typeof(long)));
             runnerIncomplete.Run(_ => GetInfiniteTask<int>());
 
             _runners = new[] { runner, runnerFaulted, runnerIncomplete };
@@ -51,13 +50,13 @@ namespace NScatterGather
         {
             var response = AggregatedResponseFactory.CreateFrom(_runners);
 
-            Assert.Equal(typeof(object), response.Completed.First().RecipientType);
-            Assert.Equal(42, response.Completed.First().Result);
+            Assert.Equal(typeof(object), response.Completed[0].RecipientType);
+            Assert.Equal(42, response.Completed[0].Result);
 
-            Assert.Equal(typeof(bool), response.Faulted.First().RecipientType);
-            Assert.Equal(_ex, response.Faulted.First().Exception);
+            Assert.Equal(typeof(bool), response.Faulted[0].RecipientType);
+            Assert.Equal(_ex, response.Faulted[0].Exception);
 
-            Assert.Equal(typeof(long), response.Incomplete.First().RecipientType);
+            Assert.Equal(typeof(long), response.Incomplete[0].RecipientType);
         }
 
         [Fact]

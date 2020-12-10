@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NScatterGather.Inspection
+namespace NScatterGather
 {
     public class ConflictException : Exception
     {

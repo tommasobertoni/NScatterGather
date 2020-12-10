@@ -3,81 +3,35 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using IsAwaitable.Analysis;
-using NScatterGather.Inspection;
 
 namespace NScatterGather.Recipients
 {
-    internal class Recipient
+    internal abstract class Recipient
     {
-        public Type Type => _type;
+        public string? Name { get; }
 
-        private readonly Type _type;
-        private readonly object _instance;
-        private readonly TypeInspector _inspector;
-
-        public Recipient(
-            object instance,
-            TypeInspector? inspector = null)
+        public Recipient(string? name = null)
         {
-            _instance = instance ?? throw new ArgumentNullException(nameof(instance));
-            _type = _instance.GetType();
-            _inspector = inspector ?? new TypeInspector(_type);
+            Name = name;
         }
 
-        public Recipient(
-            Type type,
-            TypeInspector? inspector = null)
-        {
-            _type = type ?? throw new ArgumentNullException(nameof(type));
-            _inspector = inspector ?? new TypeInspector(_type);
+        protected internal abstract string GetRecipientName();
 
+        public abstract bool CanAccept(Type requestType);
+
+        public abstract bool CanReplyWith(Type requestType, Type responseType);
+
+        protected internal abstract object? Invoke(object request);
+
+        protected internal abstract object? Invoke<TResponse>(object request);
+
+        public async Task<object?> Accept(object request)
+        {
             try
             {
-                _instance = Activator.CreateInstance(_type)!;
-            }
-            catch (MissingMethodException mMEx)
-            {
-                throw new InvalidOperationException($"Could not create a new instance of type '{_type.Name}'.", mMEx);
-            }
-        }
-
-        public bool CanAccept<TRequest>() =>
-            CanAccept(typeof(TRequest));
-
-        public bool CanAccept(Type requestType)
-        {
-            if (requestType is null)
-                throw new ArgumentNullException(nameof(requestType));
-
-            var accepts = _inspector.HasMethodAccepting(requestType);
-            return accepts;
-        }
-
-        public bool CanReplyWith<TRequest, TResponse>() =>
-            CanReplyWith(typeof(TRequest), typeof(TResponse));
-
-        public bool CanReplyWith(Type requestType, Type responseType)
-        {
-            if (requestType is null)
-                throw new ArgumentNullException(nameof(requestType));
-
-            if (responseType is null)
-                throw new ArgumentNullException(nameof(responseType));
-
-            var repliesWith = _inspector.HasMethodReturning(requestType, responseType);
-            return repliesWith;
-        }
-
-        public async Task<object?> Accept<TRequest>(TRequest request)
-        {
-            if (!_inspector.TryGetMethodAccepting<TRequest>(out var method))
-                throw new InvalidOperationException(
-                    $"Type '{_type.Name}' doesn't support accepting requests of type '{typeof(TRequest).Name}'.");
-
-            try
-            {
-                var response = await Invoke(method, request).ConfigureAwait(false);
-                return response;
+                var invocationResult = Invoke(request);
+                var completedResult = await UnwrapAsyncResult(invocationResult).ConfigureAwait(false);
+                return completedResult;
             }
             catch (TargetInvocationException tIEx) when (tIEx.InnerException is not null)
             {
@@ -86,18 +40,13 @@ namespace NScatterGather.Recipients
             }
         }
 
-        public async Task<TResponse> ReplyWith<TRequest, TResponse>(TRequest request)
+        public async Task<TResponse> ReplyWith<TResponse>(object request)
         {
-            if (!_inspector.TryGetMethodReturning<TRequest, TResponse>(out var method))
-                throw new InvalidOperationException(
-                    $"Type '{_type.Name}' doesn't support accepting " +
-                    $"requests of type '{typeof(TRequest).Name}' and " +
-                    $"returning '{typeof(TResponse).Name}'.");
-
             try
             {
-                var response = await Invoke(method, request);
-                return (TResponse)response!; // The response type will match TResponse, even on structs.
+                var invocationResult = Invoke<TResponse>(request);
+                var completedResult = await UnwrapAsyncResult(invocationResult).ConfigureAwait(false);
+                return (TResponse)completedResult!; // The response type will match TResponse, even on structs.
             }
             catch (TargetInvocationException tIEx) when (tIEx.InnerException is not null)
             {
@@ -106,10 +55,8 @@ namespace NScatterGather.Recipients
             }
         }
 
-        private async Task<object?> Invoke(MethodInfo method, object? request)
+        private async Task<object?> UnwrapAsyncResult(object? response)
         {
-            var response = method.Invoke(_instance, new object[] { request! });
-
             if (response is null)
                 return response;
 

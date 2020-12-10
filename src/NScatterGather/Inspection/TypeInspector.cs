@@ -16,7 +16,7 @@ namespace NScatterGather.Inspection
         private readonly IReadOnlyList<MethodInspection> _methodInspections;
         private readonly Type _type;
 
-        internal TypeInspector(Type type)
+        public TypeInspector(Type type)
         {
             _type = type;
             _methodInspections = InspectMethods(type);
@@ -34,16 +34,8 @@ namespace NScatterGather.Inspection
         }
 
         #region Request only
-
-        public bool HasMethodAccepting<TRequest>() =>
-            HasMethodAccepting(typeof(TRequest));
-
         public bool HasMethodAccepting(Type requestType) =>
             TryGetMethodAccepting(requestType, out _);
-
-        public bool TryGetMethodAccepting<TRequest>(
-            [NotNullWhen(true)] out MethodInfo? method) =>
-            TryGetMethodAccepting(typeof(TRequest), out method);
 
         public bool TryGetMethodAccepting(
             Type requestType,
@@ -98,15 +90,8 @@ namespace NScatterGather.Inspection
 
         #region Request and response
 
-        public bool HasMethodReturning<TRequest, TResponse>() =>
-            HasMethodReturning(typeof(TRequest), typeof(TResponse));
-
         public bool HasMethodReturning(Type requestType, Type responseType) =>
             TryGetMethodReturning(requestType, responseType, out _);
-
-        public bool TryGetMethodReturning<TRequest, TResponse>(
-            [NotNullWhen(true)] out MethodInfo? method) =>
-            TryGetMethodReturning(typeof(TRequest), typeof(TResponse), out method);
 
         public bool TryGetMethodReturning(
             Type requestType,

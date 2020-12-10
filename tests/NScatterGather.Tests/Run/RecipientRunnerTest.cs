@@ -11,7 +11,7 @@ namespace NScatterGather.Run
 
         public RecipientRunnerTest()
         {
-            _recipient = new Recipient(typeof(object));
+            _recipient = new InstanceRecipient(typeof(object));
         }
 
         [Fact]

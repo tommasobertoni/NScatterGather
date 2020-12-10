@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using NScatterGather.Recipients;
 
 namespace NScatterGather.Samples.Samples
 {
@@ -29,7 +28,7 @@ namespace NScatterGather.Samples.Samples
             Console.WriteLine($"Completed {response.Completed.Count}");
             Console.WriteLine(
                 $"Incomplete {response.Incomplete.Count}: " +
-                $"{response.Incomplete[0].RecipientType.Name}");
+                $"{response.Incomplete[0].RecipientType?.Name}");
         }
 
         class Foo

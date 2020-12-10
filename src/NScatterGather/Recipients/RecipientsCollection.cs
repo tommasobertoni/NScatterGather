@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using NScatterGather.Inspection;
+using NScatterGather.Recipients;
 
-namespace NScatterGather.Recipients
+namespace NScatterGather
 {
     public delegate void ConflictHandler(ConflictException ex);
 
@@ -12,10 +12,15 @@ namespace NScatterGather.Recipients
 
     public class RecipientsCollection
     {
-        private readonly ConcurrentBag<Recipient> _recipients = new ConcurrentBag<Recipient>();
+        private readonly List<Recipient> _recipients = new List<Recipient>();
         private readonly TypeInspectorRegistry _registry;
 
-        public IReadOnlyList<Type> RecipientTypes => _recipients.Select(x => x.Type).ToArray();
+        public IReadOnlyList<Type> RecipientTypes => _recipients
+            .OfType<InstanceRecipient>()
+            .Select(x => x.Type)
+            .ToArray();
+
+        internal IReadOnlyList<Recipient> Recipients => _recipients.ToArray();
 
         public event ConflictHandler? OnConflict;
 
@@ -24,40 +29,51 @@ namespace NScatterGather.Recipients
         public RecipientsCollection()
             : this(new TypeInspectorRegistry()) { }
 
-        internal RecipientsCollection(TypeInspectorRegistry registry) =>
+        internal RecipientsCollection(TypeInspectorRegistry registry)
+        {
             _registry = registry;
+        }
 
-        public void Add<T>() =>
-            Add(typeof(T));
+        public void Add<T>(string? name = null) =>
+            Add(typeof(T), name);
 
-        public void Add(Type recipientType)
+        public void Add(Type recipientType, string? name = null)
         {
             if (recipientType is null)
                 throw new ArgumentNullException(nameof(recipientType));
 
             var inspector = _registry.Register(recipientType);
-            _recipients.Add(new Recipient(recipientType, inspector));
+            _recipients.Add(new InstanceRecipient(recipientType, name, inspector));
         }
 
-        public void Add(object instance)
+        public void Add(object instance, string? name = null)
         {
             if (instance is null)
                 throw new ArgumentNullException(nameof(instance));
 
             var inspector = _registry.Register(instance.GetType());
-            _recipients.Add(new Recipient(instance, inspector));
+            _recipients.Add(new InstanceRecipient(instance, name, inspector));
+        }
+
+        public void Add<TRequest, TResponse>(Func<TRequest, TResponse> @delegate, string? name = null)
+        {
+            if (@delegate is null)
+                throw new ArgumentNullException(nameof(@delegate));
+
+            var recipient = DelegateRecipient.Create(@delegate, name);
+            _recipients.Add(recipient);
         }
 
         internal void Add(Recipient recipient)
         {
-            _ = _registry.Register(recipient.Type);
+            if (recipient is InstanceRecipient ir)
+                _ = _registry.Register(ir.Type);
+
             _recipients.Add(recipient);
         }
 
-        internal IReadOnlyList<Recipient> ListRecipientsAccepting<TRequest>()
+        internal IReadOnlyList<Recipient> ListRecipientsAccepting(Type requestType)
         {
-            var requestType = typeof(TRequest);
-
             var validRecipients = _recipients
                 .Where(RecipientCanAccept)
                 .ToArray();
@@ -85,11 +101,8 @@ namespace NScatterGather.Recipients
             }
         }
 
-        internal IReadOnlyList<Recipient> ListRecipientsReplyingWith<TRequest, TResponse>()
+        internal IReadOnlyList<Recipient> ListRecipientsReplyingWith(Type requestType, Type responseType)
         {
-            var requestType = typeof(TRequest);
-            var responseType = typeof(TResponse);
-
             var validRecipients = _recipients
                 .Where(RecipientCanReplyWith)
                 .ToArray();

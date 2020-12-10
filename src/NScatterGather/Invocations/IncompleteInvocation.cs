@@ -1,15 +1,27 @@
 ﻿using System;
 
-namespace NScatterGather.Invocations
+namespace NScatterGather
 {
     public class IncompleteInvocation
     {
-        public Type RecipientType { get; }
+        public string? RecipientName { get; }
+
+        public Type? RecipientType { get; }
 
         internal IncompleteInvocation(
-            Type recipientType)
+            string? recipientName,
+            Type? recipientType)
         {
+            RecipientName = recipientName;
             RecipientType = recipientType;
+        }
+
+        public void Deconstruct(
+            out string? recipientName,
+            out Type? recipientType)
+        {
+            recipientName = RecipientName;
+            recipientType = RecipientType;
         }
     }
 }

@@ -1,30 +1,36 @@
 ﻿using System;
 
-namespace NScatterGather.Invocations
+namespace NScatterGather
 {
     public class FaultedInvocation
     {
-        public Type RecipientType { get; }
+        public string? RecipientName { get; }
+
+        public Type? RecipientType { get; }
 
         public Exception? Exception { get; }
 
         public TimeSpan Duration { get; }
 
         internal FaultedInvocation(
-            Type recipientType,
+            string? recipientName,
+            Type? recipientType,
             Exception? exception,
             TimeSpan duration)
         {
+            RecipientName = recipientName;
             RecipientType = recipientType;
             Exception = exception;
             Duration = duration;
         }
 
         public void Deconstruct(
-            out Type recipientType,
+            out string? recipientName,
+            out Type? recipientType,
             out Exception? exception,
             out TimeSpan duration)
         {
+            recipientName = RecipientName;
             recipientType = RecipientType;
             exception = Exception;
             duration = Duration;

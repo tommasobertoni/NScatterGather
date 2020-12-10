@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
+﻿using Xunit;
 
 namespace NScatterGather.Inspection
 {
@@ -19,10 +16,10 @@ namespace NScatterGather.Inspection
         {
             var inspector = new TypeInspector(typeof(SomeType));
 
-            Assert.True(inspector.HasMethodAccepting<int>());
+            Assert.True(inspector.HasMethodAccepting(typeof(int)));
             Assert.True(inspector.HasMethodAccepting(typeof(long)));
 
-            bool found = inspector.TryGetMethodAccepting<int>(out var method);
+            bool found = inspector.TryGetMethodAccepting(typeof(int), out var method);
             Assert.True(found);
             Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.Do)), method);
         }
@@ -32,10 +29,10 @@ namespace NScatterGather.Inspection
         {
             var inspector = new TypeInspector(typeof(SomeType));
 
-            Assert.True(inspector.HasMethodReturning<int, int>());
+            Assert.True(inspector.HasMethodReturning(typeof(int), typeof(int)));
             Assert.True(inspector.HasMethodReturning(typeof(long), typeof(string)));
 
-            bool found = inspector.TryGetMethodReturning<int, int>(out var method);
+            bool found = inspector.TryGetMethodReturning(typeof(int), typeof(int), out var method);
             Assert.True(found);
             Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.Do)), method);
         }

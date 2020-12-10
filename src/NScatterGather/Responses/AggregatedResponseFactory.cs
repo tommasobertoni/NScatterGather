@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using NScatterGather.Invocations;
+using NScatterGather.Recipients;
 using NScatterGather.Run;
 
-namespace NScatterGather
+namespace NScatterGather.Responses
 {
     internal class AggregatedResponseFactory
     {
@@ -16,10 +16,13 @@ namespace NScatterGather
 
             foreach (var invocation in invocations)
             {
+                var recipientType = invocation.Recipient is InstanceRecipient ir ? ir.Type : null;
+
                 if (invocation.CompletedSuccessfully)
                 {
                     var completedInvocation = new CompletedInvocation<TResponse>(
-                        invocation.Recipient.Type,
+                        invocation.Recipient.Name,
+                        recipientType,
                         invocation.Result,
                         GetDuration(invocation));
 
@@ -28,14 +31,15 @@ namespace NScatterGather
                 else if (invocation.Faulted)
                 {
                     var faultedInvocation = new FaultedInvocation(
-                        invocation.Recipient.Type,
+                        invocation.Recipient.Name,
+                        recipientType,
                         invocation.Exception,
                         GetDuration(invocation));
 
                     faulted.Add(faultedInvocation);
                 }
                 else
-                    incomplete.Add(new IncompleteInvocation(invocation.Recipient.Type));
+                    incomplete.Add(new IncompleteInvocation(invocation.Recipient.Name, recipientType));
             }
 
             return new AggregatedResponse<TResponse>(completed, faulted, incomplete);
@@ -48,40 +52,6 @@ namespace NScatterGather
                 return invocation.FinishedAt.Value - invocation.StartedAt.Value;
 
             return default;
-        }
-    }
-
-    public class AggregatedResponse<TResponse>
-    {
-        public int TotalInvocationsCount =>
-            Completed.Count +
-            Faulted.Count +
-            Incomplete.Count;
-
-        public IReadOnlyList<CompletedInvocation<TResponse>> Completed { get; }
-
-        public IReadOnlyList<FaultedInvocation> Faulted { get; }
-
-        public IReadOnlyList<IncompleteInvocation> Incomplete { get; }
-
-        internal AggregatedResponse(
-            IReadOnlyList<CompletedInvocation<TResponse>> completed,
-            IReadOnlyList<FaultedInvocation> faulted,
-            IReadOnlyList<IncompleteInvocation> incomplete)
-        {
-            Completed = completed;
-            Faulted = faulted;
-            Incomplete = incomplete;
-        }
-
-        public void Deconstruct(
-            out IReadOnlyList<CompletedInvocation<TResponse>> completed,
-            out IReadOnlyList<FaultedInvocation> faulted,
-            out IReadOnlyList<IncompleteInvocation> incomplete)
-        {
-            completed = Completed;
-            faulted = Faulted;
-            incomplete = Incomplete;
         }
     }
 }

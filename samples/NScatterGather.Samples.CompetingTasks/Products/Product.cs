@@ -1,5 +1,4 @@
-﻿
-namespace NScatterGather.Samples.CompetingTasks
+﻿namespace NScatterGather.Samples.CompetingTasks
 {
     record Product(string Id, string Name);
 }
