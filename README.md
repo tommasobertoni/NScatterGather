@@ -11,20 +11,25 @@
     <img src="https://img.shields.io/nuget/v/NScatterGather" /></a>
   <a href="https://docs.microsoft.com/en-us/dotnet/standard/net-standard#net-implementation-support" alt="netstandard">
     <img src="https://img.shields.io/badge/netstandard-2.0-blue" /></a>
+  <a href="LICENSE" alt="license">
+    <img src="https://img.shields.io/badge/license-MIT-green" /></a>
+</p>
+
+<p align="center">
   <a href="https://github.com/tommasobertoni/NScatterGather/actions?query=workflow%3ACI+branch%3Amain" alt="ci">
     <img src="https://img.shields.io/github/workflow/status/tommasobertoni/NScatterGather/CI/main" /></a>
   <a href="https://coveralls.io/github/tommasobertoni/NScatterGather?branch=main" alt="coverage">
     <img src="https://img.shields.io/coveralls/github/tommasobertoni/NScatterGather/main" /></a>
-  <a href="LICENSE" alt="license">
-    <img src="https://img.shields.io/badge/license-MIT-green" /></a>
+  <a href="https://www.codefactor.io/repository/github/tommasobertoni/nscattergather/overview/main" alt="code-quality">
+    <img src="https://img.shields.io/codefactor/grade/github/tommasobertoni/NScatterGather/main" /></a>
 </p>
 
 <details align="center">
   <summary>Table of Contents</summary>
 
   [Intro](#Intro)<br/>
-  [When to use](#When-to-use)<br/>
   [How to use](#How-to-use)<br/>
+  [When to use](#When-to-use)<br/>
   [Special cases](#Special-cases)<br/>
   [Samples](#Samples)<br/>
 </details>
@@ -36,24 +41,6 @@ The Scatter-Gather pattern: send a request to multiple recipients, and aggregate
 ![scatter-gather-diagram](assets/images/scatter-gather-diagram.png)
 
 This pattern helps to limit the coupling between the consumer and the recipients in integration scenarios, and provides standard error-handling and timeout capabilities.
-
-# When to use
-
-## Competing Tasks
-
-The recipients compete in order to provide the best, or the fastest, response to the request. The consumer will then pick the best value from the aggregated response.
-
-[sample:](samples/NScatterGather.Samples.CompetingTasks/) get an item's best price from a collection of suppliers:
-
-![competing-tasks-diagram](assets/images/competing-tasks-diagram.png)
-
-## Task parallelization
-
-Different operations are computed concurrently, and their results combined or used together. The result types could be different.
-
-[sample:](samples/NScatterGather.Samples.TaskParallelization/) get a user's data from different services, and then compose into a model:
-
-![tasks-parallelization-diagram](assets/images/task-parallelization-diagram.png)
 
 # How to use
 Use a `RecipientsCollection` to register the eligible recipients:
@@ -112,6 +99,24 @@ class Bar
 // Invoke every recipient that accepts an int.
 _ = await aggregator.Send(42);
 ```
+
+# When to use
+
+## Competing Tasks
+
+The recipients compete in order to provide the best, or the fastest, response to the request. The consumer will then pick the best value from the aggregated response.
+
+[sample:](samples/NScatterGather.Samples.CompetingTasks/) get an item's best price from a collection of suppliers:
+
+![competing-tasks-diagram](assets/images/competing-tasks-diagram.png)
+
+## Task parallelization
+
+Different operations are computed concurrently, and their results combined or used together. The result types could be different.
+
+[sample:](samples/NScatterGather.Samples.TaskParallelization/) get a user's data from different services, and then compose into a model:
+
+![tasks-parallelization-diagram](assets/images/task-parallelization-diagram.png)
 
 # Special cases
 
@@ -236,3 +241,4 @@ For more, take a look at the [samples project in solution](samples/NScatterGathe
 [![xUnit](https://img.shields.io/badge/using-xUnit-512bd4)](https://xunit.net/)
 [![coverlet](https://img.shields.io/badge/using-coverlet-512bd4)](https://github.com/coverlet-coverage/coverlet)
 [![coveralls.io](https://img.shields.io/badge/using-coveralls.io-c05547)](https://coveralls.io/)
+[![codefactor.io](https://img.shields.io/badge/using-codefactor.io-35bd97)](https://www.codefactor.io/)
