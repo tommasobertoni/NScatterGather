@@ -67,19 +67,27 @@ namespace NScatterGather.Run
             else if (task.IsFaulted)
             {
                 Faulted = true;
-                Exception = ExtractException(task.Exception);
+
+                /*
+                 * task.Exception would be null only due to a race condition while accessing
+                 * the task.Faulted property and the set of the exception.
+                 * Since the task is already complete, it's ensured that the exception is not null.
+                 * 
+                 * From the source code:
+                 *   A "benevolent" race condition makes it possible to return null when IsFaulted is
+                 *   true (i.e., if IsFaulted is set just after the check to IsFaulted above).
+                 */
+                Exception = ExtractException(task.Exception!);
             }
         }
 
-        private Exception? ExtractException(Exception? exception)
+        private Exception? ExtractException(Exception exception)
         {
-            if (exception is null) return null;
-
-            if (exception is AggregateException aEx)
-                return ExtractException(aEx.InnerException) ?? aEx;
+            if (exception is AggregateException aEx && aEx.InnerExceptions.Count == 1)
+                return aEx.InnerException is null ? aEx : ExtractException(aEx.InnerException);
 
             if (exception is TargetInvocationException tIEx)
-                return ExtractException(tIEx.InnerException) ?? tIEx;
+                return tIEx.InnerException is null ? tIEx : ExtractException(tIEx.InnerException);
 
             return exception;
         }

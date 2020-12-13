@@ -16,7 +16,7 @@ namespace NScatterGather.Responses
 
             foreach (var invocation in invocations)
             {
-                var recipientType = invocation.Recipient is InstanceRecipient ir ? ir.Type : null;
+                var recipientType = invocation.Recipient is TypeRecipient ir ? ir.Type : null;
 
                 if (invocation.CompletedSuccessfully)
                 {

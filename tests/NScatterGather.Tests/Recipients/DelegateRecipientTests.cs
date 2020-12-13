@@ -1,36 +1,10 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NScatterGather.Recipients
 {
     public class DelegateRecipientTests
     {
-        class SomeType
-        {
-            public string EchoAsString(int n) => n.ToString();
-        }
-
-        class SomeTypeWithConstructor
-        {
-            public SomeTypeWithConstructor(int n) { }
-        }
-
-        class SomeAsyncType
-        {
-            public Task<string> EchoAsString(int n) => Task.FromResult(n.ToString());
-        }
-
-        class SomeComputingType
-        {
-            public void Do(int n) { }
-        }
-
-        class SomeAsyncComputingType
-        {
-            public Task Do(int n) => Task.CompletedTask;
-        }
-
         [Fact]
         public void Error_if_instance_is_null()
         {

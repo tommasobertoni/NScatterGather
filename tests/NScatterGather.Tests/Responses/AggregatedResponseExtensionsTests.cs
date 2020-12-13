@@ -13,13 +13,13 @@ namespace NScatterGather.Responses
 
         public AggregatedResponseExtensionsTests()
         {
-            var runner = new RecipientRunner<int>(new InstanceRecipient(typeof(object)));
+            var runner = new RecipientRunner<int>(InstanceRecipient.Create(42));
             runner.Run(_ => Task.FromResult(42)).Wait();
 
-            var runnerFaulted = new RecipientRunner<int>(new InstanceRecipient(typeof(bool)));
+            var runnerFaulted = new RecipientRunner<int>(InstanceRecipient.Create(42f));
             runnerFaulted.Run(_ => Task.FromException<int>(new Exception())).Wait();
 
-            var runnerIncomplete = new RecipientRunner<int>(new InstanceRecipient(typeof(long)));
+            var runnerIncomplete = new RecipientRunner<int>(InstanceRecipient.Create(42L));
             runnerIncomplete.Run(_ => GetInfiniteTask<int>());
 
             _runners = new[] { runner, runnerFaulted, runnerIncomplete };
@@ -50,7 +50,7 @@ namespace NScatterGather.Responses
             var results = response.AsResultsDictionary();
             Assert.NotNull(results);
             Assert.Single(results.Keys);
-            Assert.Equal(typeof(object), results.Keys.First());
+            Assert.Equal(typeof(int), results.Keys.First());
             Assert.Single(results.Values);
             Assert.Equal(42, results.Values.First());
         }

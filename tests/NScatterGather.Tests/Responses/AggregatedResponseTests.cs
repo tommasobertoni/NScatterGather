@@ -15,13 +15,13 @@ namespace NScatterGather.Responses
         {
             _ex = new Exception("Test ex.");
 
-            var runner = new RecipientRunner<int>(new InstanceRecipient(typeof(object)));
+            var runner = new RecipientRunner<int>(InstanceRecipient.Create(42));
             runner.Run(_ => Task.FromResult(42)).Wait();
 
-            var runnerFaulted = new RecipientRunner<int>(new InstanceRecipient(typeof(bool)));
+            var runnerFaulted = new RecipientRunner<int>(InstanceRecipient.Create(42f));
             runnerFaulted.Run(_ => Task.FromException<int>(_ex)).Wait();
 
-            var runnerIncomplete = new RecipientRunner<int>(new InstanceRecipient(typeof(long)));
+            var runnerIncomplete = new RecipientRunner<int>(InstanceRecipient.Create(42L));
             runnerIncomplete.Run(_ => GetInfiniteTask<int>());
 
             _runners = new[] { runner, runnerFaulted, runnerIncomplete };
@@ -50,10 +50,10 @@ namespace NScatterGather.Responses
         {
             var response = AggregatedResponseFactory.CreateFrom(_runners);
 
-            Assert.Equal(typeof(object), response.Completed[0].RecipientType);
+            Assert.Equal(typeof(int), response.Completed[0].RecipientType);
             Assert.Equal(42, response.Completed[0].Result);
 
-            Assert.Equal(typeof(bool), response.Faulted[0].RecipientType);
+            Assert.Equal(typeof(float), response.Faulted[0].RecipientType);
             Assert.Equal(_ex, response.Faulted[0].Exception);
 
             Assert.Equal(typeof(long), response.Incomplete[0].RecipientType);

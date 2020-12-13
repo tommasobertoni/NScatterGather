@@ -16,7 +16,7 @@ namespace NScatterGather
         private readonly TypeInspectorRegistry _registry;
 
         public IReadOnlyList<Type> RecipientTypes => _recipients
-            .OfType<InstanceRecipient>()
+            .OfType<TypeRecipient>()
             .Select(x => x.Type)
             .ToArray();
 
@@ -34,16 +34,11 @@ namespace NScatterGather
             _registry = registry;
         }
 
-        public void Add<T>(string? name = null) =>
-            Add(typeof(T), name);
-
-        public void Add(Type recipientType, string? name = null)
+        public void Add<TRecipient>(
+            Func<TRecipient>? factory = null,
+            string? name = null)
         {
-            if (recipientType is null)
-                throw new ArgumentNullException(nameof(recipientType));
-
-            var inspector = _registry.Register(recipientType);
-            _recipients.Add(new InstanceRecipient(recipientType, name, inspector));
+            _recipients.Add(TypeRecipient.Create(factory, name));
         }
 
         public void Add(object instance, string? name = null)
@@ -51,8 +46,7 @@ namespace NScatterGather
             if (instance is null)
                 throw new ArgumentNullException(nameof(instance));
 
-            var inspector = _registry.Register(instance.GetType());
-            _recipients.Add(new InstanceRecipient(instance, name, inspector));
+            _recipients.Add(InstanceRecipient.Create(instance, name));
         }
 
         public void Add<TRequest, TResponse>(Func<TRequest, TResponse> @delegate, string? name = null)
@@ -66,8 +60,8 @@ namespace NScatterGather
 
         internal void Add(Recipient recipient)
         {
-            if (recipient is InstanceRecipient ir)
-                _ = _registry.Register(ir.Type);
+            if (recipient is TypeRecipient tr)
+                _ = _registry.Register(tr.Type);
 
             _recipients.Add(recipient);
         }

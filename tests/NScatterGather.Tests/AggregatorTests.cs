@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -8,45 +7,6 @@ namespace NScatterGather
 {
     public class AggregatorTests
     {
-        class SomeType
-        {
-            public int Do(int n) => n * 2;
-        }
-
-        class SomeAsyncType
-        {
-            public Task<string> Do(int n) => Task.FromResult(n.ToString());
-        }
-
-        class SomePossiblyAsyncType
-        {
-            public ValueTask<string> Do(int n) => new ValueTask<string>(n.ToString());
-        }
-
-        class SomeCollidingType
-        {
-            public string Do(int n) => n.ToString();
-
-            public string DoDifferently(int n) => $"{n}";
-        }
-
-        class SomeFaultingType
-        {
-            public string Fail(int n) => throw new Exception("A failure.");
-        }
-
-        class SomeNeverEndingType
-        {
-            private static readonly SemaphoreSlim _semaphore =
-                new SemaphoreSlim(initialCount: 0);
-
-            public string TryDo(int n)
-            {
-                _semaphore.Wait();
-                return n.ToString();
-            }
-        }
-
         private readonly Aggregator _aggregator;
 
         public AggregatorTests()
@@ -65,7 +25,7 @@ namespace NScatterGather
         [Fact(Timeout = 5_000)]
         public async Task Sends_request_and_aggregates_responses()
         {
-            var result = await _aggregator.Send(42, timeout: TimeSpan.FromSeconds(1));
+            var result = await _aggregator.Send(42, timeout: TimeSpan.FromSeconds(2));
 
             Assert.NotNull(result);
             Assert.Equal(3, result.Completed.Count);
@@ -83,10 +43,11 @@ namespace NScatterGather
         [Fact(Timeout = 5_000)]
         public async Task Receives_expected_response_types()
         {
-            var result = await _aggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(1));
+            var result = await _aggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(2));
 
             Assert.NotNull(result);
-            Assert.Equal(2, result.Completed.Count);
+            Assert.Equal(3, result.Completed.Count);
+            Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.RecipientType));
             Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.RecipientType));
             Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.RecipientType));
 
@@ -101,26 +62,26 @@ namespace NScatterGather
         public async Task Responses_expose_the_recipient_name_and_type()
         {
             var collection = new RecipientsCollection();
-            collection.Add((int n) => n.ToString(), "Some delegate");
-            collection.Add(new SomeFaultingType(), "Some faulting type");
-            collection.Add<SomeNeverEndingType>("Some never ending type");
+            collection.Add((int n) => n.ToString(), name: "Some delegate");
+            collection.Add(new SomeFaultingType(), name: "Some faulting type");
+            collection.Add<SomeNeverEndingType>(name: "Some never ending type");
 
             var localAggregator = new Aggregator(collection);
-            var result = await localAggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(1));
+            var result = await localAggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(2));
 
             Assert.NotNull(result);
 
             Assert.Equal(1, result.Completed.Count);
-            Assert.Equal("Some delegate", result.Completed.First().RecipientName);
-            Assert.Null(result.Completed.First().RecipientType);
+            Assert.Equal("Some delegate", result.Completed[0].RecipientName);
+            Assert.Null(result.Completed[0].RecipientType);
 
             Assert.Equal(1, result.Faulted.Count);
-            Assert.Equal("Some faulting type", result.Faulted.First().RecipientName);
-            Assert.Equal(typeof(SomeFaultingType), result.Faulted.First().RecipientType);
+            Assert.Equal("Some faulting type", result.Faulted[0].RecipientName);
+            Assert.Equal(typeof(SomeFaultingType), result.Faulted[0].RecipientType);
 
             Assert.Equal(1, result.Incomplete.Count);
-            Assert.Equal("Some never ending type", result.Incomplete.First().RecipientName);
-            Assert.Equal(typeof(SomeNeverEndingType), result.Incomplete.First().RecipientType);
+            Assert.Equal("Some never ending type", result.Incomplete[0].RecipientName);
+            Assert.Equal(typeof(SomeNeverEndingType), result.Incomplete[0].RecipientType);
         }
     }
 }

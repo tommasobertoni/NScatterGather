@@ -11,7 +11,7 @@ namespace NScatterGather.Run
 
         public RecipientRunnerTest()
         {
-            _recipient = new InstanceRecipient(typeof(object));
+            _recipient = TypeRecipient.Create<object>();
         }
 
         [Fact]
@@ -90,13 +90,111 @@ namespace NScatterGather.Run
 
             Assert.False(runner.CompletedSuccessfully);
             Assert.Equal(default, runner.Result);
-
             Assert.True(runner.Faulted);
-            Assert.Equal(ex, runner.Exception);
 
             Assert.NotEqual(default, runner.StartedAt);
             Assert.NotEqual(default, runner.FinishedAt);
             Assert.True(runner.FinishedAt >= runner.StartedAt);
+
+            Assert.Equal(ex, runner.Exception);
+        }
+
+        [Fact]
+        public async Task Exception_is_extracted()
+        {
+            var runner = new RecipientRunner<int>(_recipient);
+
+            var ex = new Exception();
+
+            await runner.Run(_ =>
+            {
+                Fail().Wait();
+                return Task.FromResult(42);
+            });
+
+            Assert.False(runner.CompletedSuccessfully);
+            Assert.Equal(default, runner.Result);
+
+            Assert.True(runner.Faulted);
+
+            Assert.NotEqual(default, runner.StartedAt);
+            Assert.NotEqual(default, runner.FinishedAt);
+            Assert.True(runner.FinishedAt >= runner.StartedAt);
+
+            Assert.NotNull(runner.Exception);
+            Assert.Equal(ex, runner.Exception);
+
+            // Local functions.
+
+            async Task Fail()
+            {
+                await Task.Delay(10);
+                throw ex;
+            }
+        }
+
+        [Fact]
+        public async Task Aggregated_exceptions_are_decomposed()
+        {
+            var runner = new RecipientRunner<int>(_recipient);
+
+            var ex = new Exception();
+
+            await runner.Run(_ =>
+            {
+                Task.WhenAll(Fail(), Fail(), Fail()).Wait();
+                return Task.FromResult(42);
+            });
+
+            Assert.False(runner.CompletedSuccessfully);
+            Assert.Equal(default, runner.Result);
+
+            Assert.True(runner.Faulted);
+
+            Assert.NotEqual(default, runner.StartedAt);
+            Assert.NotEqual(default, runner.FinishedAt);
+            Assert.True(runner.FinishedAt >= runner.StartedAt);
+
+            Assert.NotNull(runner.Exception);
+            Assert.IsType<AggregateException>(runner.Exception);
+
+            var aggEx = (AggregateException)runner.Exception!;
+
+            Assert.Equal(3, aggEx.InnerExceptions.Count);
+
+            foreach (var exception in aggEx.InnerExceptions)
+                Assert.Equal(ex, exception);
+
+            // Local functions.
+
+            async Task Fail()
+            {
+                await Task.Delay(10);
+                throw ex;
+            }
+        }
+
+        [Fact]
+        public async Task Reflection_exception_are_decomposed()
+        {
+            var runner = new RecipientRunner<int>(_recipient);
+
+            var ex = new Exception();
+
+            await runner.Run(_ =>
+            {
+                throw new System.Reflection.TargetInvocationException(ex);
+            });
+
+            Assert.False(runner.CompletedSuccessfully);
+            Assert.Equal(default, runner.Result);
+            Assert.True(runner.Faulted);
+
+            Assert.NotEqual(default, runner.StartedAt);
+            Assert.NotEqual(default, runner.FinishedAt);
+            Assert.True(runner.FinishedAt >= runner.StartedAt);
+
+            Assert.Equal(ex, runner.Exception);
         }
     }
 }

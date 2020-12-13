@@ -34,7 +34,7 @@ namespace NScatterGather.Recipients
                 name);
         }
 
-        internal DelegateRecipient(
+        protected DelegateRecipient(
             Func<object, object?> @delegate,
             Type inType,
             Type outType,

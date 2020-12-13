@@ -112,9 +112,9 @@ static bool IsProductOutOfStock(Evaluation evaluation)
 static RecipientsCollection CollectRecipients()
 {
     var collection = new RecipientsCollection();
-    collection.Add<AlibabaSupplier>("Alibaba");
-    collection.Add<AmazonSupplier>("Amazon");
-    collection.Add<WalmartSupplier>("Walmart");
+    collection.Add<AlibabaSupplier>(name: "Alibaba");
+    collection.Add<AmazonSupplier>(name: "Amazon");
+    collection.Add<WalmartSupplier>(name: "Walmart");
     return collection;
 }
 
