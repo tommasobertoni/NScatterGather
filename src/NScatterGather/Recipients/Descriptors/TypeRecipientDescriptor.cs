@@ -7,11 +7,6 @@ namespace NScatterGather.Recipients.Descriptors
     {
         private readonly TypeInspector _inspector;
 
-        public TypeRecipientDescriptor(Type type)
-            : this(new TypeInspector(type))
-        {
-        }
-
         public TypeRecipientDescriptor(TypeInspector inspector)
         {
             _inspector = inspector;
