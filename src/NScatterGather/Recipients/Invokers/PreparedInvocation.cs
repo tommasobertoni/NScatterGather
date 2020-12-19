@@ -8,9 +8,9 @@ namespace NScatterGather.Recipients.Invokers
 {
     internal class PreparedInvocation<TResult>
     {
-        private readonly Func<TResult> _invocation;
+        private readonly Func<object?> _invocation;
 
-        public PreparedInvocation(Func<TResult> invocation)
+        public PreparedInvocation(Func<object?> invocation)
         {
             _invocation = invocation;
         }

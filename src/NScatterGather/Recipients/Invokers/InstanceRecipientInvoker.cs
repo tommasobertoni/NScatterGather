@@ -41,7 +41,7 @@ namespace NScatterGather.Recipients.Invokers
             var recipientInstance = _factory.Get();
 
             return new PreparedInvocation<TResult>(invocation: () =>
-                (TResult)method.Invoke(recipientInstance, new object?[] { request })!);
+                method.Invoke(recipientInstance, new object?[] { request })!);
         }
     }
 }
