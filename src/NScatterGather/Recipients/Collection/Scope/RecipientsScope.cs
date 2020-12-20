@@ -6,7 +6,9 @@ namespace NScatterGather.Recipients.Collection.Scope
 {
     internal class RecipientsScope : IRecipientsScope
     {
-        public event ConflictHandler? OnConflict;
+        public int RecipientsCount => _recipients.Count;
+
+        public event CollisionHandler? OnCollision;
 
         public event ErrorHandler? OnError;
 
@@ -31,9 +33,9 @@ namespace NScatterGather.Recipients.Collection.Scope
                 {
                     return recipient.CanAccept(requestType);
                 }
-                catch (ConflictException ex)
+                catch (CollisionException ex)
                 {
-                    OnConflict?.Invoke(ex);
+                    OnCollision?.Invoke(ex);
                     return false;
                 }
                 catch (Exception ex)
@@ -60,9 +62,9 @@ namespace NScatterGather.Recipients.Collection.Scope
                 {
                     return recipient.CanReplyWith(requestType, responseType);
                 }
-                catch (ConflictException ex)
+                catch (CollisionException ex)
                 {
-                    OnConflict?.Invoke(ex);
+                    OnCollision?.Invoke(ex);
                     return false;
                 }
                 catch (Exception ex)

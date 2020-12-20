@@ -7,13 +7,13 @@ using NScatterGather.Recipients.Collection.Scope;
 
 namespace NScatterGather
 {
-    public delegate void ConflictHandler(ConflictException ex);
+    public delegate void CollisionHandler(CollisionException ex);
 
     public delegate void ErrorHandler(Exception ex);
 
     public class RecipientsCollection
     {
-        public event ConflictHandler? OnConflict;
+        public event CollisionHandler? OnCollision;
 
         public event ErrorHandler? OnError;
 
@@ -93,7 +93,7 @@ namespace NScatterGather
             var clonedScoped = _scopedRecipients.Select(r => r.Clone());
             scope.AddRange(clonedScoped);
 
-            scope.OnConflict += OnConflict;
+            scope.OnCollision += OnCollision;
             scope.OnError += OnError;
 
             return scope;
