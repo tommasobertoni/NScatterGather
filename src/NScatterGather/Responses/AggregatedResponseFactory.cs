@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using NScatterGather.Recipients;
-using NScatterGather.Run;
+using NScatterGather.Recipients.Run;
 
 namespace NScatterGather.Responses
 {
     internal class AggregatedResponseFactory
     {
         public static AggregatedResponse<TResponse> CreateFrom<TResponse>(
-            IEnumerable<RecipientRunner<TResponse>> invocations)
+            IEnumerable<RecipientRun<TResponse>> invocations)
         {
             var completed = new List<CompletedInvocation<TResponse>>();
             var faulted = new List<FaultedInvocation>();
@@ -45,8 +45,7 @@ namespace NScatterGather.Responses
             return new AggregatedResponse<TResponse>(completed, faulted, incomplete);
         }
 
-        private static TimeSpan GetDuration<TResponse>(
-            RecipientRunner<TResponse> invocation)
+        private static TimeSpan GetDuration<TResponse>(RecipientRun<TResponse> invocation)
         {
             if (invocation.StartedAt.HasValue && invocation.FinishedAt.HasValue)
                 return invocation.FinishedAt.Value - invocation.StartedAt.Value;

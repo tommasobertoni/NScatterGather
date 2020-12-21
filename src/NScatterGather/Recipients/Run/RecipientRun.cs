@@ -2,12 +2,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
-using NScatterGather.Recipients;
+using NScatterGather.Recipients.Invokers;
 using static System.Threading.Tasks.TaskContinuationOptions;
 
-namespace NScatterGather.Run
+namespace NScatterGather.Recipients.Run
 {
-    internal class RecipientRunner<TResult>
+    internal class RecipientRun<TResult>
     {
         public Recipient Recipient { get; }
 
@@ -24,23 +24,22 @@ namespace NScatterGather.Run
 
         public DateTime? FinishedAt { get; private set; }
 
-        public RecipientRunner(Recipient recipient)
+        private readonly PreparedInvocation<TResult> _preparedInvocation;
+
+        public RecipientRun(Recipient recipient, PreparedInvocation<TResult> preparedInvocation)
         {
-            Recipient = recipient ?? throw new ArgumentNullException(nameof(recipient));
-            Result = default;
+            Recipient = recipient;
+            _preparedInvocation = preparedInvocation;
         }
 
-        public Task Run(Func<Recipient, Task<TResult>> invocation)
+        public Task Start()
         {
-            if (invocation is null)
-                throw new ArgumentNullException(nameof(invocation));
-
             if (StartedAt.HasValue)
                 throw new InvalidOperationException("Run already executed.");
 
-            StartedAt = DateTime.UtcNow;
+            var runnerTask = Task.Run(async () => await _preparedInvocation.Execute());
 
-            var runnerTask = Task.Run(async () => await invocation(Recipient));
+            StartedAt = DateTime.UtcNow;
 
             var tcs = new TaskCompletionSource<bool>();
 
