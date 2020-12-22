@@ -11,6 +11,8 @@ namespace NScatterGather.Inspection
         private static readonly BindingFlags DefaultFlags = BindingFlags.Public | BindingFlags.Instance;
         private static readonly MethodAnalyzer _methodAnalyzer = new MethodAnalyzer();
 
+        public Type Type => _type;
+
         private readonly MethodMatchEvaluationCache _evaluationsCache = new MethodMatchEvaluationCache();
 
         private readonly IReadOnlyList<MethodInspection> _methodInspections;
@@ -18,7 +20,7 @@ namespace NScatterGather.Inspection
 
         public TypeInspector(Type type)
         {
-            _type = type;
+            _type = type ?? throw new ArgumentNullException(nameof(type));
             _methodInspections = InspectMethods(type);
 
             // Local functions.
@@ -68,7 +70,7 @@ namespace NScatterGather.Inspection
             _evaluationsCache.TryAdd(requestType, new MethodMatchEvaluation(false, method));
 
             if (matches.Count > 1)
-                throw new ConflictException(_type, requestType);
+                throw new CollisionException(_type, requestType);
 
             return false;
         }
@@ -126,7 +128,7 @@ namespace NScatterGather.Inspection
             _evaluationsCache.TryAdd(requestType, responseType, new MethodMatchEvaluation(false, method));
 
             if (matches.Count > 1)
-                throw new ConflictException(_type, requestType, responseType);
+                throw new CollisionException(_type, requestType, responseType);
 
             return false;
         }
