@@ -4,17 +4,20 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NScatterGather.Recipients;
+using NScatterGather.Recipients.Collection.Scope;
+using NScatterGather.Recipients.Run;
 using NScatterGather.Responses;
-using NScatterGather.Run;
 
 namespace NScatterGather
 {
     public class Aggregator
     {
-        private readonly RecipientsCollection _recipients;
+        private readonly IRecipientsScope _scope;
 
-        public Aggregator(RecipientsCollection recipients) =>
-            _recipients = recipients;
+        public Aggregator(RecipientsCollection collection)
+        {
+            _scope = collection.CreateScope();
+        }
 
         public async Task<AggregatedResponse<object?>> Send(
             object request,
@@ -31,7 +34,7 @@ namespace NScatterGather
             if (request is null)
                 throw new ArgumentNullException(nameof(request));
 
-            var recipients = _recipients.ListRecipientsAccepting(request.GetType());
+            var recipients = _scope.ListRecipientsAccepting(request.GetType());
 
             var invocations = await Invoke(recipients, request, cancellationToken)
                 .ConfigureAwait(false);
@@ -39,15 +42,15 @@ namespace NScatterGather
             return AggregatedResponseFactory.CreateFrom(invocations);
         }
 
-        private async Task<IReadOnlyList<RecipientRunner<object?>>> Invoke(
+        private async Task<IReadOnlyList<RecipientRun<object?>>> Invoke(
             IReadOnlyList<Recipient> recipients,
             object request,
             CancellationToken cancellationToken)
         {
-            var runners = recipients.Select(r => new RecipientRunner<object?>(r)).ToArray();
+            var runners = recipients.Select(recipient => recipient.Accept(request)).ToArray();
 
             var tasks = runners
-                .Select(runner => runner.Run(x => x.Accept(request)))
+                .Select(runner => runner.Start())
                 .ToArray();
 
             var allTasksCompleted = Task.WhenAll(tasks);
@@ -76,7 +79,7 @@ namespace NScatterGather
             if (request is null)
                 throw new ArgumentNullException(nameof(request));
 
-            var recipients = _recipients.ListRecipientsReplyingWith(request.GetType(), typeof(TResponse));
+            var recipients = _scope.ListRecipientsReplyingWith(request.GetType(), typeof(TResponse));
 
             var runners = await Invoke<TResponse>(recipients, request, cancellationToken)
                 .ConfigureAwait(false);
@@ -84,15 +87,15 @@ namespace NScatterGather
             return AggregatedResponseFactory.CreateFrom(runners);
         }
 
-        private async Task<IReadOnlyList<RecipientRunner<TResponse>>> Invoke<TResponse>(
+        private async Task<IReadOnlyList<RecipientRun<TResponse>>> Invoke<TResponse>(
             IReadOnlyList<Recipient> recipients,
             object request,
             CancellationToken cancellationToken)
         {
-            var runners = recipients.Select(r => new RecipientRunner<TResponse>(r)).ToArray();
+            var runners = recipients.Select(recipient => recipient.ReplyWith<TResponse>(request)).ToArray();
 
             var tasks = runners
-                .Select(runner => runner.Run(x => x.ReplyWith<TResponse>(request)))
+                .Select(runner => runner.Start())
                 .ToArray();
 
             var allTasksCompleted = Task.WhenAll(tasks);
