@@ -83,5 +83,12 @@ namespace NScatterGather
             Assert.Equal("Some never ending type", result.Incomplete[0].RecipientName);
             Assert.Equal(typeof(SomeNeverEndingType), result.Incomplete[0].RecipientType);
         }
+
+        [Fact]
+        public void Error_if_request_is_null()
+        {
+            Assert.ThrowsAsync<ArgumentNullException>(() => _aggregator.Send((null as object)!));
+            Assert.ThrowsAsync<ArgumentNullException>(() => _aggregator.Send<int>((null as object)!));
+        }
     }
 }

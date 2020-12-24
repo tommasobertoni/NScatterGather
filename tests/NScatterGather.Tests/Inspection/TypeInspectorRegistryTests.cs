@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace NScatterGather.Inspection
@@ -17,29 +16,28 @@ namespace NScatterGather.Inspection
         [Fact]
         public void Can_register_generic_type()
         {
-            _registry.Register<object>();
+            _registry.For<object>();
         }
 
         [Fact]
         public void Can_register_type()
         {
-            _registry.Register(typeof(object));
+            var inspector = _registry.For(typeof(object));
+            Assert.NotNull(inspector);
         }
 
         [Fact]
-        public void Registered_type_inspector_can_be_found()
+        public void Inspector_are_cached()
         {
-            _registry.Register<object>();
+            var inspector1 = _registry.For(typeof(object));
+            var inspector2 = _registry.For(typeof(object));
+            var inspector3 = _registry.For(typeof(int));
+            var inspector4 = _registry.For(typeof(int));
 
-            Assert.NotNull(_registry.Of<object>());
-            Assert.NotNull(_registry.Of(typeof(object)));
-        }
-
-        [Fact]
-        public void Error_if_type_was_never_registered()
-        {
-            Assert.Throws<KeyNotFoundException>(() => _registry.Of<object>());
-            Assert.Throws<KeyNotFoundException>(() => _registry.Of(typeof(object)));
+            Assert.Same(inspector1, inspector2);
+            Assert.NotSame(inspector2, inspector3);
+            Assert.NotEqual(inspector2, inspector3);
+            Assert.Same(inspector3, inspector4);
         }
 
         public void Dispose()

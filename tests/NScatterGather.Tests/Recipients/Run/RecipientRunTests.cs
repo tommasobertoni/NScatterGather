@@ -1,30 +1,36 @@
 ﻿using System;
 using System.Threading.Tasks;
+using NScatterGather.Inspection;
 using NScatterGather.Recipients;
 using Xunit;
 
 namespace NScatterGather.Run
 {
-    public class RecipientRunnerTest
+    public class RecipientRunTests
     {
         private readonly Recipient _recipient;
+        private readonly Recipient _faultingRecipient;
+        private readonly Recipient _anotherFaultingRecipient;
 
-        public RecipientRunnerTest()
+        public RecipientRunTests()
         {
-            _recipient = TypeRecipient.Create<object>();
+            var registry = new TypeInspectorRegistry();
+            _recipient = InstanceRecipient.Create(registry, new SomeType(), name: null);
+            _faultingRecipient = InstanceRecipient.Create(registry, new SomeFaultingType(), name: null);
+            _anotherFaultingRecipient = InstanceRecipient.Create(registry, new SomeComplexFaultingType(), name: null);
         }
 
         [Fact]
         public void Can_be_created()
         {
-            var runner = new RecipientRunner<int>(_recipient);
+            var runner = _recipient.Accept(42);
             Assert.Same(_recipient, runner.Recipient);
         }
 
         [Fact]
         public void Initially_has_default_parameters()
         {
-            var runner = new RecipientRunner<int>(_recipient);
+            var runner = _recipient.Accept(42);
             Assert.False(runner.CompletedSuccessfully);
             Assert.Equal(default, runner.Result);
             Assert.False(runner.Faulted);
@@ -36,36 +42,19 @@ namespace NScatterGather.Run
         [Fact]
         public async Task Error_if_started_multiple_times()
         {
-            var runner = new RecipientRunner<int>(_recipient);
-
-            await runner.Run(_ => Task.FromResult(42));
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => runner.Run(_ => Task.FromResult(42)));
-        }
-
-        [Fact]
-        public void Error_if_recipient_is_null()
-        {
-            Assert.Throws<ArgumentNullException>(() => new RecipientRunner<int>((null as Recipient)!));
-        }
-
-        [Fact]
-        public void Error_if_invocation_is_null()
-        {
-            var runner = new RecipientRunner<int>(_recipient);
-
-            Assert.ThrowsAsync<ArgumentNullException>(() => runner.Run(null!));
+            var runner = _recipient.Accept(42);
+            await runner.Start();
+            await Assert.ThrowsAsync<InvalidOperationException>(() => runner.Start());
         }
 
         [Fact]
         public async Task Runner_completes()
         {
-            var runner = new RecipientRunner<int>(_recipient);
-
-            await runner.Run(_ => Task.FromResult(42));
+            var runner = _recipient.Accept(42);
+            await runner.Start();
 
             Assert.True(runner.CompletedSuccessfully);
-            Assert.Equal(42, runner.Result);
+            Assert.Equal("42", runner.Result);
 
             Assert.False(runner.Faulted);
             Assert.Null(runner.Exception);
@@ -78,15 +67,8 @@ namespace NScatterGather.Run
         [Fact]
         public async Task Runner_fails()
         {
-            var runner = new RecipientRunner<int>(_recipient);
-
-            var ex = new Exception();
-
-            await runner.Run(async _ =>
-            {
-                await Task.Yield();
-                throw ex;
-            });
+            var runner = _faultingRecipient.Accept(42);
+            await runner.Start();
 
             Assert.False(runner.CompletedSuccessfully);
             Assert.Equal(default, runner.Result);
@@ -96,21 +78,14 @@ namespace NScatterGather.Run
             Assert.NotEqual(default, runner.FinishedAt);
             Assert.True(runner.FinishedAt >= runner.StartedAt);
 
-            Assert.Equal(ex, runner.Exception);
+            Assert.NotNull(runner.Exception);
         }
 
         [Fact]
         public async Task Exception_is_extracted()
         {
-            var runner = new RecipientRunner<int>(_recipient);
-
-            var ex = new Exception();
-
-            await runner.Run(_ =>
-            {
-                Fail().Wait();
-                return Task.FromResult(42);
-            });
+            var runner = _faultingRecipient.Accept(42);
+            await runner.Start();
 
             Assert.False(runner.CompletedSuccessfully);
             Assert.Equal(default, runner.Result);
@@ -122,29 +97,14 @@ namespace NScatterGather.Run
             Assert.True(runner.FinishedAt >= runner.StartedAt);
 
             Assert.NotNull(runner.Exception);
-            Assert.Equal(ex, runner.Exception);
-
-            // Local functions.
-
-            async Task Fail()
-            {
-                await Task.Delay(10);
-                throw ex;
-            }
+            Assert.Equal("A failure.", runner.Exception!.Message);
         }
 
         [Fact]
         public async Task Aggregated_exceptions_are_decomposed()
         {
-            var runner = new RecipientRunner<int>(_recipient);
-
-            var ex = new Exception();
-
-            await runner.Run(_ =>
-            {
-                Task.WhenAll(Fail(), Fail(), Fail()).Wait();
-                return Task.FromResult(42);
-            });
+            var runner = _anotherFaultingRecipient.Accept(42);
+            await runner.Start();
 
             Assert.False(runner.CompletedSuccessfully);
             Assert.Equal(default, runner.Result);
@@ -163,28 +123,17 @@ namespace NScatterGather.Run
             Assert.Equal(3, aggEx.InnerExceptions.Count);
 
             foreach (var exception in aggEx.InnerExceptions)
-                Assert.Equal(ex, exception);
-
-            // Local functions.
-
-            async Task Fail()
             {
-                await Task.Delay(10);
-                throw ex;
+                Assert.NotNull(exception);
+                Assert.Equal("A failure.", exception!.Message);
             }
         }
 
         [Fact]
         public async Task Reflection_exception_are_decomposed()
         {
-            var runner = new RecipientRunner<int>(_recipient);
-
-            var ex = new Exception();
-
-            await runner.Run(_ =>
-            {
-                throw new System.Reflection.TargetInvocationException(ex);
-            });
+            var runner = _anotherFaultingRecipient.Accept(42L);
+            await runner.Start();
 
             Assert.False(runner.CompletedSuccessfully);
             Assert.Equal(default, runner.Result);
@@ -194,7 +143,8 @@ namespace NScatterGather.Run
             Assert.NotEqual(default, runner.FinishedAt);
             Assert.True(runner.FinishedAt >= runner.StartedAt);
 
-            Assert.Equal(ex, runner.Exception);
+            Assert.NotNull(runner.Exception);
+            Assert.Equal("An invocation failure.", runner.Exception!.Message);
         }
     }
 }

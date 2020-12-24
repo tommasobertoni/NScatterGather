@@ -1,38 +1,31 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using NScatterGather.Inspection;
 using NScatterGather.Recipients;
-using NScatterGather.Run;
+using NScatterGather.Recipients.Run;
 using Xunit;
 
 namespace NScatterGather.Responses
 {
     public class AggregatedResponseTests
     {
-        private readonly RecipientRunner<int>[] _runners;
-        private readonly Exception _ex;
+        private readonly RecipientRun<object?>[] _runners;
 
         public AggregatedResponseTests()
         {
-            _ex = new Exception("Test ex.");
+            var registry = new TypeInspectorRegistry();
 
-            var runner = new RecipientRunner<int>(InstanceRecipient.Create(42));
-            runner.Run(_ => Task.FromResult(42)).Wait();
+            var someRecipient = InstanceRecipient.Create(registry, new SomeType(), name: null);
+            var someRun = someRecipient.Accept(42);
+            someRun.Start().Wait();
 
-            var runnerFaulted = new RecipientRunner<int>(InstanceRecipient.Create(42f));
-            runnerFaulted.Run(_ => Task.FromException<int>(_ex)).Wait();
+            var someFaultingRecipient = InstanceRecipient.Create(registry, new SomeFaultingType(), name: null);
+            var someFaultingRun = someFaultingRecipient.Accept(42);
+            someFaultingRun.Start().Wait();
 
-            var runnerIncomplete = new RecipientRunner<int>(InstanceRecipient.Create(42L));
-            runnerIncomplete.Run(_ => GetInfiniteTask<int>());
+            var someNeverEndingRecipient = InstanceRecipient.Create(registry, new SomeNeverEndingType(), name: null);
+            var someNeverEndingRun = someNeverEndingRecipient.Accept(42);
+            someNeverEndingRun.Start();
 
-            _runners = new[] { runner, runnerFaulted, runnerIncomplete };
-
-            // Local functions.
-
-            static Task<TResult> GetInfiniteTask<TResult>()
-            {
-                var source = new TaskCompletionSource<TResult>();
-                return source.Task;
-            }
+            _runners = new[] { someRun, someFaultingRun, someNeverEndingRun };
         }
 
         [Fact]
@@ -50,13 +43,13 @@ namespace NScatterGather.Responses
         {
             var response = AggregatedResponseFactory.CreateFrom(_runners);
 
-            Assert.Equal(typeof(int), response.Completed[0].RecipientType);
-            Assert.Equal(42, response.Completed[0].Result);
+            Assert.Equal(typeof(SomeType), response.Completed[0].RecipientType);
+            Assert.Equal("42", response.Completed[0].Result);
 
-            Assert.Equal(typeof(float), response.Faulted[0].RecipientType);
-            Assert.Equal(_ex, response.Faulted[0].Exception);
+            Assert.Equal(typeof(SomeFaultingType), response.Faulted[0].RecipientType);
+            Assert.Equal("A failure.", response.Faulted[0].Exception?.Message);
 
-            Assert.Equal(typeof(long), response.Incomplete[0].RecipientType);
+            Assert.Equal(typeof(SomeNeverEndingType), response.Incomplete[0].RecipientType);
         }
 
         [Fact]
