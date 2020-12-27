@@ -8,8 +8,6 @@ namespace NScatterGather.Recipients
 {
     internal class TypeRecipient : Recipient
     {
-        private readonly TypeRecipientDescriptor _typedDescriptor;
-
         public Type Type { get; }
 
         public static TypeRecipient Create<TRecipient>(
@@ -44,20 +42,22 @@ namespace NScatterGather.Recipients
 
         protected TypeRecipient(
             Type type,
-            TypeRecipientDescriptor descriptor,
+            IRecipientDescriptor descriptor,
             IRecipientInvoker invoker,
             string? name,
             Lifetime lifetime) : base(descriptor, invoker, name, lifetime)
         {
-            _typedDescriptor = descriptor;
-
             Type = type;
         }
 
 #if NETSTANDARD2_0 || NETSTANDARD2_1
-        public override Recipient Clone() => new TypeRecipient(Type, _typedDescriptor, _invoker, Name, Lifetime);
+        public override Recipient Clone()
 #else
-        public override TypeRecipient Clone() => new(Type, _typedDescriptor, _invoker, Name, Lifetime);
+        public override TypeRecipient Clone()
 #endif
+        {
+            var invoker = _invoker.Clone();
+            return new TypeRecipient(Type, _descriptor, invoker, Name, Lifetime);
+        }
     }
 }

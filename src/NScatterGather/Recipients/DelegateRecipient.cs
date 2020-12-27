@@ -10,9 +10,6 @@ namespace NScatterGather.Recipients
 
         public Type ResponseType { get; }
 
-        private readonly DelegateRecipientDescriptor _typedDescriptor;
-        private readonly DelegateRecipientInvoker _typedInvoker;
-
         public static DelegateRecipient Create<TRequest, TResponse>(
             Func<TRequest, TResponse> @delegate,
             string? name)
@@ -30,25 +27,25 @@ namespace NScatterGather.Recipients
             var descriptor = new DelegateRecipientDescriptor(typeof(TRequest), typeof(TResponse));
             var invoker = new DelegateRecipientInvoker(descriptor, delegateInvoker);
 
-            return new DelegateRecipient(descriptor, invoker, name);
+            return new DelegateRecipient(descriptor.RequestType, descriptor.ResponseType, descriptor, invoker, name);
         }
 
         protected DelegateRecipient(
-            DelegateRecipientDescriptor descriptor,
-            DelegateRecipientInvoker invoker,
+            Type requestType,
+            Type responseType,
+            IRecipientDescriptor descriptor,
+            IRecipientInvoker invoker,
             string? name) : base(descriptor, invoker, name, Lifetime.Singleton)
         {
-            _typedDescriptor = descriptor;
-            _typedInvoker = invoker;
-
-            RequestType = descriptor.RequestType;
-            ResponseType = descriptor.ResponseType;
+            RequestType = requestType;
+            ResponseType = responseType;
         }
 
 #if NETSTANDARD2_0 || NETSTANDARD2_1
-        public override Recipient Clone() => new DelegateRecipient(_typedDescriptor, _typedInvoker, Name);
+        public override Recipient Clone() =>
 #else
-        public override DelegateRecipient Clone() => new(_typedDescriptor, _typedInvoker, Name);
+        public override DelegateRecipient Clone() =>
 #endif
+            new DelegateRecipient(RequestType, ResponseType, _descriptor, _invoker, Name);
     }
 }

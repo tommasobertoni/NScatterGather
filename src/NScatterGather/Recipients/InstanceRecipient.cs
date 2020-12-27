@@ -9,8 +9,6 @@ namespace NScatterGather.Recipients
     internal class InstanceRecipient : TypeRecipient
     {
         private readonly object _instance;
-        private readonly TypeRecipientDescriptor _typedDescriptor;
-        private readonly InstanceRecipientInvoker _typedInvoker;
 
         public static InstanceRecipient Create(
             TypeInspectorRegistry registry,
@@ -39,19 +37,21 @@ namespace NScatterGather.Recipients
 
         protected InstanceRecipient(
             object instance,
-            TypeRecipientDescriptor descriptor,
-            InstanceRecipientInvoker invoker,
+            IRecipientDescriptor descriptor,
+            IRecipientInvoker invoker,
             string? name) : base(instance.GetType(), descriptor, invoker, name, Lifetime.Singleton)
         {
             _instance = instance;
-            _typedDescriptor = descriptor;
-            _typedInvoker = invoker;
         }
 
 #if NETSTANDARD2_0 || NETSTANDARD2_1
-        public override Recipient Clone() => new InstanceRecipient(_instance, _typedDescriptor, _typedInvoker, Name);
+        public override Recipient Clone()
 #else
-        public override InstanceRecipient Clone() => new(_instance, _typedDescriptor, _typedInvoker, Name);
+        public override InstanceRecipient Clone()
 #endif
+        {
+            var invoker = _invoker.Clone();
+            return new InstanceRecipient(_instance, _descriptor, invoker, Name);
+        }
     }
 }
