@@ -7,15 +7,16 @@ using NScatterGather.Recipients.Collection.Scope;
 
 namespace NScatterGather
 {
-    public delegate void CollisionHandler(CollisionException ex);
-
-    public delegate void ErrorHandler(Exception ex);
-
     public class RecipientsCollection
     {
         public event CollisionHandler? OnCollision;
 
         public event ErrorHandler? OnError;
+
+        public int RecipientsCount =>
+            _singletonRecipients.Count +
+            _scopedRecipients.Count +
+            _transientRecipients.Count;
 
         private readonly List<Recipient> _singletonRecipients = new();
         private readonly List<Recipient> _scopedRecipients = new();
