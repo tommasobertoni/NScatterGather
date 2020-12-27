@@ -12,5 +12,8 @@ namespace NScatterGather.Recipients.Factories
         }
 
         public object Get() => _factory();
+
+        public IRecipientFactory Clone() =>
+            new RecipientFactory(_factory);
     }
 }
