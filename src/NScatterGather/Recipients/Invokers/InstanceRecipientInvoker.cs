@@ -43,5 +43,11 @@ namespace NScatterGather.Recipients.Invokers
             return new PreparedInvocation<TResult>(invocation: () =>
                 method.Invoke(recipientInstance, new object?[] { request })!);
         }
+
+        public IRecipientInvoker Clone()
+        {
+            var factory = _factory.Clone();
+            return new InstanceRecipientInvoker(_inspector, factory);
+        }
     }
 }

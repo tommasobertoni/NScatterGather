@@ -5,5 +5,7 @@
         PreparedInvocation<object?> PrepareInvocation(object request);
 
         PreparedInvocation<TResult> PrepareInvocation<TResult>(object request);
+
+        IRecipientInvoker Clone();
     }
 }

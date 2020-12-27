@@ -36,5 +36,8 @@ namespace NScatterGather.Recipients.Invokers
 
             return new PreparedInvocation<TResult>(() => (TResult)_delegate(request)!);
         }
+
+        public IRecipientInvoker Clone() =>
+            new DelegateRecipientInvoker(_descriptor, _delegate);
     }
 }
