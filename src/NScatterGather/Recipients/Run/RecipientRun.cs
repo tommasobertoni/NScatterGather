@@ -20,9 +20,11 @@ namespace NScatterGather.Recipients.Run
 
         public Exception? Exception { get; set; }
 
-        public DateTime? StartedAt { get; private set; }
+        public DateTime StartedAt { get; private set; }
 
-        public DateTime? FinishedAt { get; private set; }
+        public DateTime FinishedAt { get; private set; }
+
+        public TimeSpan Duration => FinishedAt - StartedAt;
 
         private readonly PreparedInvocation<TResult> _preparedInvocation;
 
@@ -34,12 +36,12 @@ namespace NScatterGather.Recipients.Run
 
         public Task Start()
         {
-            if (StartedAt.HasValue)
+            if (StartedAt != default)
                 throw new InvalidOperationException("Run already executed.");
 
-            var runnerTask = Task.Run(async () => await _preparedInvocation.Execute());
-
             StartedAt = DateTime.UtcNow;
+
+            var runnerTask = Task.Run(async () => await _preparedInvocation.Execute());
 
             var tcs = new TaskCompletionSource<bool>();
 

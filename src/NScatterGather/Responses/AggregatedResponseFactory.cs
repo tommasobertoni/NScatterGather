@@ -24,7 +24,7 @@ namespace NScatterGather.Responses
                         invocation.Recipient.Name,
                         recipientType,
                         invocation.Result,
-                        GetDuration(invocation));
+                        invocation.Duration);
 
                     completed.Add(completedInvocation);
                 }
@@ -34,7 +34,7 @@ namespace NScatterGather.Responses
                         invocation.Recipient.Name,
                         recipientType,
                         invocation.Exception,
-                        GetDuration(invocation));
+                        invocation.Duration);
 
                     faulted.Add(faultedInvocation);
                 }
@@ -43,14 +43,6 @@ namespace NScatterGather.Responses
             }
 
             return new AggregatedResponse<TResponse>(completed, faulted, incomplete);
-        }
-
-        private static TimeSpan GetDuration<TResponse>(RecipientRun<TResponse> invocation)
-        {
-            if (invocation.StartedAt.HasValue && invocation.FinishedAt.HasValue)
-                return invocation.FinishedAt.Value - invocation.StartedAt.Value;
-
-            return default;
         }
     }
 }
