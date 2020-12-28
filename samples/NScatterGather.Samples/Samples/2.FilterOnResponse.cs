@@ -11,6 +11,7 @@ namespace NScatterGather.Samples.Samples
             var collection = new RecipientsCollection();
             collection.Add<Foo>();
             collection.Add<Bar>();
+            collection.Add<Baz>();
 
             var aggregator = new Aggregator(collection);
 
@@ -18,10 +19,11 @@ namespace NScatterGather.Samples.Samples
             // parameter of the methods:
             AggregatedResponse<object?> all = await aggregator.Send(42);
 
-            var allResults = all.AsResultsList(); // 42L, "42"
+            var allResults = all.AsResultsList(); // "42", 42L, 42
             Console.WriteLine($"" +
                 $"{allResults[0]} ({allResults[0]?.GetType().Name}), " +
-                $"{allResults[1]} ({allResults[1]?.GetType().Name})");
+                $"{allResults[1]} ({allResults[1]?.GetType().Name}), " +
+                $"{allResults[2]} ({allResults[2]?.GetType().Name})");
 
             // Instead the Send<TRequest, TResponse> method checks
             // also the return type of the methods, allowing to filter
@@ -40,6 +42,11 @@ namespace NScatterGather.Samples.Samples
         class Bar
         {
             public long Longify(int n) => n * 1L;
+        }
+
+        class Baz
+        {
+            public int Echo(int n) => n;
         }
     }
 }

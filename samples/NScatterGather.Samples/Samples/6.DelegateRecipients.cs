@@ -17,7 +17,7 @@ namespace NScatterGather.Samples.Samples
             var aggregator = new Aggregator(collection);
 
             var responseOfInt = await aggregator.Send(42);
-            var resultsOfInt = responseOfInt.AsResultsList(); // 84, "42"
+            var resultsOfInt = responseOfInt.AsResultsList(); // "42", 84
             Console.WriteLine($"{resultsOfInt[0]}, {resultsOfInt[1]}");
 
             var onlyStrings = await aggregator.Send<string>(42);

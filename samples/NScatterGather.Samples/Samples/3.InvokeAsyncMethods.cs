@@ -20,7 +20,7 @@ namespace NScatterGather.Samples.Samples
             // before aggregating the response.
             var response1 = await aggregator.Send(42);
 
-            var results = response1.AsResultsList(); // "42", 42L, 84L
+            var results = response1.AsResultsList(); // 84L, 42L, "42"
             Console.WriteLine($"" +
                 $"{results[0]} ({results[0]?.GetType().Name}), " +
                 $"{results[1]} ({results[1]?.GetType().Name}), " +
