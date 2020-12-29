@@ -90,5 +90,40 @@ namespace NScatterGather
             Assert.ThrowsAsync<ArgumentNullException>(() => _aggregator.Send((null as object)!));
             Assert.ThrowsAsync<ArgumentNullException>(() => _aggregator.Send<int>((null as object)!));
         }
+
+        [Fact]
+        public async Task Recipients_comply_with_lifetime()
+        {
+            var transients = 0;
+            var scoped = 0;
+            var singletons = 0;
+
+            var collection = new RecipientsCollection();
+
+            collection.Add(() => { transients++; return new SomeType(); }, lifetime: Lifetime.Transient);
+            collection.Add(() => { scoped++; return new SomeOtherType(); }, lifetime: Lifetime.Scoped);
+            collection.Add(() => { singletons++; return new SomeAsyncType(); }, lifetime: Lifetime.Singleton);
+
+            var aggregator = new Aggregator(collection);
+            var anotherAggregator = new Aggregator(collection);
+
+            await aggregator.Send(42);
+
+            Assert.Equal(1, transients);
+            Assert.Equal(1, scoped);
+            Assert.Equal(1, singletons);
+
+            await anotherAggregator.Send(42);
+
+            Assert.Equal(2, transients);
+            Assert.Equal(2, scoped);
+            Assert.Equal(1, singletons);
+
+            await Task.WhenAll(aggregator.Send(42), anotherAggregator.Send(42));
+
+            Assert.Equal(4, transients);
+            Assert.Equal(2, scoped);
+            Assert.Equal(1, singletons);
+        }
     }
 }
