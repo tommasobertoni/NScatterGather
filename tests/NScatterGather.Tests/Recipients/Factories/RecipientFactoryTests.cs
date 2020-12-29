@@ -25,5 +25,30 @@ namespace NScatterGather.Recipients.Factories
             Assert.Equal(expectedInstance, instance);
             Assert.Equal(3, count);
         }
+
+        [Fact]
+        public void Can_be_cloned()
+        {
+            int count = 0;
+
+            object factoryMethod()
+            {
+                count++;
+                return new object();
+            };
+
+            var factory = new RecipientFactory(factoryMethod);
+            var clone = factory.Clone();
+
+            Assert.IsType<RecipientFactory>(clone);
+
+            _ = factory.Get();
+            _ = clone.Get();
+            Assert.Equal(2, count);
+
+            _ = factory.Get();
+            _ = clone.Get();
+            Assert.Equal(4, count);
+        }
     }
 }

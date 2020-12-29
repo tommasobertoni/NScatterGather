@@ -37,5 +37,37 @@ namespace NScatterGather.Recipients.Factories
 
             Assert.Equal(expectedInstance, instance);
         }
+
+        [Fact]
+        public void Can_be_cloned()
+        {
+            int count = 0;
+
+            object factoryMethod()
+            {
+                count++;
+                return new object();
+            };
+
+            var singletonFactory = new SingletonRecipientFactory(new RecipientFactory(factoryMethod));
+            var singletonClone = singletonFactory.Clone();
+
+            Assert.IsType<SingletonRecipientFactory>(singletonClone);
+
+            _ = singletonFactory.Get();
+            _ = singletonClone.Get();
+            Assert.Equal(2, count);
+
+            _ = singletonFactory.Get();
+            _ = singletonClone.Get();
+            Assert.Equal(2, count);
+
+            var instance = new object();
+            var singletonFactoryWithInstance = new SingletonRecipientFactory(instance);
+            var singletonCloneWithInstance = singletonFactoryWithInstance.Clone();
+
+            Assert.Same(instance, singletonFactoryWithInstance.Get());
+            Assert.Same(instance, singletonCloneWithInstance.Get());
+        }
     }
 }
