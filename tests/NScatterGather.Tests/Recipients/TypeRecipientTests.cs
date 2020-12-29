@@ -23,8 +23,8 @@ namespace NScatterGather.Recipients
             Assert.Throws<ArgumentNullException>(() =>
             {
                 _ = TypeRecipient.Create(
-                    registry: new TypeInspectorRegistry(),
-                    (null as Func<SomeType>)!,
+                    registry: (null as TypeInspectorRegistry)!,
+                    () => new SomeType(),
                     name: null,
                     lifetime: Lifetime.Transient);
             });
@@ -131,67 +131,85 @@ namespace NScatterGather.Recipients
             Assert.Throws<ArgumentNullException>(() => recipient.CanReplyWith(null!, typeof(string)));
         }
 
-        //[Fact]
-        //public void Error_if_request_type_not_supported()
-        //{
-        //    var recipient = TypeRecipient.Create<SomeType>();
-        //    Assert.ThrowsAsync<InvalidOperationException>(() => recipient.Accept(Guid.NewGuid()));
-        //}
+        [Fact]
+        public void Error_if_request_type_not_supported()
+        {
+            var registry = new TypeInspectorRegistry();
+            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
 
-        //[Fact]
-        //public void Error_if_response_type_not_supported()
-        //{
-        //    var recipient = TypeRecipient.Create<SomeType>();
-        //    Assert.ThrowsAsync<InvalidOperationException>(() => recipient.ReplyWith<Guid>(42));
-        //}
+            Assert.Throws<InvalidOperationException>(() => recipient.Accept(Guid.NewGuid()));
+        }
 
-        //[Fact]
-        //public async Task Recipient_replies_with_response()
-        //{
-        //    var recipient = TypeRecipient.Create<SomeType>();
-        //    var input = 42;
-        //    var response = await recipient.ReplyWith<string>(input);
-        //    Assert.Equal(input.ToString(), response);
-        //}
+        [Fact]
+        public void Error_if_response_type_not_supported()
+        {
+            var registry = new TypeInspectorRegistry();
+            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
 
-        //[Fact]
-        //public async Task Recipient_can_reply_with_task()
-        //{
-        //    var recipient = TypeRecipient.Create<SomeAsyncType>();
-        //    var input = 42;
-        //    var response = await recipient.ReplyWith<string>(input);
-        //    Assert.Equal(input.ToString(), response);
-        //}
+            Assert.Throws<InvalidOperationException>(() => recipient.ReplyWith<Guid>(42));
+        }
 
-        //[Fact]
-        //public void Recipient_must_return_something()
-        //{
-        //    var recipient = TypeRecipient.Create<SomeComputingType>();
-        //    bool accepts = recipient.CanAccept(typeof(int));
-        //    Assert.False(accepts);
-        //}
+        [Fact]
+        public async Task Recipient_replies_with_response()
+        {
+            var registry = new TypeInspectorRegistry();
+            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
 
-        //[Fact]
-        //public void Error_if_void_returning()
-        //{
-        //    var recipient = TypeRecipient.Create<SomeComputingType>();
-        //    Assert.ThrowsAsync<InvalidOperationException>(() => recipient.Accept(42));
-        //}
+            var input = 42;
+            var runner = recipient.ReplyWith<string>(input);
+            await runner.Start();
+            Assert.Equal(input.ToString(), runner.Result);
+        }
 
-        //[Fact]
-        //public void Recipient_must_return_something_async()
-        //{
-        //    var recipient = TypeRecipient.Create<SomeAsyncComputingType>();
-        //    bool accepts = recipient.CanReplyWith(typeof(int), typeof(Task));
-        //    Assert.False(accepts);
-        //}
+        [Fact]
+        public async Task Recipient_can_reply_with_task()
+        {
+            var registry = new TypeInspectorRegistry();
+            var recipient = TypeRecipient.Create(registry, () => new SomeAsyncType(), name: null, Lifetime.Transient);
 
-        //[Fact]
-        //public void Error_if_returning_task_without_result()
-        //{
-        //    var recipient = TypeRecipient.Create<SomeAsyncComputingType>();
-        //    Assert.ThrowsAsync<InvalidOperationException>(() => recipient.ReplyWith<Task>(42));
-        //}
+            var input = 42;
+            var runner = recipient.ReplyWith<string>(input);
+            await runner.Start();
+            Assert.Equal(input.ToString(), runner.Result);
+        }
+
+        [Fact]
+        public void Recipient_must_return_something()
+        {
+            var registry = new TypeInspectorRegistry();
+            var recipient = TypeRecipient.Create(registry, () => new SomeComputingType(), name: null, Lifetime.Transient);
+
+            bool accepts = recipient.CanAccept(typeof(int));
+            Assert.False(accepts);
+        }
+
+        [Fact]
+        public void Error_if_void_returning()
+        {
+            var registry = new TypeInspectorRegistry();
+            var recipient = TypeRecipient.Create(registry, () => new SomeComputingType(), name: null, Lifetime.Transient);
+
+            Assert.Throws<InvalidOperationException>(() => recipient.Accept(42));
+        }
+
+        [Fact]
+        public void Recipient_must_return_something_async()
+        {
+            var registry = new TypeInspectorRegistry();
+            var recipient = TypeRecipient.Create(registry, () => new SomeAsyncComputingType(), name: null, Lifetime.Transient);
+
+            bool accepts = recipient.CanReplyWith(typeof(int), typeof(Task));
+            Assert.False(accepts);
+        }
+
+        [Fact]
+        public void Error_if_returning_task_without_result()
+        {
+            var registry = new TypeInspectorRegistry();
+            var recipient = TypeRecipient.Create(registry, () => new SomeAsyncComputingType(), name: null, Lifetime.Transient);
+
+            Assert.Throws<InvalidOperationException>(() => recipient.ReplyWith<Task>(42));
+        }
 
         [Fact]
         public void Can_be_cloned()

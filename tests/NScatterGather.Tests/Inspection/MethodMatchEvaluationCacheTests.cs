@@ -13,21 +13,31 @@ namespace NScatterGather.Inspection
         public void Error_if_request_type_is_null()
         {
             var cache = new MethodMatchEvaluationCache();
-            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(null!, new MethodMatchEvaluation(false, null)));
+
+            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(
+                null!, new MethodMatchEvaluation(false, null)));
+
+            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(
+                null!, typeof(SomeResponse), new MethodMatchEvaluation(false, null)));
         }
 
         [Fact]
         public void Error_if_response_type_is_null()
         {
             var cache = new MethodMatchEvaluationCache();
-            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(typeof(SomeRequest), null!, new MethodMatchEvaluation(false, null)));
+
+            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(
+                typeof(SomeRequest), null!, new MethodMatchEvaluation(false, null)));
         }
 
         [Fact]
-        public void Error_if_inspection_is_null()
+        public void Error_if_evaluation_is_null()
         {
             var cache = new MethodMatchEvaluationCache();
             Assert.Throws<ArgumentNullException>(() => cache.TryAdd<SomeRequest>(null!));
+
+            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(
+                typeof(SomeRequest), typeof(SomeResponse), (null as MethodMatchEvaluation)!));
         }
 
         [Fact]
