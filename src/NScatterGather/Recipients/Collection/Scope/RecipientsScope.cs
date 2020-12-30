@@ -10,8 +10,6 @@ namespace NScatterGather.Recipients.Collection.Scope
 
         public event CollisionHandler? OnCollision;
 
-        public event ErrorHandler? OnError;
-
         private readonly List<Recipient> _recipients = new();
 
         internal void AddRange(IEnumerable<Recipient> recipients) =>
@@ -38,11 +36,6 @@ namespace NScatterGather.Recipients.Collection.Scope
                     OnCollision?.Invoke(ex);
                     return false;
                 }
-                catch (Exception ex)
-                {
-                    OnError?.Invoke(ex);
-                    return false;
-                }
             }
         }
 
@@ -65,11 +58,6 @@ namespace NScatterGather.Recipients.Collection.Scope
                 catch (CollisionException ex)
                 {
                     OnCollision?.Invoke(ex);
-                    return false;
-                }
-                catch (Exception ex)
-                {
-                    OnError?.Invoke(ex);
                     return false;
                 }
             }

@@ -11,8 +11,6 @@ namespace NScatterGather
     {
         public event CollisionHandler? OnCollision;
 
-        public event ErrorHandler? OnError;
-
         public int RecipientsCount =>
             _singletonRecipients.Count +
             _scopedRecipients.Count +
@@ -95,7 +93,6 @@ namespace NScatterGather
             scope.AddRange(clonedScoped);
 
             scope.OnCollision += OnCollision;
-            scope.OnError += OnError;
 
             return scope;
         }
