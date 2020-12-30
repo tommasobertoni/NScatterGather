@@ -27,9 +27,9 @@ namespace NScatterGather.Recipients.Collection
         [Fact]
         public void Can_add_generic_type_with_lifetime()
         {
-            _collection.Add<SomeType>(lifetime: Lifetime.Transient);
-            _collection.Add<SomeType>(lifetime: Lifetime.Scoped);
-            _collection.Add<SomeType>(lifetime: Lifetime.Singleton);
+            _collection.Add<SomeType>(Lifetime.Transient);
+            _collection.Add<SomeType>(Lifetime.Scoped);
+            _collection.Add<SomeType>(Lifetime.Singleton);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace NScatterGather.Recipients.Collection
         public void Error_if_lifetime_is_not_valid()
         {
             Assert.Throws<ArgumentException>(() =>
-                _collection.Add<SomeType>(lifetime: (Lifetime)42));
+                _collection.Add<SomeType>((Lifetime)42));
         }
 
         [Fact]

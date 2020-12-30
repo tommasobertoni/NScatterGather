@@ -132,8 +132,8 @@ namespace NScatterGather.Recipients
             Assert.IsType<DelegateRecipient>(clone);
             Assert.Equal(recipient.Name, clone.Name);
             Assert.Equal(recipient.Lifetime, clone.Lifetime);
-            Assert.Equal(recipient.RequestType, (clone as DelegateRecipient).RequestType);
-            Assert.Equal(recipient.ResponseType, (clone as DelegateRecipient).ResponseType);
+            Assert.Equal(recipient.RequestType, (clone as DelegateRecipient)!.RequestType);
+            Assert.Equal(recipient.ResponseType, (clone as DelegateRecipient)!.ResponseType);
         }
 
         [Fact]

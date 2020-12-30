@@ -222,7 +222,7 @@ namespace NScatterGather.Recipients
             Assert.IsType<TypeRecipient>(clone);
             Assert.Equal(recipient.Name, clone.Name);
             Assert.Equal(recipient.Lifetime, clone.Lifetime);
-            Assert.Equal(recipient.Type, (clone as TypeRecipient).Type);
+            Assert.Equal(recipient.Type, (clone as TypeRecipient)!.Type);
         }
 
         [Fact]

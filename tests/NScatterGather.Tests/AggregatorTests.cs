@@ -100,9 +100,9 @@ namespace NScatterGather
 
             var collection = new RecipientsCollection();
 
-            collection.Add(() => { transients++; return new SomeType(); }, lifetime: Lifetime.Transient);
-            collection.Add(() => { scoped++; return new SomeOtherType(); }, lifetime: Lifetime.Scoped);
-            collection.Add(() => { singletons++; return new SomeAsyncType(); }, lifetime: Lifetime.Singleton);
+            collection.Add(() => { transients++; return new SomeType(); }, name: null, lifetime: Lifetime.Transient);
+            collection.Add(() => { scoped++; return new SomeOtherType(); }, name: null, lifetime: Lifetime.Scoped);
+            collection.Add(() => { singletons++; return new SomeAsyncType(); }, name: null, lifetime: Lifetime.Singleton);
 
             var aggregator = new Aggregator(collection);
             var anotherAggregator = new Aggregator(collection);

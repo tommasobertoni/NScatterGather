@@ -16,9 +16,18 @@ namespace NScatterGather
         private readonly List<Recipient> _recipients = new();
         private readonly TypeInspectorRegistry _registry = new TypeInspectorRegistry();
 
+        public void Add<TRecipient>(string? name = null) =>
+            Add<TRecipient>(name: name, lifetime: Lifetime.Transient);
+
+        public void Add<TRecipient>(Lifetime lifetime) =>
+            Add<TRecipient>(name: null, lifetime: lifetime);
+
+        public void Add<TRecipient>(Func<TRecipient> factoryMethod) =>
+            Add(factoryMethod, name: null, lifetime: Lifetime.Transient);
+
         public void Add<TRecipient>(
-            string? name = null,
-            Lifetime lifetime = Lifetime.Transient)
+            string? name,
+            Lifetime lifetime)
         {
             if (!HasADefaultConstructor<TRecipient>())
                 throw new ArgumentException($"Type '{typeof(TRecipient).Name}' is missing a public, parameterless constructor.");
@@ -36,8 +45,8 @@ namespace NScatterGather
 
         public void Add<TRecipient>(
             Func<TRecipient> factoryMethod,
-            string? name = null,
-            Lifetime lifetime = Lifetime.Transient)
+            string? name,
+            Lifetime lifetime)
         {
             if (factoryMethod is null)
                 throw new ArgumentNullException(nameof(factoryMethod));
