@@ -11,14 +11,9 @@ namespace NScatterGather
     {
         public event CollisionHandler? OnCollision;
 
-        public int RecipientsCount =>
-            _singletonRecipients.Count +
-            _scopedRecipients.Count +
-            _transientRecipients.Count;
+        public int RecipientsCount => _recipients.Count;
 
-        private readonly List<Recipient> _singletonRecipients = new();
-        private readonly List<Recipient> _scopedRecipients = new();
-        private readonly List<Recipient> _transientRecipients = new();
+        private readonly List<Recipient> _recipients = new();
         private readonly TypeInspectorRegistry _registry = new TypeInspectorRegistry();
 
         public void Add<TRecipient>(
@@ -48,6 +43,7 @@ namespace NScatterGather
                 throw new ArgumentNullException(nameof(factoryMethod));
 
             var typeRecipient = TypeRecipient.Create(_registry, factoryMethod, name, lifetime);
+
             Add(typeRecipient);
         }
 
@@ -59,6 +55,7 @@ namespace NScatterGather
                 throw new ArgumentNullException(nameof(instance));
 
             var instanceRecipient = InstanceRecipient.Create(_registry, instance, name);
+
             Add(instanceRecipient);
         }
 
@@ -70,27 +67,27 @@ namespace NScatterGather
                 throw new ArgumentNullException(nameof(@delegate));
 
             var delegateRecipient = DelegateRecipient.Create(@delegate, name);
+
             Add(delegateRecipient);
         }
 
         private void Add(Recipient recipient)
         {
-            if (recipient.Lifetime == Lifetime.Singleton)
-                _singletonRecipients.Add(recipient);
-            else if (recipient.Lifetime == Lifetime.Scoped)
-                _scopedRecipients.Add(recipient);
-            else
-                _transientRecipients.Add(recipient);
+            _recipients.Add(recipient);
         }
 
         internal IRecipientsScope CreateScope()
         {
             var scope = new RecipientsScope();
-            scope.AddRange(_singletonRecipients);
-            scope.AddRange(_transientRecipients);
 
-            var clonedScoped = _scopedRecipients.Select(r => r.Clone());
-            scope.AddRange(clonedScoped);
+            var scopedRecipients = _recipients.Select(recipient =>
+            {
+                return recipient.Lifetime == Lifetime.Scoped
+                    ? recipient.Clone()
+                    : recipient;
+            });
+
+            scope.AddRange(scopedRecipients);
 
             scope.OnCollision += OnCollision;
 

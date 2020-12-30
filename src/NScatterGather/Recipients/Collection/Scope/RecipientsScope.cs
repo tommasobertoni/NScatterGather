@@ -6,9 +6,9 @@ namespace NScatterGather.Recipients.Collection.Scope
 {
     internal class RecipientsScope : IRecipientsScope
     {
-        public int RecipientsCount => _recipients.Count;
-
         public event CollisionHandler? OnCollision;
+
+        public int RecipientsCount => _recipients.Count;
 
         private readonly List<Recipient> _recipients = new();
 
