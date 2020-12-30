@@ -125,5 +125,43 @@ namespace NScatterGather
             Assert.Equal(2, scoped);
             Assert.Equal(1, singletons);
         }
+
+        [Fact]
+        public async Task Recipients_can_return_null()
+        {
+            var collection = new RecipientsCollection();
+            collection.Add<SomeTypeReturningNull>();
+
+            var aggregator = new Aggregator(collection);
+
+            var response = await aggregator.Send(42);
+
+            Assert.NotNull(response);
+            Assert.Single(response.Completed);
+            Assert.Empty(response.Faulted);
+
+            var completed = response.Completed.First();
+            Assert.Equal(typeof(SomeTypeReturningNull), completed.RecipientType);
+            Assert.Null(completed.Result);
+        }
+
+        [Fact]
+        public async Task Recipients_can_return_nullable()
+        {
+            var collection = new RecipientsCollection();
+            collection.Add<SomeTypeReturningNullable>();
+
+            var aggregator = new Aggregator(collection);
+
+            var response = await aggregator.Send(42);
+
+            Assert.NotNull(response);
+            Assert.Single(response.Completed);
+            Assert.Empty(response.Faulted);
+
+            var completed = response.Completed.First();
+            Assert.Equal(typeof(SomeTypeReturningNullable), completed.RecipientType);
+            Assert.Null(completed.Result);
+        }
     }
 }
