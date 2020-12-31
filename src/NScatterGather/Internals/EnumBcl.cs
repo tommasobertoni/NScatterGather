@@ -12,7 +12,5 @@ namespace NScatterGather
             return Enum.IsDefined(value);
 #endif
         }
-
     }
-
 }
