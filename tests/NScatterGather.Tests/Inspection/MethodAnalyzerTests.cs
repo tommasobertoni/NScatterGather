@@ -5,25 +5,6 @@ namespace NScatterGather.Inspection
 {
     public class MethodAnalyzerTests
     {
-        class SomeType
-        {
-            public void DoVoid() { }
-
-            public void AcceptIntVoid(int n) { }
-
-            public string EchoString(string s) => s;
-
-            public Task DoTask() => Task.CompletedTask;
-
-            public ValueTask DoValueTask() => new ValueTask();
-
-            public ValueTask<int> DoAndReturnValueTask() => new ValueTask<int>(42);
-
-            public Task<int> ReturnTask(int n) => Task.FromResult(n);
-
-            public string Multi(int n, string s) => "Don't Panic";
-        }
-
         public enum Check
         {
             Request,
@@ -41,31 +22,31 @@ namespace NScatterGather.Inspection
 
         public MethodAnalyzerTests()
         {
-            var t = typeof(SomeType);
+            var t = typeof(SomeTypeWithManyMethods);
 
             _doVoidInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.DoVoid))!);
+                t, t.GetMethod(nameof(SomeTypeWithManyMethods.DoVoid))!);
 
             _acceptIntVoidInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.AcceptIntVoid))!);
+                t, t.GetMethod(nameof(SomeTypeWithManyMethods.AcceptIntVoid))!);
 
             _echoStringInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.EchoString))!);
+                t, t.GetMethod(nameof(SomeTypeWithManyMethods.EchoString))!);
 
             _doTaskInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.DoTask))!);
+                t, t.GetMethod(nameof(SomeTypeWithManyMethods.DoTask))!);
 
             _doValueTaskInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.DoValueTask))!);
+                t, t.GetMethod(nameof(SomeTypeWithManyMethods.DoValueTask))!);
 
             _doAndReturnValueTaskInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.DoAndReturnValueTask))!);
+                t, t.GetMethod(nameof(SomeTypeWithManyMethods.DoAndReturnValueTask))!);
 
             _returnTaskInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.ReturnTask))!);
+                t, t.GetMethod(nameof(SomeTypeWithManyMethods.ReturnTask))!);
 
             _multiInspection = new MethodInspection(
-                t, t.GetMethod(nameof(SomeType.Multi))!);
+                t, t.GetMethod(nameof(SomeTypeWithManyMethods.Multi))!);
         }
 
         [Fact]
@@ -77,7 +58,7 @@ namespace NScatterGather.Inspection
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoVoid)), match);
+            Assert.Equal(typeof(SomeTypeWithManyMethods).GetMethod(nameof(SomeTypeWithManyMethods.DoVoid)), match);
         }
 
         [Fact]
@@ -89,7 +70,7 @@ namespace NScatterGather.Inspection
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoVoid)), match);
+            Assert.Equal(typeof(SomeTypeWithManyMethods).GetMethod(nameof(SomeTypeWithManyMethods.DoVoid)), match);
         }
 
         [Theory]
@@ -105,7 +86,7 @@ namespace NScatterGather.Inspection
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.AcceptIntVoid)), match);
+            Assert.Equal(typeof(SomeTypeWithManyMethods).GetMethod(nameof(SomeTypeWithManyMethods.AcceptIntVoid)), match);
         }
 
         [Theory]
@@ -121,7 +102,7 @@ namespace NScatterGather.Inspection
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.EchoString)), match);
+            Assert.Equal(typeof(SomeTypeWithManyMethods).GetMethod(nameof(SomeTypeWithManyMethods.EchoString)), match);
         }
 
         [Theory]
@@ -137,7 +118,7 @@ namespace NScatterGather.Inspection
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoTask)), match);
+            Assert.Equal(typeof(SomeTypeWithManyMethods).GetMethod(nameof(SomeTypeWithManyMethods.DoTask)), match);
         }
 
         [Theory]
@@ -153,7 +134,7 @@ namespace NScatterGather.Inspection
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoValueTask)), match);
+            Assert.Equal(typeof(SomeTypeWithManyMethods).GetMethod(nameof(SomeTypeWithManyMethods.DoValueTask)), match);
         }
 
         [Theory]
@@ -169,7 +150,7 @@ namespace NScatterGather.Inspection
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.DoAndReturnValueTask)), match);
+            Assert.Equal(typeof(SomeTypeWithManyMethods).GetMethod(nameof(SomeTypeWithManyMethods.DoAndReturnValueTask)), match);
         }
 
         [Fact]
@@ -203,7 +184,7 @@ namespace NScatterGather.Inspection
 
             Assert.True(isMatch);
             Assert.NotNull(match);
-            Assert.Equal(typeof(SomeType).GetMethod(nameof(SomeType.ReturnTask)), match);
+            Assert.Equal(typeof(SomeTypeWithManyMethods).GetMethod(nameof(SomeTypeWithManyMethods.ReturnTask)), match);
         }
 
         [Fact]

@@ -6,21 +6,13 @@ namespace NScatterGather.Inspection
 {
     public class MethodInspectionTests
     {
-        class SomeType
-        {
-            public int AMethod(
-                Guid guid,
-                string s,
-                IDisposable d) => 42;
-        }
-
         private readonly Type _inspectedType;
         private readonly MethodInfo _inspectedMethod;
 
         public MethodInspectionTests()
         {
-            _inspectedType = typeof(SomeType);
-            _inspectedMethod = _inspectedType.GetMethod(nameof(SomeType.AMethod))!;
+            _inspectedType = typeof(SomeTypeWithComplexArguments);
+            _inspectedMethod = _inspectedType.GetMethod(nameof(SomeTypeWithComplexArguments.AMethod))!;
         }
 
         [Fact]

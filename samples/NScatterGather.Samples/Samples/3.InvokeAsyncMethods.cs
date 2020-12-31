@@ -20,7 +20,7 @@ namespace NScatterGather.Samples.Samples
             // before aggregating the response.
             var response1 = await aggregator.Send(42);
 
-            var results = response1.AsResultsList(); // "42", 42L, 84L
+            var results = response1.AsResultsList(); // 84L, 42L, "42"
             Console.WriteLine($"" +
                 $"{results[0]} ({results[0]?.GetType().Name}), " +
                 $"{results[1]} ({results[1]?.GetType().Name}), " +
@@ -32,9 +32,9 @@ namespace NScatterGather.Samples.Samples
             // or ValueTask<TResponse> get invoked.
 
             var response2 = await aggregator.Send<long>(42);
-            var guidResults = response2.AsResultsList();
-            Console.WriteLine($"{guidResults[0]} ({guidResults[0].GetType().Name})");
-            Console.WriteLine($"{guidResults[0]} ({guidResults[1].GetType().Name})");
+            var longResults = response2.AsResultsList();
+            Console.WriteLine($"{longResults[0]} ({longResults[0].GetType().Name})");
+            Console.WriteLine($"{longResults[1]} ({longResults[1].GetType().Name})");
 
             var response3 = await aggregator.Send<string>(42);
             var stringResults = response3.AsResultsList();

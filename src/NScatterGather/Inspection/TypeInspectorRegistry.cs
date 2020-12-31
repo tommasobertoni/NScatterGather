@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace NScatterGather.Inspection
 {
@@ -9,10 +8,9 @@ namespace NScatterGather.Inspection
         private readonly ConcurrentDictionary<Type, TypeInspector> _registry =
             new ConcurrentDictionary<Type, TypeInspector>();
 
-        public TypeInspector Register<T>() =>
-            Register(typeof(T));
+        public TypeInspector For<T>() => For(typeof(T));
 
-        public TypeInspector Register(Type type)
+        public TypeInspector For(Type type)
         {
             if (_registry.TryGetValue(type, out var cached))
                 return cached;
@@ -22,17 +20,6 @@ namespace NScatterGather.Inspection
             return inspector;
         }
 
-        public TypeInspector Of<T>() =>
-            Of(typeof(T));
-
-        public TypeInspector Of(Type t)
-        {
-            _ = _registry.TryGetValue(t, out var inspector);
-            return inspector ??
-                throw new KeyNotFoundException($"No {nameof(TypeInspector)} for type '{t.Name}' was registered.");
-        }
-
-        internal void Clear() =>
-            _registry.Clear();
+        internal void Clear() => _registry.Clear();
     }
 }

@@ -2,7 +2,7 @@
 
 namespace NScatterGather
 {
-    public class ConflictException : Exception
+    public class CollisionException : Exception
     {
         public Type RecipientType { get; }
 
@@ -10,7 +10,7 @@ namespace NScatterGather
 
         public Type? ResponseType { get; }
 
-        internal ConflictException(
+        internal CollisionException(
             Type recipientType,
             Type requestType,
             Type? responseType = null)

@@ -1,89 +1,57 @@
 ﻿using System;
 using NScatterGather.Inspection;
+using NScatterGather.Recipients.Descriptors;
+using NScatterGather.Recipients.Factories;
+using NScatterGather.Recipients.Invokers;
 
 namespace NScatterGather.Recipients
 {
-    internal class InstanceRecipient : Recipient
+    internal class InstanceRecipient : TypeRecipient
     {
-        public Type Type => _type;
-
         private readonly object _instance;
-        private readonly Type _type;
-        private readonly TypeInspector _inspector;
 
-        public InstanceRecipient(
+        public static InstanceRecipient Create(
+            TypeInspectorRegistry registry,
             object instance,
-            string? name = null,
-            TypeInspector? inspector = null) : base(name)
+            string? name)
         {
-            _instance = instance ?? throw new ArgumentNullException(nameof(instance));
-            _type = _instance.GetType();
-            _inspector = inspector ?? new TypeInspector(_type);
+            if (registry is null)
+                throw new ArgumentNullException(nameof(registry));
+
+            if (instance is null)
+                throw new ArgumentNullException(nameof(instance));
+
+            var inspector = registry.For(instance.GetType());
+            var descriptor = new TypeRecipientDescriptor(inspector);
+
+            var invoker = new InstanceRecipientInvoker(
+                inspector,
+                new SingletonRecipientFactory(instance));
+
+            return new InstanceRecipient(
+                instance,
+                descriptor,
+                invoker,
+                name);
         }
 
-        public InstanceRecipient(
-            Type type,
-            string? name = null,
-            TypeInspector? inspector = null) : base(name)
+        protected InstanceRecipient(
+            object instance,
+            IRecipientDescriptor descriptor,
+            IRecipientInvoker invoker,
+            string? name) : base(instance.GetType(), descriptor, invoker, name, Lifetime.Singleton)
         {
-            _type = type ?? throw new ArgumentNullException(nameof(type));
-            _inspector = inspector ?? new TypeInspector(_type);
-
-            try
-            {
-                _instance = Activator.CreateInstance(_type)!;
-            }
-            catch (MissingMethodException mMEx)
-            {
-                throw new InvalidOperationException($"Could not create a new instance of type '{_type.Name}'.", mMEx);
-            }
+            _instance = instance;
         }
 
-        protected internal override string GetRecipientName() =>
-            _type.Name;
-
-        public override bool CanAccept(Type requestType)
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+        public override Recipient Clone()
+#else
+        public override InstanceRecipient Clone()
+#endif
         {
-            if (requestType is null)
-                throw new ArgumentNullException(nameof(requestType));
-
-            var accepts = _inspector.HasMethodAccepting(requestType);
-            return accepts;
-        }
-
-        public override bool CanReplyWith(Type requestType, Type responseType)
-        {
-            if (requestType is null)
-                throw new ArgumentNullException(nameof(requestType));
-
-            if (responseType is null)
-                throw new ArgumentNullException(nameof(responseType));
-
-            var repliesWith = _inspector.HasMethodReturning(requestType, responseType);
-            return repliesWith;
-        }
-
-        protected internal override object? Invoke(object request)
-        {
-            if (!_inspector.TryGetMethodAccepting(request.GetType(), out var method))
-                throw new InvalidOperationException(
-                    $"Type '{GetRecipientName()}' doesn't support accepting requests " +
-                    $"of type '{request.GetType().Name}'.");
-
-            var response = method.Invoke(_instance, new object?[] { request });
-            return response;
-        }
-
-        protected internal override object? Invoke<TResponse>(object request)
-        {
-            if (!_inspector.TryGetMethodReturning(request.GetType(), typeof(TResponse), out var method))
-                throw new InvalidOperationException(
-                    $"Type '{GetRecipientName()}' doesn't support accepting " +
-                    $"requests of type '{request.GetType().Name}' and " +
-                    $"returning '{typeof(TResponse).Name}'.");
-
-            var response = method.Invoke(_instance, new object?[] { request });
-            return response;
+            var invoker = _invoker.Clone();
+            return new InstanceRecipient(_instance, _descriptor, invoker, Name);
         }
     }
 }

@@ -1,90 +1,51 @@
 ﻿using System;
+using NScatterGather.Recipients.Descriptors;
+using NScatterGather.Recipients.Invokers;
 
 namespace NScatterGather.Recipients
 {
     internal class DelegateRecipient : Recipient
     {
-        private readonly Func<object, object?> _delegate;
+        public Type RequestType { get; }
 
-        internal Type In => _inType;
-
-        internal Type Out => _outType;
-
-        private readonly Type _inType;
-        private readonly Type _outType;
+        public Type ResponseType { get; }
 
         public static DelegateRecipient Create<TRequest, TResponse>(
             Func<TRequest, TResponse> @delegate,
-            string? name = null)
+            string? name)
         {
             if (@delegate is null)
-                 throw new ArgumentNullException(nameof(@delegate));
+                throw new ArgumentNullException(nameof(@delegate));
 
-            object? delegateInvoker(object @in)
+            object? delegateInvoker(object request)
             {
-                var request = (TRequest)@in;
-                TResponse response = @delegate(request);
+                var typedRequest = (TRequest)request;
+                TResponse response = @delegate(typedRequest);
                 return response;
             }
 
-            return new DelegateRecipient(
-                delegateInvoker,
-                inType: typeof(TRequest),
-                outType: typeof(TResponse),
-                name);
+            var descriptor = new DelegateRecipientDescriptor(typeof(TRequest), typeof(TResponse));
+            var invoker = new DelegateRecipientInvoker(descriptor, delegateInvoker);
+
+            return new DelegateRecipient(descriptor.RequestType, descriptor.ResponseType, descriptor, invoker, name);
         }
 
-        internal DelegateRecipient(
-            Func<object, object?> @delegate,
-            Type inType,
-            Type outType,
-            string? name = null) : base(name)
+        protected DelegateRecipient(
+            Type requestType,
+            Type responseType,
+            IRecipientDescriptor descriptor,
+            IRecipientInvoker invoker,
+            string? name) : base(descriptor, invoker, name, Lifetime.Singleton)
         {
-            _delegate = @delegate;
-            _inType = inType;
-            _outType = outType;
+            RequestType = requestType;
+            ResponseType = responseType;
         }
 
-        protected internal override string GetRecipientName() =>
-            _delegate.ToString() ?? "delegate";
-
-        public override bool CanAccept(Type requestType) =>
-            Match(_inType, requestType);
-
-        public override bool CanReplyWith(Type requestType, Type responseType) =>
-            Match(_inType, requestType) && Match(_outType, responseType);
-
-        private bool Match(Type target, Type actual)
-        {
-            if (target == actual)
-                return true;
-
-            var nonNullableType = Nullable.GetUnderlyingType(target);
-            if (nonNullableType is not null && nonNullableType == actual)
-                return true;
-
-            return false;
-        }
-
-        protected internal override object? Invoke(object request)
-        {
-            if (!CanAccept(request.GetType()))
-                throw new InvalidOperationException(
-                    $"Type '{GetRecipientName()}' doesn't support accepting requests " +
-                    $"of type '{request.GetType().Name}'.");
-
-            return _delegate(request!);
-        }
-
-        protected internal override object? Invoke<TResponse>(object request)
-        {
-            if (!CanReplyWith(request.GetType(), typeof(TResponse)))
-                throw new InvalidOperationException(
-                    $"Type '{GetRecipientName()}' doesn't support accepting " +
-                    $"requests of type '{request.GetType().Name}' and " +
-                    $"returning '{typeof(TResponse).Name}'.");
-
-            return _delegate(request!);
-        }
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+        public override Recipient Clone() =>
+#else
+        public override DelegateRecipient Clone() =>
+#endif
+            new DelegateRecipient(RequestType, ResponseType, _descriptor, _invoker, Name);
     }
 }

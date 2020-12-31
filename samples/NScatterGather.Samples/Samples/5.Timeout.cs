@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NScatterGather.Samples.Samples
@@ -15,20 +14,20 @@ namespace NScatterGather.Samples.Samples
 
             var aggregator = new Aggregator(collection);
 
-            // The consumer can limit the duration of the aggregation
-            // by providing a CancellationToken to the aggregator:
+            // The consumer can limit the duration of the aggregation by
+            // providing a timeout (or CancellationToken) to the aggregator:
             // this will ensure that the response will be ready in
             // the given amount of time and will "discard" incomplete
             // (and also never-ending) invocations.
-            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
-            var response = await aggregator.Send(42, cts.Token);
+            var response = await aggregator.Send(42, TimeSpan.FromMilliseconds(50));
 
             // The recipients that didn't complete in time will be
             // listed in the Incomplete property of the result:
             Console.WriteLine($"Completed {response.Completed.Count}");
             Console.WriteLine(
                 $"Incomplete {response.Incomplete.Count}: " +
-                $"{response.Incomplete[0].RecipientType?.Name}");
+                $"{response.Incomplete[0].RecipientType?.Name}, " +
+                $"{response.Incomplete[1].RecipientType?.Name}");
         }
 
         class Foo
@@ -40,7 +39,7 @@ namespace NScatterGather.Samples.Samples
         {
             public async Task<int> Long(int n)
             {
-                await Task.Delay(100);
+                await Task.Delay(1000);
                 return n;
             }
         }
