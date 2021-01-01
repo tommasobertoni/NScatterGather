@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -26,13 +25,15 @@ namespace NScatterGather.Inspection
             if (parameters.Count != 1)
                 return false;
 
-            var theParameter = parameters.First();
+            var theParameter = parameters[0];
 
-            if (theParameter.ParameterType != requestType)
-                return false;
+            if (IsSameOrCompatible(baseType: theParameter.ParameterType, requestType))
+            {
+                match = method;
+                return true;
+            }
 
-            match = method;
-            return true;
+            return false;
         }
 
         public bool IsMatch(
@@ -51,7 +52,7 @@ namespace NScatterGather.Inspection
 
             var (_, method, _, returnType) = inspection;
 
-            if (returnType == responseType)
+            if (IsSameOrCompatible(baseType: responseType, returnType))
             {
                 match = method;
                 return true;
@@ -63,13 +64,28 @@ namespace NScatterGather.Inspection
             if (!returnType.IsAwaitableWithResult(out var awaitResultType))
                 return false;
 
-            if (awaitResultType != responseType)
-                return false;
+            if (IsSameOrCompatible(baseType: responseType, awaitResultType))
+            {
+                // It's a match: Task/ValueTask/Awaitable of TResponse.
+                match = method;
+                return true;
+            }
 
-            // It's a match: Task/ValueTask/Awaitable of TResponse.
+            return false;
+        }
 
-            match = method;
-            return true;
+        private bool IsSameOrCompatible(Type baseType, Type otherType)
+        {
+            if (baseType == otherType)
+                return true;
+
+            var nonNullableBaseType = Nullable.GetUnderlyingType(baseType);
+
+            if (nonNullableBaseType is not null &&
+                nonNullableBaseType == otherType)
+                return true;
+
+            return false;
         }
     }
 }
