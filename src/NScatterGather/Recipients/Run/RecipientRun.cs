@@ -41,9 +41,9 @@ namespace NScatterGather.Recipients.Run
 
             StartedAt = DateTime.UtcNow;
 
-            var runnerTask = Task.Run(async () => await _preparedInvocation.Execute());
-
             var tcs = new TaskCompletionSource<bool>();
+
+            var runnerTask = Task.Run(async () => await _preparedInvocation.Execute().ConfigureAwait(false));
 
             runnerTask.ContinueWith(completedTask =>
             {

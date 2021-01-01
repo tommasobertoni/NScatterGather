@@ -24,7 +24,7 @@ namespace NScatterGather
             TimeSpan timeout)
         {
             using var cts = new CancellationTokenSource(timeout);
-            return await Send(request, cts.Token);
+            return await Send(request, cts.Token).ConfigureAwait(false);
         }
 
         public async Task<AggregatedResponse<object?>> Send(
@@ -36,8 +36,7 @@ namespace NScatterGather
 
             var recipients = _scope.ListRecipientsAccepting(request.GetType());
 
-            var invocations = await Invoke(recipients, request, cancellationToken)
-                .ConfigureAwait(false);
+            var invocations = await Invoke(recipients, request, cancellationToken).ConfigureAwait(false);
 
             return AggregatedResponseFactory.CreateFrom(invocations);
         }
@@ -69,7 +68,7 @@ namespace NScatterGather
             TimeSpan timeout)
         {
             using var cts = new CancellationTokenSource(timeout);
-            return await Send<TResponse>(request, cts.Token);
+            return await Send<TResponse>(request, cts.Token).ConfigureAwait(false);
         }
 
         public async Task<AggregatedResponse<TResponse>> Send<TResponse>(
@@ -81,8 +80,7 @@ namespace NScatterGather
 
             var recipients = _scope.ListRecipientsReplyingWith(request.GetType(), typeof(TResponse));
 
-            var runners = await Invoke<TResponse>(recipients, request, cancellationToken)
-                .ConfigureAwait(false);
+            var runners = await Invoke<TResponse>(recipients, request, cancellationToken).ConfigureAwait(false);
 
             return AggregatedResponseFactory.CreateFrom(runners);
         }
