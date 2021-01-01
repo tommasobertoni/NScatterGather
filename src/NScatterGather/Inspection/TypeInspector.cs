@@ -29,6 +29,7 @@ namespace NScatterGather.Inspection
             {
                 var methods = type.GetMethods(DefaultFlags);
                 return methods
+                    .Where(method => method.DeclaringType == type)
                     .Select(method => new MethodInspection(type, method))
                     .Where(inspection => inspection.ReturnsAResponse)
                     .ToArray();
@@ -36,43 +37,42 @@ namespace NScatterGather.Inspection
         }
 
         #region Request only
-        public bool HasMethodAccepting(Type requestType) =>
-            TryGetMethodAccepting(requestType, out _);
+        public bool HasMethodsAccepting(Type requestType, CollisionStrategy collisionStrategy) =>
+            TryGetMethodsAccepting(requestType, collisionStrategy, out _);
 
-        public bool TryGetMethodAccepting(
+        public bool TryGetMethodsAccepting(
             Type requestType,
-            [NotNullWhen(true)] out MethodInfo? method)
+            CollisionStrategy collisionStrategy,
+            out IReadOnlyList<MethodInfo> methods)
         {
-            if (requestType is null) throw new ArgumentNullException(nameof(requestType));
+            if (requestType is null)
+                throw new ArgumentNullException(nameof(requestType));
 
+            if (!collisionStrategy.IsValid())
+                throw new ArgumentException($"Invalid {nameof(collisionStrategy)} value: {collisionStrategy}");
+
+            var evaluation = FindOrEvaluate(requestType);
+
+            return IsCompliantWithCollisionStrategyOrThrow(
+                requestType,
+                responseType: null,
+                evaluation,
+                collisionStrategy,
+                out methods);
+        }
+
+        private MethodMatchEvaluation FindOrEvaluate(Type requestType)
+        {
             // Check in the cache if the analysis was already done.
             if (_evaluationsCache.TryFindEvaluation(requestType, out var cached))
-            {
-                // Compliance with the request type is already known.
-                method = cached.Method!;
-                return cached.IsMatch;
-            }
-
-            // Analyze the methods and find a match.
+                return cached;
 
             var matches = ListMatchingMethods(requestType);
 
-            if (matches.Count == 1)
-            {
-                method = matches.Single();
-                _evaluationsCache.TryAdd(requestType, new MethodMatchEvaluation(true, method));
-                return true;
-            }
+            var evaluation = new MethodMatchEvaluation(requestType, responseType: null, matches);
+            _evaluationsCache.TryAdd(evaluation);
 
-            // Single match not found.
-
-            method = null;
-            _evaluationsCache.TryAdd(requestType, new MethodMatchEvaluation(false, method));
-
-            if (matches.Count > 1)
-                throw new CollisionException(_type, requestType);
-
-            return false;
+            return evaluation;
         }
 
         private IReadOnlyList<MethodInfo> ListMatchingMethods(Type requestType)
@@ -92,45 +92,46 @@ namespace NScatterGather.Inspection
 
         #region Request and response
 
-        public bool HasMethodReturning(Type requestType, Type responseType) =>
-            TryGetMethodReturning(requestType, responseType, out _);
+        public bool HasMethodsReturning(Type requestType, Type responseType, CollisionStrategy collisionStrategy) =>
+            TryGetMethodsReturning(requestType, responseType, collisionStrategy, out _);
 
-        public bool TryGetMethodReturning(
+        public bool TryGetMethodsReturning(
             Type requestType,
             Type responseType,
-            [NotNullWhen(true)] out MethodInfo? method)
+            CollisionStrategy collisionStrategy,
+            out IReadOnlyList<MethodInfo> methods)
         {
-            if (requestType is null) throw new ArgumentNullException(nameof(requestType));
-            if (responseType is null) throw new ArgumentNullException(nameof(responseType));
+            if (requestType is null)
+                throw new ArgumentNullException(nameof(requestType));
 
+            if (responseType is null)
+                throw new ArgumentNullException(nameof(responseType));
+
+            if (!collisionStrategy.IsValid())
+                throw new ArgumentException($"Invalid {nameof(collisionStrategy)} value: {collisionStrategy}");
+
+            var evaluation = FindOrEvaluate(requestType, responseType);
+
+            return IsCompliantWithCollisionStrategyOrThrow(
+                requestType,
+                responseType,
+                evaluation,
+                collisionStrategy,
+                out methods);
+        }
+
+        private MethodMatchEvaluation FindOrEvaluate(Type requestType, Type responseType)
+        {
             // Check in the cache if the analysis was already done.
             if (_evaluationsCache.TryFindEvaluation(requestType, responseType, out var cached))
-            {
-                // Compliance with the request type is already known.
-                method = cached.Method!;
-                return cached.IsMatch;
-            }
-
-            // Analyze the methods and find a match.
+                return cached;
 
             var matches = ListMatchingMethods(requestType, responseType);
 
-            if (matches.Count == 1)
-            {
-                method = matches.Single();
-                _evaluationsCache.TryAdd(requestType, responseType, new MethodMatchEvaluation(true, method));
-                return true;
-            }
+            var evaluation = new MethodMatchEvaluation(requestType, responseType, matches);
+            _evaluationsCache.TryAdd(evaluation);
 
-            // Single match not found.
-
-            method = null;
-            _evaluationsCache.TryAdd(requestType, responseType, new MethodMatchEvaluation(false, method));
-
-            if (matches.Count > 1)
-                throw new CollisionException(_type, requestType, responseType);
-
-            return false;
+            return evaluation;
         }
 
         private IReadOnlyList<MethodInfo> ListMatchingMethods(Type requestType, Type responseType)
@@ -147,5 +148,38 @@ namespace NScatterGather.Inspection
         }
 
         #endregion
+
+        private bool IsCompliantWithCollisionStrategyOrThrow(
+            Type requestType,
+            Type? responseType,
+            MethodMatchEvaluation evaluation,
+            CollisionStrategy collisionStrategy,
+            out IReadOnlyList<MethodInfo> methods)
+        {
+            var (_, _, matches) = evaluation;
+
+            // Check if evaluation has methods and is compliant with the CollisionStrategy
+
+            if (matches.Count == 0)
+            {
+                methods = Array.Empty<MethodInfo>();
+                return false;
+            }
+            else if (matches.Count == 1)
+            {
+                methods = matches;
+                return true;
+            }
+
+            // More than one match found
+
+            if (collisionStrategy == CollisionStrategy.UseAllMethodsMatching)
+            {
+                methods = matches;
+                return true;
+            }
+
+            throw new CollisionException(_type, requestType, responseType);
+        }
     }
 }

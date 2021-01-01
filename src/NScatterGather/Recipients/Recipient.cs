@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NScatterGather.Recipients.Descriptors;
 using NScatterGather.Recipients.Invokers;
 using NScatterGather.Recipients.Run;
@@ -11,6 +13,8 @@ namespace NScatterGather.Recipients
 
         public Lifetime Lifetime { get; }
 
+        public CollisionStrategy CollisionStrategy { get; }
+
         protected readonly IRecipientDescriptor _descriptor;
         protected readonly IRecipientInvoker _invoker;
 
@@ -18,33 +22,41 @@ namespace NScatterGather.Recipients
             IRecipientDescriptor descriptor,
             IRecipientInvoker invoker,
             string? name,
-            Lifetime lifetime)
+            Lifetime lifetime,
+            CollisionStrategy collisionStrategy)
         {
             _descriptor = descriptor;
             _invoker = invoker;
 
             Name = name;
             Lifetime = lifetime;
+            CollisionStrategy = collisionStrategy;
         }
 
         public bool CanAccept(Type requestType) =>
-            _descriptor.CanAccept(requestType);
+            _descriptor.CanAccept(requestType, CollisionStrategy);
 
         public bool CanReplyWith(Type requestType, Type responseType) =>
-            _descriptor.CanReplyWith(requestType, responseType);
+            _descriptor.CanReplyWith(requestType, responseType, CollisionStrategy);
 
-        public RecipientRun<object?> Accept(object request)
+        public IReadOnlyList<RecipientRun<object?>> Accept(object request)
         {
-            var preparedInvocation = _invoker.PrepareInvocation(request);
-            var run = new RecipientRun<object?>(this, preparedInvocation);
-            return run;
+            var preparedInvocations = _invoker.PrepareInvocations(request);
+
+            var runners = preparedInvocations.Select(preparedInvocation =>
+                new RecipientRun<object?>(this, preparedInvocation));
+
+            return runners.ToArray();
         }
 
-        public RecipientRun<TResponse> ReplyWith<TResponse>(object request)
+        public IReadOnlyList<RecipientRun<TResponse>> ReplyWith<TResponse>(object request)
         {
-            var preparedInvocation = _invoker.PrepareInvocation<TResponse>(request);
-            var run = new RecipientRun<TResponse>(this, preparedInvocation);
-            return run;
+            var preparedInvocations = _invoker.PrepareInvocations<TResponse>(request);
+
+            var runners = preparedInvocations.Select(preparedInvocation =>
+                new RecipientRun<TResponse>(this, preparedInvocation));
+
+            return runners.ToArray();
         }
 
         public abstract Recipient Clone();

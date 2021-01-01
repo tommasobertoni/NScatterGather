@@ -13,7 +13,8 @@ namespace NScatterGather.Recipients
         public static InstanceRecipient Create(
             TypeInspectorRegistry registry,
             object instance,
-            string? name)
+            string? name,
+            CollisionStrategy collisionStrategy)
         {
             if (registry is null)
                 throw new ArgumentNullException(nameof(registry));
@@ -21,25 +22,32 @@ namespace NScatterGather.Recipients
             if (instance is null)
                 throw new ArgumentNullException(nameof(instance));
 
+            if (!collisionStrategy.IsValid())
+                throw new ArgumentException($"Invalid {nameof(collisionStrategy)} value: {collisionStrategy}");
+
             var inspector = registry.For(instance.GetType());
             var descriptor = new TypeRecipientDescriptor(inspector);
 
             var invoker = new InstanceRecipientInvoker(
                 inspector,
-                new SingletonRecipientFactory(instance));
+                new SingletonRecipientFactory(instance),
+                collisionStrategy);
 
             return new InstanceRecipient(
                 instance,
                 descriptor,
                 invoker,
-                name);
+                name,
+                collisionStrategy);
         }
 
         protected InstanceRecipient(
             object instance,
             IRecipientDescriptor descriptor,
             IRecipientInvoker invoker,
-            string? name) : base(instance.GetType(), descriptor, invoker, name, Lifetime.Singleton)
+            string? name,
+            CollisionStrategy collisionStrategy)
+            : base(instance.GetType(), descriptor, invoker, name, Lifetime.Singleton, collisionStrategy)
         {
             _instance = instance;
         }
@@ -51,7 +59,7 @@ namespace NScatterGather.Recipients
 #endif
         {
             var invoker = _invoker.Clone();
-            return new InstanceRecipient(_instance, _descriptor, invoker, Name);
+            return new InstanceRecipient(_instance, _descriptor, invoker, Name, CollisionStrategy);
         }
     }
 }

@@ -4,8 +4,8 @@ namespace NScatterGather.Recipients.Descriptors
 {
     internal interface IRecipientDescriptor
     {
-        bool CanAccept(Type requestType);
+        bool CanAccept(Type requestType, CollisionStrategy collisionStrategy);
 
-        bool CanReplyWith(Type requestType, Type responseType);
+        bool CanReplyWith(Type requestType, Type responseType, CollisionStrategy collisionStrategy);
     }
 }

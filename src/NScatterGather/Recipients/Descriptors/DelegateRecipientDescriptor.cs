@@ -14,13 +14,13 @@ namespace NScatterGather.Recipients.Descriptors
             ResponseType = responseType;
         }
 
-        public bool CanAccept(Type requestType)
+        public bool CanAccept(Type requestType, CollisionStrategy collisionStrategy)
         {
             var requestTypeMatches = TypesMatch(RequestType, requestType);
             return requestTypeMatches;
         }
 
-        public bool CanReplyWith(Type requestType, Type responseType)
+        public bool CanReplyWith(Type requestType, Type responseType, CollisionStrategy collisionStrategy)
         {
             var requestAndResponseMatch =
                 TypesMatch(RequestType, requestType) &&

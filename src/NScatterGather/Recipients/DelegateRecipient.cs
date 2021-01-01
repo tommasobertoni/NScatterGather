@@ -35,7 +35,8 @@ namespace NScatterGather.Recipients
             Type responseType,
             IRecipientDescriptor descriptor,
             IRecipientInvoker invoker,
-            string? name) : base(descriptor, invoker, name, Lifetime.Singleton)
+            string? name)
+            : base(descriptor, invoker, name, Lifetime.Singleton, CollisionStrategy.IgnoreRecipient)
         {
             RequestType = requestType;
             ResponseType = responseType;

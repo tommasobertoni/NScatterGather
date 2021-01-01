@@ -1,22 +1,35 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace NScatterGather.Inspection
 {
     internal class MethodMatchEvaluation
     {
-        public bool IsMatch { get; }
+        public Type RequestType { get; }
 
-        public MethodInfo? Method { get; }
+        public Type? ResponseType { get; }
 
-        public MethodMatchEvaluation(bool isMatch, MethodInfo? method) =>
-            (IsMatch, Method) = (isMatch, method);
+        public IReadOnlyList<MethodInfo> Methods { get; }
+
+        public MethodMatchEvaluation(
+            Type requestType,
+            Type? responseType,
+            IReadOnlyList<MethodInfo> methods)
+        {
+            RequestType = requestType;
+            ResponseType = responseType;
+            Methods = methods;
+        }
 
         public void Deconstruct(
-            out bool isMatch,
-            out MethodInfo? method)
+            out Type requestType,
+            out Type? responseType,
+            out IReadOnlyList<MethodInfo> methods)
         {
-            isMatch = IsMatch;
-            method = Method;
+            requestType = RequestType;
+            responseType = ResponseType;
+            methods = Methods;
         }
     }
 }

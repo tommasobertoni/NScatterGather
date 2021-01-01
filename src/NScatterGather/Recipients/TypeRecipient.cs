@@ -14,7 +14,8 @@ namespace NScatterGather.Recipients
             TypeInspectorRegistry registry,
             Func<TRecipient> factoryMethod,
             string? name,
-            Lifetime lifetime)
+            Lifetime lifetime,
+            CollisionStrategy collisionStrategy)
         {
             if (registry is null)
                 throw new ArgumentNullException(nameof(registry));
@@ -24,6 +25,9 @@ namespace NScatterGather.Recipients
 
             if (!lifetime.IsValid())
                 throw new ArgumentException($"Invalid {nameof(lifetime)} value: {lifetime}");
+
+            if (!collisionStrategy.IsValid())
+                throw new ArgumentException($"Invalid {nameof(collisionStrategy)} value: {collisionStrategy}");
 
             var inspector = registry.For<TRecipient>();
 
@@ -35,9 +39,10 @@ namespace NScatterGather.Recipients
             return new TypeRecipient(
                 typeof(TRecipient),
                 new TypeRecipientDescriptor(inspector),
-                new InstanceRecipientInvoker(inspector, factory),
+                new InstanceRecipientInvoker(inspector, factory, collisionStrategy),
                 name,
-                lifetime);
+                lifetime,
+                collisionStrategy);
         }
 
         protected TypeRecipient(
@@ -45,7 +50,9 @@ namespace NScatterGather.Recipients
             IRecipientDescriptor descriptor,
             IRecipientInvoker invoker,
             string? name,
-            Lifetime lifetime) : base(descriptor, invoker, name, lifetime)
+            Lifetime lifetime,
+            CollisionStrategy collisionStrategy)
+            : base(descriptor, invoker, name, lifetime, collisionStrategy)
         {
             Type = type;
         }
@@ -57,7 +64,7 @@ namespace NScatterGather.Recipients
 #endif
         {
             var invoker = _invoker.Clone();
-            return new TypeRecipient(Type, _descriptor, invoker, Name, Lifetime);
+            return new TypeRecipient(Type, _descriptor, invoker, Name, Lifetime, CollisionStrategy);
         }
     }
 }
