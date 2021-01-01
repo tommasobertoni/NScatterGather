@@ -9,24 +9,18 @@ namespace NScatterGather.Inspection
         private readonly ConcurrentDictionary<int, MethodMatchEvaluation> _cache =
             new ConcurrentDictionary<int, MethodMatchEvaluation>();
 
-        #region Request only
-
-        public bool TryAdd<TRequest>(MethodMatchEvaluation evaluation) =>
-            TryAdd(typeof(TRequest), evaluation);
-
-        public bool TryAdd(
-            Type requestType,
-            MethodMatchEvaluation evaluation)
+        public bool TryAdd(MethodMatchEvaluation evaluation)
         {
-            if (requestType is null) throw new ArgumentNullException(nameof(requestType));
             if (evaluation is null) throw new ArgumentNullException(nameof(evaluation));
+            if (evaluation.RequestType is null) throw new ArgumentNullException(nameof(evaluation.RequestType));
+            if (evaluation.Methods is null) throw new ArgumentNullException(nameof(evaluation.Methods));
 
-            var hash = HashCode.Combine(requestType);
+            var hash = evaluation.ResponseType is null
+                ? HashCode.Combine(evaluation.RequestType)
+                : HashCode.Combine(evaluation.RequestType, evaluation.ResponseType);
+
             return _cache.TryAdd(hash, evaluation);
         }
-
-        public bool TryFindEvaluation<TRequest>([NotNullWhen(true)] out MethodMatchEvaluation? evaluation) =>
-            TryFindEvaluation(typeof(TRequest), out evaluation);
 
         public bool TryFindEvaluation(
             Type requestType,
@@ -37,29 +31,6 @@ namespace NScatterGather.Inspection
             var hash = HashCode.Combine(requestType);
             return _cache.TryGetValue(hash, out evaluation);
         }
-
-        #endregion
-
-        #region Request and response
-
-        public bool TryAdd<TRequest, TResponse>(MethodMatchEvaluation evaluation) =>
-            TryAdd(typeof(TRequest), typeof(TResponse), evaluation);
-
-        public bool TryAdd(
-            Type requestType,
-            Type responseType,
-            MethodMatchEvaluation evaluation)
-        {
-            if (requestType is null) throw new ArgumentNullException(nameof(requestType));
-            if (responseType is null) throw new ArgumentNullException(nameof(responseType));
-            if (evaluation is null) throw new ArgumentNullException(nameof(evaluation));
-
-            var hash = HashCode.Combine(requestType, responseType);
-            return _cache.TryAdd(hash, evaluation);
-        }
-
-        public bool TryFindEvaluation<TRequest, TResponse>([NotNullWhen(true)] out MethodMatchEvaluation? evaluation) =>
-            TryFindEvaluation(typeof(TRequest), typeof(TResponse), out evaluation);
 
         public bool TryFindEvaluation(
             Type requestType,
@@ -72,7 +43,5 @@ namespace NScatterGather.Inspection
             var hash = HashCode.Combine(requestType, responseType);
             return _cache.TryGetValue(hash, out evaluation);
         }
-
-        #endregion
     }
 }

@@ -12,15 +12,15 @@ namespace NScatterGather.Recipients.Descriptors
             _inspector = inspector;
         }
 
-        public bool CanAccept(Type requestType)
+        public bool CanAccept(Type requestType, CollisionStrategy collisionStrategy)
         {
-            var accepts = _inspector.HasMethodAccepting(requestType);
+            var accepts = _inspector.HasMethodsAccepting(requestType, collisionStrategy);
             return accepts;
         }
 
-        public bool CanReplyWith(Type requestType, Type responseType)
+        public bool CanReplyWith(Type requestType, Type responseType, CollisionStrategy collisionStrategy)
         {
-            var repliesWith = _inspector.HasMethodReturning(requestType, responseType);
+            var repliesWith = _inspector.HasMethodsReturning(requestType, responseType, collisionStrategy);
             return repliesWith;
         }
     }

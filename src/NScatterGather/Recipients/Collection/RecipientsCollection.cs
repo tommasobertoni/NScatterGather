@@ -4,6 +4,8 @@ using System.Linq;
 using NScatterGather.Inspection;
 using NScatterGather.Recipients;
 using NScatterGather.Recipients.Collection.Scope;
+using static NScatterGather.CollisionStrategy;
+using static NScatterGather.Lifetime;
 
 namespace NScatterGather
 {
@@ -15,24 +17,53 @@ namespace NScatterGather
 
         private readonly List<Recipient> _recipients = new();
         private readonly TypeInspectorRegistry _registry = new TypeInspectorRegistry();
+        private readonly CollisionStrategy _defaultCollisionStrategy;
 
-        public void Add<TRecipient>(string? name = null) =>
-            Add<TRecipient>(name: name, lifetime: Lifetime.Transient);
+        public RecipientsCollection(CollisionStrategy defaultCollisionStrategy = IgnoreRecipient)
+        {
+            _defaultCollisionStrategy = defaultCollisionStrategy;
+        }
+
+        public void Add<TRecipient>(string name) =>
+            AddWithDefaultFactoryMethod<TRecipient>(name: name);
 
         public void Add<TRecipient>(Lifetime lifetime) =>
-            Add<TRecipient>(name: null, lifetime: lifetime);
+            AddWithDefaultFactoryMethod<TRecipient>(lifetime: lifetime);
 
         public void Add<TRecipient>(Func<TRecipient> factoryMethod) =>
-            Add(factoryMethod, name: null, lifetime: Lifetime.Transient);
+            Internal_Add(factoryMethod: factoryMethod);
+
+        public void Add<TRecipient>(CollisionStrategy collisionStrategy) =>
+            AddWithDefaultFactoryMethod<TRecipient>(collisionStrategy: collisionStrategy);
 
         public void Add<TRecipient>(
-            string? name,
-            Lifetime lifetime)
+            string? name = null,
+            Lifetime lifetime = Transient,
+            CollisionStrategy? collisionStrategy = null)
+        {
+            AddWithDefaultFactoryMethod<TRecipient>(name, lifetime, collisionStrategy);
+        }
+
+        public void Add<TRecipient>(
+            Func<TRecipient> factoryMethod,
+            string? name = null,
+            Lifetime lifetime = Transient,
+            CollisionStrategy? collisionStrategy = null)
+        {
+            Internal_Add(factoryMethod, name, lifetime, collisionStrategy);
+        }
+
+        internal void AddWithDefaultFactoryMethod<TRecipient>(
+            string? name = null,
+            Lifetime lifetime = Transient,
+            CollisionStrategy? collisionStrategy = null)
         {
             if (!HasADefaultConstructor<TRecipient>())
                 throw new ArgumentException($"Type '{typeof(TRecipient).Name}' is missing a public, parameterless constructor.");
 
-            Add(() => ((TRecipient)Activator.CreateInstance(typeof(TRecipient)))!, name, lifetime);
+            static TRecipient factoryMethod() => ((TRecipient)Activator.CreateInstance(typeof(TRecipient)))!;
+
+            Internal_Add(factoryMethod, name, lifetime, collisionStrategy);
 
             // Local functions.
 
@@ -43,27 +74,31 @@ namespace NScatterGather
             }
         }
 
-        public void Add<TRecipient>(
+        internal void Internal_Add<TRecipient>(
             Func<TRecipient> factoryMethod,
-            string? name,
-            Lifetime lifetime)
+            string? name = null,
+            Lifetime lifetime = Transient,
+            CollisionStrategy? collisionStrategy = null)
         {
             if (factoryMethod is null)
                 throw new ArgumentNullException(nameof(factoryMethod));
 
-            var typeRecipient = TypeRecipient.Create(_registry, factoryMethod, name, lifetime);
+            var typeRecipient = TypeRecipient.Create(
+                _registry, factoryMethod, name, lifetime, collisionStrategy ?? _defaultCollisionStrategy);
 
             Add(typeRecipient);
         }
 
         public void Add(
             object instance,
-            string? name = null)
+            string? name = null,
+            CollisionStrategy? collisionStrategy = null)
         {
             if (instance is null)
                 throw new ArgumentNullException(nameof(instance));
 
-            var instanceRecipient = InstanceRecipient.Create(_registry, instance, name);
+            var instanceRecipient = InstanceRecipient.Create(
+                _registry, instance, name, collisionStrategy ?? _defaultCollisionStrategy);
 
             Add(instanceRecipient);
         }
@@ -90,11 +125,7 @@ namespace NScatterGather
             var scope = new RecipientsScope();
 
             var scopedRecipients = _recipients.Select(recipient =>
-            {
-                return recipient.Lifetime == Lifetime.Scoped
-                    ? recipient.Clone()
-                    : recipient;
-            });
+                recipient.Lifetime == Scoped ? recipient.Clone() : recipient);
 
             scope.AddRange(scopedRecipients);
 

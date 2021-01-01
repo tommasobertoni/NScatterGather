@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NScatterGather.Recipients.Descriptors;
 
 namespace NScatterGather.Recipients.Invokers
@@ -16,25 +17,27 @@ namespace NScatterGather.Recipients.Invokers
             _delegate = @delegate;
         }
 
-        public PreparedInvocation<object?> PrepareInvocation(object request)
+        public IReadOnlyList<PreparedInvocation<object?>> PrepareInvocations(object request)
         {
-            if (!_descriptor.CanAccept(request.GetType()))
+            if (!_descriptor.CanAccept(request.GetType(), CollisionStrategy.IgnoreRecipient))
                 throw new InvalidOperationException(
                     $"Delegate '{_delegate}' doesn't support accepting requests " +
                     $"of type '{request.GetType().Name}'.");
 
-            return new PreparedInvocation<object?>(() => _delegate(request!));
+            var preparedInvocation = new PreparedInvocation<object?>(() => _delegate(request!));
+            return new[] { preparedInvocation };
         }
 
-        public PreparedInvocation<TResult> PrepareInvocation<TResult>(object request)
+        public IReadOnlyList<PreparedInvocation<TResult>> PrepareInvocations<TResult>(object request)
         {
-            if (!_descriptor.CanReplyWith(request.GetType(), typeof(TResult)))
+            if (!_descriptor.CanReplyWith(request.GetType(), typeof(TResult), CollisionStrategy.IgnoreRecipient))
                 throw new InvalidOperationException(
                     $"Type '{_delegate}' doesn't support accepting " +
                     $"requests of type '{request.GetType().Name}' and " +
                     $"returning '{typeof(TResult).Name}'.");
 
-            return new PreparedInvocation<TResult>(() => (TResult)_delegate(request)!);
+            var preparedInvocation = new PreparedInvocation<TResult>(() => (TResult)_delegate(request)!);
+            return new[] { preparedInvocation };
         }
 
         public IRecipientInvoker Clone() =>
