@@ -63,10 +63,9 @@ namespace NScatterGather.Recipients.Invokers
 
             // At this point the task is completed.
 
-            var description = Awaitable.Describe(response);
-
-            if (description is null)
-                throw new Exception("Couldn't extract async response.");
+            // The AwaitableDescription is not null since the response was
+            // evaluated with `IsAwaitableWithResult`
+            var description = Awaitable.Describe(response)!;
 
             var awaiter = description.GetAwaiterMethod.Invoke(response, null);
             var awaitedResult = description.AwaiterDescriptor.GetResultMethod.Invoke(awaiter, null);
