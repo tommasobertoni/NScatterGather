@@ -1,6 +1,7 @@
 ﻿using System;
 using NScatterGather.Inspection;
 using Xunit;
+using static NScatterGather.CollisionStrategy;
 
 namespace NScatterGather.Recipients
 {
@@ -10,14 +11,14 @@ namespace NScatterGather.Recipients
         public void Recipient_can_be_created_from_instance()
         {
             var registry = new TypeInspectorRegistry();
-            _ = InstanceRecipient.Create(registry, new SomeType(), name: null);
+            _ = InstanceRecipient.Create(registry, new SomeType(), name: null, IgnoreRecipient);
         }
 
         [Fact]
         public void Error_if_registry_is_null()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                InstanceRecipient.Create((null as TypeInspectorRegistry)!, new SomeType(), name: null));
+                InstanceRecipient.Create((null as TypeInspectorRegistry)!, new SomeType(), name: null, IgnoreRecipient));
         }
 
         [Fact]
@@ -26,14 +27,14 @@ namespace NScatterGather.Recipients
             var registry = new TypeInspectorRegistry();
 
             Assert.Throws<ArgumentNullException>(() =>
-                InstanceRecipient.Create(registry, (null as object)!, name: null));
+                InstanceRecipient.Create(registry, (null as object)!, name: null, IgnoreRecipient));
         }
 
         [Fact]
         public void Recipient_has_a_name()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = InstanceRecipient.Create(registry, new SomeType(), name: "My name is");
+            var recipient = InstanceRecipient.Create(registry, new SomeType(), name: "My name is", IgnoreRecipient);
             Assert.NotNull(recipient.Name);
             Assert.NotEmpty(recipient.Name);
         }
@@ -42,7 +43,7 @@ namespace NScatterGather.Recipients
         public void Can_be_cloned()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = InstanceRecipient.Create(registry, new SomeType(), name: "My name is");
+            var recipient = InstanceRecipient.Create(registry, new SomeType(), name: "My name is", IgnoreRecipient);
             var clone = recipient.Clone();
 
             Assert.NotNull(clone);
@@ -56,7 +57,7 @@ namespace NScatterGather.Recipients
         public void Has_expected_lifetime()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = InstanceRecipient.Create(registry, new SomeType(), name: null);
+            var recipient = InstanceRecipient.Create(registry, new SomeType(), name: null, IgnoreRecipient);
             Assert.Equal(Lifetime.Singleton, recipient.Lifetime);
         }
     }

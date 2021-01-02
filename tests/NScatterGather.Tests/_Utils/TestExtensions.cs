@@ -1,6 +1,7 @@
 ﻿using NScatterGather.Inspection;
 using NScatterGather.Recipients;
 using NScatterGather.Recipients.Collection.Scope;
+using static NScatterGather.CollisionStrategy;
 
 namespace NScatterGather
 {
@@ -16,7 +17,8 @@ namespace NScatterGather
                     new TypeInspectorRegistry(),
                     () => new TRecipients(),
                     name: null,
-                    Lifetime.Transient)
+                    Lifetime.Transient,
+                    IgnoreRecipient)
             });
         }
     }

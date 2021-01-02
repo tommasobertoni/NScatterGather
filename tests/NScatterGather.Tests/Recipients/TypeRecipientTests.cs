@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NScatterGather.Inspection;
 using Xunit;
+using static NScatterGather.CollisionStrategy;
 
 namespace NScatterGather.Recipients
 {
@@ -14,7 +15,8 @@ namespace NScatterGather.Recipients
                 registry: new TypeInspectorRegistry(),
                 () => new SomeType(),
                 name: null,
-                lifetime: Lifetime.Transient);
+                lifetime: Lifetime.Transient,
+                IgnoreRecipient);
         }
 
         [Fact]
@@ -26,7 +28,8 @@ namespace NScatterGather.Recipients
                     registry: (null as TypeInspectorRegistry)!,
                     () => new SomeType(),
                     name: null,
-                    lifetime: Lifetime.Transient);
+                    lifetime: Lifetime.Transient,
+                    IgnoreRecipient);
             });
         }
 
@@ -39,7 +42,8 @@ namespace NScatterGather.Recipients
                     registry: new TypeInspectorRegistry(),
                     (null as Func<SomeType>)!,
                     name: null,
-                    lifetime: Lifetime.Transient);
+                    lifetime: Lifetime.Transient,
+                    IgnoreRecipient);
             });
         }
 
@@ -52,7 +56,8 @@ namespace NScatterGather.Recipients
                     registry: new TypeInspectorRegistry(),
                     () => new SomeType(),
                     name: null,
-                    lifetime: (Lifetime)42);
+                    lifetime: (Lifetime)42,
+                    IgnoreRecipient);
             });
         }
 
@@ -60,7 +65,10 @@ namespace NScatterGather.Recipients
         public void Recipient_has_a_name()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: "My name is", Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: "My name is", Lifetime.Transient, IgnoreRecipient);
+
             Assert.NotNull(recipient.Name);
             Assert.NotEmpty(recipient.Name);
         }
@@ -69,10 +77,15 @@ namespace NScatterGather.Recipients
         public async Task Recipient_accepts_request()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
+
             var input = 42;
-            var runner = recipient.Accept(input);
+            var runners = recipient.Accept(input);
+            var runner = runners[0];
             await runner.Start();
+
             Assert.Equal(input.ToString(), runner.Result);
         }
 
@@ -80,10 +93,15 @@ namespace NScatterGather.Recipients
         public async Task Recipient_accepts_request_and_replies_with_task()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeAsyncType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeAsyncType(), name: null, Lifetime.Transient, IgnoreRecipient);
+
             var input = 42;
-            var runner = recipient.Accept(input);
+            var runners = recipient.Accept(input);
+            var runner = runners[0];
             await runner.Start();
+
             Assert.Equal(input.ToString(), runner.Result);
         }
 
@@ -91,8 +109,12 @@ namespace NScatterGather.Recipients
         public void Recipient_accepts_input_parameter_type()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
+
             bool canAccept = recipient.CanAccept(typeof(int));
+
             Assert.True(canAccept);
         }
 
@@ -100,7 +122,10 @@ namespace NScatterGather.Recipients
         public void Recipient_type_is_visible()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
+
             Assert.Same(typeof(SomeType), recipient.Type);
         }
 
@@ -108,8 +133,12 @@ namespace NScatterGather.Recipients
         public void Recipient_replies_with_response_type()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
+
             bool canAccept = recipient.CanReplyWith(typeof(int), typeof(string));
+
             Assert.True(canAccept);
         }
 
@@ -117,8 +146,12 @@ namespace NScatterGather.Recipients
         public void Recipient_replies_with_async_response_type()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeAsyncType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeAsyncType(), name: null, Lifetime.Transient, IgnoreRecipient);
+
             bool canAccept = recipient.CanReplyWith(typeof(int), typeof(string));
+
             Assert.True(canAccept);
         }
 
@@ -126,7 +159,10 @@ namespace NScatterGather.Recipients
         public void Error_if_request_or_response_types_are_null()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
+
             Assert.Throws<ArgumentNullException>(() => recipient.CanReplyWith(typeof(int), null!));
             Assert.Throws<ArgumentNullException>(() => recipient.CanReplyWith(null!, typeof(string)));
         }
@@ -135,7 +171,9 @@ namespace NScatterGather.Recipients
         public void Error_if_request_type_not_supported()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
 
             Assert.Throws<InvalidOperationException>(() => recipient.Accept(Guid.NewGuid()));
         }
@@ -144,7 +182,9 @@ namespace NScatterGather.Recipients
         public void Error_if_response_type_not_supported()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
 
             Assert.Throws<InvalidOperationException>(() => recipient.ReplyWith<Guid>(42));
         }
@@ -153,11 +193,15 @@ namespace NScatterGather.Recipients
         public async Task Recipient_replies_with_response()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
 
             var input = 42;
-            var runner = recipient.ReplyWith<string>(input);
+            var runners = recipient.ReplyWith<string>(input);
+            var runner = runners[0];
             await runner.Start();
+
             Assert.Equal(input.ToString(), runner.Result);
         }
 
@@ -165,11 +209,15 @@ namespace NScatterGather.Recipients
         public async Task Recipient_can_reply_with_task()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeAsyncType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeAsyncType(), name: null, Lifetime.Transient, IgnoreRecipient);
 
             var input = 42;
-            var runner = recipient.ReplyWith<string>(input);
+            var runners = recipient.ReplyWith<string>(input);
+            var runner = runners[0];
             await runner.Start();
+
             Assert.Equal(input.ToString(), runner.Result);
         }
 
@@ -177,9 +225,12 @@ namespace NScatterGather.Recipients
         public void Recipient_must_return_something()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeComputingType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeComputingType(), name: null, Lifetime.Transient, IgnoreRecipient);
 
             bool accepts = recipient.CanAccept(typeof(int));
+
             Assert.False(accepts);
         }
 
@@ -187,7 +238,9 @@ namespace NScatterGather.Recipients
         public void Error_if_void_returning()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeComputingType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeComputingType(), name: null, Lifetime.Transient, IgnoreRecipient);
 
             Assert.Throws<InvalidOperationException>(() => recipient.Accept(42));
         }
@@ -196,7 +249,9 @@ namespace NScatterGather.Recipients
         public void Recipient_must_return_something_async()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeAsyncComputingType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeAsyncComputingType(), name: null, Lifetime.Transient, IgnoreRecipient);
 
             bool accepts = recipient.CanReplyWith(typeof(int), typeof(Task));
             Assert.False(accepts);
@@ -206,7 +261,9 @@ namespace NScatterGather.Recipients
         public void Error_if_returning_task_without_result()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeAsyncComputingType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeAsyncComputingType(), name: null, Lifetime.Transient, IgnoreRecipient);
 
             Assert.Throws<InvalidOperationException>(() => recipient.ReplyWith<Task>(42));
         }
@@ -215,7 +272,10 @@ namespace NScatterGather.Recipients
         public void Can_be_cloned()
         {
             var registry = new TypeInspectorRegistry();
-            var recipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
+
+            var recipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
+
             var clone = recipient.Clone();
 
             Assert.NotNull(clone);
@@ -229,9 +289,15 @@ namespace NScatterGather.Recipients
         public void Has_expected_lifetime()
         {
             var registry = new TypeInspectorRegistry();
-            var transientRecipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Transient);
-            var scopedRecipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Scoped);
-            var singletonRecipient = TypeRecipient.Create(registry, () => new SomeType(), name: null, Lifetime.Singleton);
+
+            var transientRecipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Transient, IgnoreRecipient);
+
+            var scopedRecipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Scoped, IgnoreRecipient);
+
+            var singletonRecipient = TypeRecipient.Create(
+                registry, () => new SomeType(), name: null, Lifetime.Singleton, IgnoreRecipient);
 
             Assert.Equal(Lifetime.Transient, transientRecipient.Lifetime);
             Assert.Equal(Lifetime.Scoped, scopedRecipient.Lifetime);
