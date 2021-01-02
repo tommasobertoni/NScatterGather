@@ -10,7 +10,7 @@ namespace NScatterGather.Responses
 {
     public class AggregatedResponseExtensionsTests
     {
-        private readonly RecipientRun<object?>[] _runners;
+        private readonly RecipientRunner<object?>[] _runners;
 
         public AggregatedResponseExtensionsTests()
         {

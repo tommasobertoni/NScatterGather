@@ -7,13 +7,13 @@ using static NScatterGather.CollisionStrategy;
 
 namespace NScatterGather.Run
 {
-    public class RecipientRunTests
+    public class RecipientRunnerTests
     {
         private readonly Recipient _recipient;
         private readonly Recipient _faultingRecipient;
         private readonly Recipient _anotherFaultingRecipient;
 
-        public RecipientRunTests()
+        public RecipientRunnerTests()
         {
             var registry = new TypeInspectorRegistry();
             _recipient = InstanceRecipient.Create(registry, new SomeType(), name: null, IgnoreRecipient);
