@@ -140,7 +140,7 @@ namespace NScatterGather
             Assert.Single(response.Completed);
             Assert.Empty(response.Faulted);
 
-            var completed = response.Completed.First();
+            var completed = response.Completed[0];
             Assert.Equal(typeof(SomeTypeReturningNull), completed.RecipientType);
             Assert.Null(completed.Result);
         }
@@ -159,9 +159,57 @@ namespace NScatterGather
             Assert.Single(response.Completed);
             Assert.Empty(response.Faulted);
 
-            var completed = response.Completed.First();
+            var completed = response.Completed[0];
             Assert.Equal(typeof(SomeTypeReturningNullable), completed.RecipientType);
             Assert.Null(completed.Result);
+        }
+
+        [Fact]
+        public async Task Colliding_recipients_are_ignored_by_design()
+        {
+            var collection = new RecipientsCollection();
+            collection.Add<SomeCollidingType>(CollisionStrategy.IgnoreRecipient);
+
+            var collisionDetected = false;
+            collection.OnCollision += _ => collisionDetected = true;
+
+            var aggregator = new Aggregator(collection);
+
+            var (completed, faulted, incomplete) = await aggregator.Send(42);
+
+            Assert.Empty(completed);
+            Assert.Empty(faulted);
+            Assert.Empty(incomplete);
+
+            Assert.True(collisionDetected);
+        }
+
+        [Fact]
+        public async Task Colliding_recipients_use_all_methods_by_design()
+        {
+            var collection = new RecipientsCollection();
+            collection.Add<SomeCollidingType>(CollisionStrategy.UseAllMethodsMatching);
+
+            var collisionDetected = false;
+            collection.OnCollision += _ => collisionDetected = true;
+
+            var aggregator = new Aggregator(collection);
+
+            var (completed, faulted, incomplete) = await aggregator.Send(42);
+
+            Assert.Equal(2, completed.Count);
+            Assert.Empty(faulted);
+            Assert.Empty(incomplete);
+
+            Assert.False(collisionDetected);
+
+            var stringsOnly = await aggregator.Send<string>(42);
+
+            Assert.Equal(2, stringsOnly.Completed.Count);
+            Assert.Empty(stringsOnly.Faulted);
+            Assert.Empty(stringsOnly.Incomplete);
+
+            Assert.False(collisionDetected);
         }
     }
 }

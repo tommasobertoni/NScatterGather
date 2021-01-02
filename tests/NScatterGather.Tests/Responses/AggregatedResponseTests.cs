@@ -2,6 +2,7 @@
 using NScatterGather.Recipients;
 using NScatterGather.Recipients.Run;
 using Xunit;
+using static NScatterGather.CollisionStrategy;
 
 namespace NScatterGather.Responses
 {
@@ -13,19 +14,22 @@ namespace NScatterGather.Responses
         {
             var registry = new TypeInspectorRegistry();
 
-            var someRecipient = InstanceRecipient.Create(registry, new SomeType(), name: null);
-            var someRun = someRecipient.Accept(42);
-            someRun.Start().Wait();
+            var someRecipient = InstanceRecipient.Create(registry, new SomeType(), name: null, IgnoreRecipient);
+            var someRunners = someRecipient.Accept(42);
+            var aRunner = someRunners[0];
+            aRunner.Start().Wait();
 
-            var someFaultingRecipient = InstanceRecipient.Create(registry, new SomeFaultingType(), name: null);
-            var someFaultingRun = someFaultingRecipient.Accept(42);
-            someFaultingRun.Start().Wait();
+            var someFaultingRecipient = InstanceRecipient.Create(registry, new SomeFaultingType(), name: null, IgnoreRecipient);
+            var someFaultingRunners = someFaultingRecipient.Accept(42);
+            var aFaultingRunner = someFaultingRunners[0];
+            aFaultingRunner.Start().Wait();
 
-            var someNeverEndingRecipient = InstanceRecipient.Create(registry, new SomeNeverEndingType(), name: null);
-            var someNeverEndingRun = someNeverEndingRecipient.Accept(42);
-            someNeverEndingRun.Start();
+            var someNeverEndingRecipient = InstanceRecipient.Create(registry, new SomeNeverEndingType(), name: null, IgnoreRecipient);
+            var someNeverEndingRunners = someNeverEndingRecipient.Accept(42);
+            var aNeverEndingRunner = someNeverEndingRunners[0];
+            aNeverEndingRunner.Start();
 
-            _runners = new[] { someRun, someFaultingRun, someNeverEndingRun };
+            _runners = new[] { aRunner, aFaultingRunner, aNeverEndingRunner };
         }
 
         [Fact]

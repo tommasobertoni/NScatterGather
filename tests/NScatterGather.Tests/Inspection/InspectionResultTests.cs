@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using System;
+using System.Reflection;
+using Xunit;
 
 namespace NScatterGather.Inspection
 {
@@ -7,19 +9,22 @@ namespace NScatterGather.Inspection
         [Fact]
         public void Can_be_constructed()
         {
-            new MethodMatchEvaluation(false, typeof(object).GetMethod(nameof(object.ToString)));
+            _ = new MethodMatchEvaluation(typeof(object), typeof(object), Array.Empty<MethodInfo>());
         }
 
         [Fact]
         public void Can_be_deconstructed()
         {
-            var evaluation = new MethodMatchEvaluation(
-                false,
-                typeof(object).GetMethod(nameof(object.ToString)));
+            var expectedRequestType = typeof(int);
+            var expectedResponseType = typeof(int);
+            var expectedMethods = Array.Empty<MethodInfo>();
 
-            var (isMatch, method) = evaluation;
-            Assert.Equal(isMatch, evaluation.IsMatch);
-            Assert.Equal(method, evaluation.Method);
+            var evaluation = new MethodMatchEvaluation(expectedRequestType, expectedResponseType, expectedMethods);
+            var (requestType, responseType, methods) = evaluation;
+
+            Assert.Same(expectedRequestType, requestType);
+            Assert.Same(expectedResponseType, responseType);
+            Assert.Same(expectedMethods, methods);
         }
     }
 }

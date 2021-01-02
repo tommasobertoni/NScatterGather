@@ -89,7 +89,8 @@ namespace NScatterGather.Recipients
             var recipient = DelegateRecipient.Create<int?, string?>(func, name: null);
 
             var input = 42;
-            var runner = recipient.Accept(input);
+            var runners = recipient.Accept(input);
+            var runner = runners[0];
             await runner.Start();
 
             var result = runner.Result;
@@ -112,7 +113,8 @@ namespace NScatterGather.Recipients
             var recipient = DelegateRecipient.Create<int?, string?>(func, name: null);
 
             var input = 42;
-            var runner = recipient.ReplyWith<string>(input);
+            var runners = recipient.ReplyWith<string>(input);
+            var runner = runners[0];
             await runner.Start();
 
             var result = runner.Result;

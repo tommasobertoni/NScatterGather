@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace NScatterGather.Recipients.Collection
@@ -21,7 +22,7 @@ namespace NScatterGather.Recipients.Collection
         [Fact]
         public void Can_add_generic_type_with_name()
         {
-            _collection.Add<SomeType>(name: "My name is");
+            _collection.Add<SomeType>("My name is");
         }
 
         [Fact]
@@ -36,6 +37,12 @@ namespace NScatterGather.Recipients.Collection
         public void Can_add_generic_type_with_factory_method()
         {
             _collection.Add(() => new SomeType());
+        }
+
+        [Fact]
+        public void Can_add_generic_type_with_collision_strategy()
+        {
+            _collection.Add<SomeType>(CollisionStrategy.UseAllMethodsMatching);
         }
 
         [Fact]

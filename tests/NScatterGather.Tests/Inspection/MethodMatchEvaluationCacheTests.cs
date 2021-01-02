@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Xunit;
 
 namespace NScatterGather.Inspection
@@ -10,34 +11,37 @@ namespace NScatterGather.Inspection
         class SomeResponse { }
 
         [Fact]
-        public void Error_if_request_type_is_null()
+        public void Accepts_empty_methods()
         {
             var cache = new MethodMatchEvaluationCache();
 
-            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(
-                null!, new MethodMatchEvaluation(false, null)));
-
-            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(
-                null!, typeof(SomeResponse), new MethodMatchEvaluation(false, null)));
-        }
-
-        [Fact]
-        public void Error_if_response_type_is_null()
-        {
-            var cache = new MethodMatchEvaluationCache();
-
-            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(
-                typeof(SomeRequest), null!, new MethodMatchEvaluation(false, null)));
+            cache.TryAdd(new MethodMatchEvaluation(typeof(SomeRequest), typeof(SomeResponse), methods: Array.Empty<MethodInfo>()));
         }
 
         [Fact]
         public void Error_if_evaluation_is_null()
         {
             var cache = new MethodMatchEvaluationCache();
-            Assert.Throws<ArgumentNullException>(() => cache.TryAdd<SomeRequest>(null!));
+
+            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(null!));
+        }
+
+        [Fact]
+        public void Error_if_request_type_is_null()
+        {
+            var cache = new MethodMatchEvaluationCache();
 
             Assert.Throws<ArgumentNullException>(() => cache.TryAdd(
-                typeof(SomeRequest), typeof(SomeResponse), (null as MethodMatchEvaluation)!));
+                new MethodMatchEvaluation(requestType: null!, typeof(SomeResponse), Array.Empty<MethodInfo>())));
+        }
+
+        [Fact]
+        public void Error_if_methods_are_null()
+        {
+            var cache = new MethodMatchEvaluationCache();
+
+            Assert.Throws<ArgumentNullException>(() => cache.TryAdd(
+                new MethodMatchEvaluation(requestType: typeof(SomeRequest), responseType: null, methods: null!)));
         }
 
         [Fact]
@@ -56,38 +60,22 @@ namespace NScatterGather.Inspection
         }
 
         [Fact]
-        public void Accepts_generic_request_type()
+        public void Accepts_request_type()
         {
             var cache = new MethodMatchEvaluationCache();
-            bool added = cache.TryAdd<SomeRequest>(new MethodMatchEvaluation(false, null));
+            bool added = cache.TryAdd(new MethodMatchEvaluation(typeof(SomeRequest), null, Array.Empty<MethodInfo>()));
             Assert.True(added);
         }
 
         [Fact]
-        public void Accepts_explicit_request_type()
-        {
-            var cache = new MethodMatchEvaluationCache();
-            bool added = cache.TryAdd(typeof(SomeRequest), new MethodMatchEvaluation(false, null));
-            Assert.True(added);
-        }
-
-        [Fact]
-        public void Accepts_generic_request_and_response_types()
-        {
-            var cache = new MethodMatchEvaluationCache();
-            bool added = cache.TryAdd<SomeRequest, SomeResponse>(new MethodMatchEvaluation(false, null));
-            Assert.True(added);
-        }
-
-        [Fact]
-        public void Accepts_explicit_request_and_response_types()
+        public void Accepts_request_and_response_types()
         {
             var cache = new MethodMatchEvaluationCache();
 
-            bool added = cache.TryAdd(
-                typeof(SomeRequest),
+            bool added = cache.TryAdd(new MethodMatchEvaluation(
                 typeof(SomeResponse),
-                new MethodMatchEvaluation(false, null));
+                typeof(SomeResponse),
+                Array.Empty<MethodInfo>()));
 
             Assert.True(added);
         }
@@ -97,18 +85,11 @@ namespace NScatterGather.Inspection
         {
             var cache = new MethodMatchEvaluationCache();
 
-            var evaluation = new MethodMatchEvaluation(false, null);
-            _ = cache.TryAdd<SomeRequest>(evaluation);
+            var evaluation = new MethodMatchEvaluation(typeof(SomeRequest), null, Array.Empty<MethodInfo>());
+            _ = cache.TryAdd(evaluation);
 
-            {
-                bool added = cache.TryAdd<SomeRequest>(evaluation);
-                Assert.False(added);
-            }
-
-            {
-                bool added = cache.TryAdd(typeof(SomeRequest), evaluation);
-                Assert.False(added);
-            }
+            bool added = cache.TryAdd(evaluation);
+            Assert.False(added);
         }
 
         [Fact]
@@ -116,76 +97,34 @@ namespace NScatterGather.Inspection
         {
             var cache = new MethodMatchEvaluationCache();
 
-            var evaluation = new MethodMatchEvaluation(false, null);
-            _ = cache.TryAdd<SomeRequest, SomeResponse>(evaluation);
+            var evaluation = new MethodMatchEvaluation(typeof(SomeRequest), typeof(SomeResponse), Array.Empty<MethodInfo>());
+            _ = cache.TryAdd(evaluation);
 
-            {
-                bool added = cache.TryAdd<SomeRequest, SomeResponse>(evaluation);
-                Assert.False(added);
-            }
-
-            {
-                bool added = cache.TryAdd(
-                    typeof(SomeRequest),
-                    typeof(SomeResponse),
-                    evaluation);
-
-                Assert.False(added);
-            }
+            bool added = cache.TryAdd(evaluation);
+            Assert.False(added);
         }
 
         [Fact]
-        public void Finds_generic_request_type()
+        public void Finds_request_type()
         {
             var cache = new MethodMatchEvaluationCache();
 
-            var evaluation = new MethodMatchEvaluation(false, null);
-            _ = cache.TryAdd<SomeRequest>(evaluation);
+            var evaluation = new MethodMatchEvaluation(typeof(SomeRequest), null, Array.Empty<MethodInfo>());
+            _ = cache.TryAdd(evaluation);
 
-            bool found = cache.TryFindEvaluation<SomeRequest>(out var cached);
+            bool found = cache.TryFindEvaluation(typeof(SomeRequest), out var cached);
 
             Assert.True(found);
             Assert.Same(evaluation, cached);
         }
 
         [Fact]
-        public void Finds_explicit_request_type()
+        public void Finds_request_and_response_types()
         {
             var cache = new MethodMatchEvaluationCache();
 
-            var evaluation = new MethodMatchEvaluation(false, null);
-            _ = cache.TryAdd(typeof(SomeRequest), evaluation);
-
-            bool found = cache.TryFindEvaluation<SomeRequest>(out var cached);
-
-            Assert.True(found);
-            Assert.Same(evaluation, cached);
-        }
-
-        [Fact]
-        public void Finds_generic_request_and_response_types()
-        {
-            var cache = new MethodMatchEvaluationCache();
-
-            var evaluation = new MethodMatchEvaluation(false, null);
-            _ = cache.TryAdd<SomeRequest, SomeResponse>(evaluation);
-
-            bool found = cache.TryFindEvaluation<SomeRequest, SomeResponse>(out var cached);
-
-            Assert.True(found);
-            Assert.Same(evaluation, cached);
-        }
-
-        [Fact]
-        public void Finds_explicit_request_and_response_types()
-        {
-            var cache = new MethodMatchEvaluationCache();
-
-            var evaluation = new MethodMatchEvaluation(false, null);
-            _ = cache.TryAdd(
-                typeof(SomeRequest),
-                typeof(SomeResponse),
-                evaluation);
+            var evaluation = new MethodMatchEvaluation(typeof(SomeRequest), typeof(SomeResponse), Array.Empty<MethodInfo>());
+            _ = cache.TryAdd(evaluation);
 
             bool found = cache.TryFindEvaluation(
                 typeof(SomeRequest),
