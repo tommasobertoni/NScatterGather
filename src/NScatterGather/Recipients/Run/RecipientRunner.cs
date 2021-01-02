@@ -7,7 +7,7 @@ using static System.Threading.Tasks.TaskContinuationOptions;
 
 namespace NScatterGather.Recipients.Run
 {
-    internal class RecipientRun<TResult>
+    internal class RecipientRunner<TResult>
     {
         public Recipient Recipient { get; }
 
@@ -28,7 +28,7 @@ namespace NScatterGather.Recipients.Run
 
         private readonly PreparedInvocation<TResult> _preparedInvocation;
 
-        public RecipientRun(Recipient recipient, PreparedInvocation<TResult> preparedInvocation)
+        public RecipientRunner(Recipient recipient, PreparedInvocation<TResult> preparedInvocation)
         {
             Recipient = recipient;
             _preparedInvocation = preparedInvocation;

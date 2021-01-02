@@ -41,7 +41,7 @@ namespace NScatterGather
             return AggregatedResponseFactory.CreateFrom(invocations);
         }
 
-        private async Task<IReadOnlyList<RecipientRun<object?>>> Invoke(
+        private async Task<IReadOnlyList<RecipientRunner<object?>>> Invoke(
             IReadOnlyList<Recipient> recipients,
             object request,
             CancellationToken cancellationToken)
@@ -85,7 +85,7 @@ namespace NScatterGather
             return AggregatedResponseFactory.CreateFrom(runners);
         }
 
-        private async Task<IReadOnlyList<RecipientRun<TResponse>>> Invoke<TResponse>(
+        private async Task<IReadOnlyList<RecipientRunner<TResponse>>> Invoke<TResponse>(
             IReadOnlyList<Recipient> recipients,
             object request,
             CancellationToken cancellationToken)

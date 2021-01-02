@@ -8,7 +8,7 @@ namespace NScatterGather.Responses
     internal class AggregatedResponseFactory
     {
         public static AggregatedResponse<TResponse> CreateFrom<TResponse>(
-            IEnumerable<RecipientRun<TResponse>> invocations)
+            IEnumerable<RecipientRunner<TResponse>> invocations)
         {
             var completed = new List<CompletedInvocation<TResponse>>();
             var faulted = new List<FaultedInvocation>();
