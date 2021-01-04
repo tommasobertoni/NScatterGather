@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NScatterGather.Recipients;
 using NScatterGather.Recipients.Run;
 
@@ -16,12 +15,14 @@ namespace NScatterGather.Responses
 
             foreach (var invocation in invocations)
             {
-                var recipientType = invocation.Recipient is TypeRecipient ir ? ir.Type : null;
+                var recipient = invocation.Recipient;
+                var recipientType = recipient is TypeRecipient ir ? ir.Type : null;
 
                 if (invocation.CompletedSuccessfully)
                 {
                     var completedInvocation = new CompletedInvocation<TResponse>(
-                        invocation.Recipient.Name,
+                        recipient.Id,
+                        recipient.Name,
                         recipientType,
                         invocation.Result,
                         invocation.Duration);
@@ -31,7 +32,8 @@ namespace NScatterGather.Responses
                 else if (invocation.Faulted)
                 {
                     var faultedInvocation = new FaultedInvocation(
-                        invocation.Recipient.Name,
+                        recipient.Id,
+                        recipient.Name,
                         recipientType,
                         invocation.Exception,
                         invocation.Duration);
@@ -39,7 +41,10 @@ namespace NScatterGather.Responses
                     faulted.Add(faultedInvocation);
                 }
                 else
-                    incomplete.Add(new IncompleteInvocation(invocation.Recipient.Name, recipientType));
+                    incomplete.Add(new IncompleteInvocation(
+                        recipient.Id,
+                        recipient.Name,
+                        recipientType));
             }
 
             return new AggregatedResponse<TResponse>(completed, faulted, incomplete);

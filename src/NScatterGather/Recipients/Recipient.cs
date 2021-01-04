@@ -9,6 +9,8 @@ namespace NScatterGather.Recipients
 {
     internal abstract class Recipient
     {
+        public Guid Id { get; set; } = Guid.NewGuid();
+
         public string? Name { get; }
 
         public Lifetime Lifetime { get; }
