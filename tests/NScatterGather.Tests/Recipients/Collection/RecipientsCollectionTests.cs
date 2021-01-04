@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NScatterGather.Recipients.Collection
@@ -16,33 +15,42 @@ namespace NScatterGather.Recipients.Collection
         [Fact]
         public void Can_add_generic_type()
         {
-            _collection.Add<SomeType>();
+            var id = _collection.Add<SomeType>();
+            Assert.NotEqual(default, id);
         }
 
         [Fact]
         public void Can_add_generic_type_with_name()
         {
-            _collection.Add<SomeType>("My name is");
+            var id = _collection.Add<SomeType>("My name is");
+            Assert.NotEqual(default, id);
         }
 
         [Fact]
         public void Can_add_generic_type_with_lifetime()
         {
-            _collection.Add<SomeType>(Lifetime.Transient);
-            _collection.Add<SomeType>(Lifetime.Scoped);
-            _collection.Add<SomeType>(Lifetime.Singleton);
+            var id1 = _collection.Add<SomeType>(Lifetime.Transient);
+            Assert.NotEqual(default, id1);
+
+            var id2 = _collection.Add<SomeType>(Lifetime.Scoped);
+            Assert.NotEqual(default, id2);
+
+            var id3 = _collection.Add<SomeType>(Lifetime.Singleton);
+            Assert.NotEqual(default, id3);
         }
 
         [Fact]
         public void Can_add_generic_type_with_factory_method()
         {
-            _collection.Add(() => new SomeType());
+            var id = _collection.Add(() => new SomeType());
+            Assert.NotEqual(default, id);
         }
 
         [Fact]
         public void Can_add_generic_type_with_collision_strategy()
         {
-            _collection.Add<SomeType>(CollisionStrategy.UseAllMethodsMatching);
+            var id = _collection.Add<SomeType>(CollisionStrategy.UseAllMethodsMatching);
+            Assert.NotEqual(default, id);
         }
 
         [Fact]
@@ -62,7 +70,8 @@ namespace NScatterGather.Recipients.Collection
         [Fact]
         public void Can_add_instance()
         {
-            _collection.Add(new SomeType());
+            var id = _collection.Add(new SomeType());
+            Assert.NotEqual(default, id);
         }
 
         [Fact]
@@ -100,7 +109,8 @@ namespace NScatterGather.Recipients.Collection
         [Fact]
         public void Can_add_recipient_instance()
         {
-            _collection.Add(new SomeType());
+            var id = _collection.Add(new SomeType());
+            Assert.NotEqual(default, id);
         }
 
         [Fact]
