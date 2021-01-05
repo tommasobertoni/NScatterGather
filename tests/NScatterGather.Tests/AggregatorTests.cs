@@ -29,15 +29,15 @@ namespace NScatterGather
 
             Assert.NotNull(result);
             Assert.Equal(3, result.Completed.Count);
-            Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.RecipientType));
-            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.RecipientType));
-            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.Recipient.Type));
+            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.Recipient.Type));
+            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.Recipient.Type));
 
             Assert.Single(result.Faulted);
-            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.Recipient.Type));
 
             Assert.Single(result.Incomplete);
-            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete.Select(x => x.Recipient.Type));
         }
 
         [Fact(Timeout = 5_000)]
@@ -47,15 +47,15 @@ namespace NScatterGather
 
             Assert.NotNull(result);
             Assert.Equal(3, result.Completed.Count);
-            Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.RecipientType));
-            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.RecipientType));
-            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomeType), result.Completed.Select(x => x.Recipient.Type));
+            Assert.Contains(typeof(SomeAsyncType), result.Completed.Select(x => x.Recipient.Type));
+            Assert.Contains(typeof(SomePossiblyAsyncType), result.Completed.Select(x => x.Recipient.Type));
 
             Assert.Single(result.Faulted);
-            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomeFaultingType), result.Faulted.Select(x => x.Recipient.Type));
 
             Assert.Single(result.Incomplete);
-            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete.Select(x => x.RecipientType));
+            Assert.Contains(typeof(SomeNeverEndingType), result.Incomplete.Select(x => x.Recipient.Type));
         }
 
         [Fact]
@@ -72,16 +72,16 @@ namespace NScatterGather
             Assert.NotNull(result);
 
             Assert.Equal(1, result.Completed.Count);
-            Assert.Equal("Some delegate", result.Completed[0].RecipientName);
-            Assert.Null(result.Completed[0].RecipientType);
+            Assert.Equal("Some delegate", result.Completed[0].Recipient.Name);
+            Assert.Null(result.Completed[0].Recipient.Type);
 
             Assert.Equal(1, result.Faulted.Count);
-            Assert.Equal("Some faulting type", result.Faulted[0].RecipientName);
-            Assert.Equal(typeof(SomeFaultingType), result.Faulted[0].RecipientType);
+            Assert.Equal("Some faulting type", result.Faulted[0].Recipient.Name);
+            Assert.Equal(typeof(SomeFaultingType), result.Faulted[0].Recipient.Type);
 
             Assert.Equal(1, result.Incomplete.Count);
-            Assert.Equal("Some never ending type", result.Incomplete[0].RecipientName);
-            Assert.Equal(typeof(SomeNeverEndingType), result.Incomplete[0].RecipientType);
+            Assert.Equal("Some never ending type", result.Incomplete[0].Recipient.Name);
+            Assert.Equal(typeof(SomeNeverEndingType), result.Incomplete[0].Recipient.Type);
         }
 
         [Fact]
@@ -141,7 +141,7 @@ namespace NScatterGather
             Assert.Empty(response.Faulted);
 
             var completed = response.Completed[0];
-            Assert.Equal(typeof(SomeTypeReturningNull), completed.RecipientType);
+            Assert.Equal(typeof(SomeTypeReturningNull), completed.Recipient.Type);
             Assert.Null(completed.Result);
         }
 
@@ -160,7 +160,7 @@ namespace NScatterGather
             Assert.Empty(response.Faulted);
 
             var completed = response.Completed[0];
-            Assert.Equal(typeof(SomeTypeReturningNullable), completed.RecipientType);
+            Assert.Equal(typeof(SomeTypeReturningNullable), completed.Recipient.Type);
             Assert.Null(completed.Result);
         }
 

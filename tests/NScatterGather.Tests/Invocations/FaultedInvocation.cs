@@ -8,24 +8,28 @@ namespace NScatterGather.Invocations
         [Fact]
         public void Can_be_deconstructed()
         {
-            var expectedId = Guid.NewGuid();
-            var expectedName = "foo";
-            var expectedType = typeof(int);
+            var expectedDescription = new RecipientDescription(
+                Guid.NewGuid(),
+                "My name is",
+                typeof(SomeType),
+                Lifetime.Singleton,
+                CollisionStrategy.UseAllMethodsMatching);
+
             var expectedException = new Exception();
             var expectedDuration = TimeSpan.FromSeconds(1);
 
             var invocation = new FaultedInvocation(
-                expectedId,
-                expectedName,
-                expectedType,
+                expectedDescription,
                 expectedException,
                 expectedDuration);
 
-            var (id, name, type, exception, duration) = invocation;
+            var ((id, name, type, lifetime, strategy), exception, duration) = invocation;
 
-            Assert.Equal(expectedId, id);
-            Assert.Equal(expectedName, name);
-            Assert.Equal(expectedType, type);
+            Assert.Equal(expectedDescription.Id, id);
+            Assert.Equal(expectedDescription.Name, name);
+            Assert.Equal(expectedDescription.Type, type);
+            Assert.Equal(expectedDescription.Lifetime, lifetime);
+            Assert.Equal(expectedDescription.CollisionStrategy, strategy);
             Assert.Equal(expectedException, exception);
             Assert.Equal(expectedDuration, duration);
         }
