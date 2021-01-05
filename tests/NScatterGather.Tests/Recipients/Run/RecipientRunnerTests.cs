@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using NScatterGather.Inspection;
 using NScatterGather.Recipients;
+using NScatterGather.Recipients.Invokers;
+using NScatterGather.Recipients.Run;
 using Xunit;
 using static NScatterGather.CollisionStrategy;
 
@@ -154,6 +157,60 @@ namespace NScatterGather.Run
 
             Assert.NotNull(runner.Exception);
             Assert.Equal("An invocation failure.", runner.Exception!.Message);
+        }
+
+        [Fact]
+        public async Task Aggregate_exception_without_inner_is_handled()
+        {
+            var aggEx = new AggregateException("Empty inner exceptions");
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw aggEx));
+
+            await runner.Start();
+            Assert.Same(aggEx, runner.Exception);
+        }
+
+        [Fact]
+        public async Task Aggregate_exception_with_inner_is_handled()
+        {
+            var ex1 = new Exception();
+            var ex2 = new Exception();
+            var aggEx = new AggregateException(ex1, ex2);
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw aggEx));
+
+            await runner.Start();
+            Assert.Same(aggEx, runner.Exception);
+        }
+
+        [Fact]
+        public async Task Aggregate_exception_with_one_inner_is_handled()
+        {
+            var ex = new Exception();
+            var aggEx = new AggregateException(ex);
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw aggEx));
+
+            await runner.Start();
+            Assert.Same(ex, runner.Exception);
+        }
+
+        [Fact]
+        public async Task Target_invocation_exception_without_inner_is_handled()
+        {
+            var tiEx = new TargetInvocationException("Empty inner exception", null);
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw tiEx));
+
+            await runner.Start();
+            Assert.Same(tiEx, runner.Exception);
+        }
+
+        [Fact]
+        public async Task Target_invocation_exception_with_inner_is_handled()
+        {
+            var ex = new Exception();
+            var tiEx = new TargetInvocationException(ex);
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw tiEx));
+
+            await runner.Start();
+            Assert.Same(ex, runner.Exception);
         }
     }
 }
