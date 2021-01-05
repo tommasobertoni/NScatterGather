@@ -84,8 +84,8 @@ namespace NScatterGather.Recipients.Run
 
         private Exception? ExtractException(Exception exception)
         {
-            if (exception is AggregateException aEx && aEx.InnerExceptions.Count == 1)
-                return aEx.InnerException is null ? aEx : ExtractException(aEx.InnerException);
+            if (exception is AggregateException aEx)
+                return aEx.InnerExceptions.Count == 1 ? ExtractException(aEx.InnerException!) : aEx;
 
             if (exception is TargetInvocationException tIEx)
                 return tIEx.InnerException is null ? tIEx : ExtractException(tIEx.InnerException);
