@@ -71,7 +71,7 @@ static void PrettyPrint(IReadOnlyList<Evaluation> evaluations)
             foreach (var invocation in resultsWithPrice.OrderBy(x => x.Duration))
             {
                 var productName = isFirstPrice ? evaluation.Product.Name : string.Empty;
-                var supplierName = invocation.RecipientName;
+                var supplierName = invocation.Recipient.Name;
                 var supplierPrice = invocation.Result!.Value;
                 var isBestPrice = supplierPrice == bestPrice;
                 var resultColor = isBestPrice ? "green3_1" : "red";

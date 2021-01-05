@@ -22,7 +22,7 @@ namespace NScatterGather.Samples.Samples
             Console.WriteLine($"Completed {response.Completed.Count}");
             Console.WriteLine(
                 $"Faulted {response.Faulted.Count}: " +
-                $"{response.Faulted[0].RecipientType?.Name} => " +
+                $"{response.Faulted[0].Recipient.Type?.Name} => " +
                 $"{response.Faulted[0].Exception?.Message}");
         }
 
@@ -34,7 +34,7 @@ namespace NScatterGather.Samples.Samples
 
         class Bar
         {
-            public string Todo(string s) =>
+            public string Todo(string _) =>
                 throw new NotImplementedException("TODO");
         }
     }
