@@ -3,37 +3,28 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NScatterGather
 {
-    public class CompletedInvocation<TResponse>
+    public class CompletedInvocation<TResponse> : Invocation
     {
-        public string? RecipientName { get; }
-
-        public Type? RecipientType { get; }
-
         [AllowNull, MaybeNull]
         public TResponse Result { get; }
 
         public TimeSpan Duration { get; }
 
         internal CompletedInvocation(
-            string? recipientName,
-            Type? recipientType,
+            RecipientDescription recipient,
             [AllowNull] TResponse result,
-            TimeSpan duration)
+            TimeSpan duration) : base(recipient)
         {
-            RecipientName = recipientName;
-            RecipientType = recipientType;
             Result = result;
             Duration = duration;
         }
 
         public void Deconstruct(
-            out string? recipientName,
-            out Type? recipientType,
+            out RecipientDescription recipient,
             [MaybeNull] out TResponse result,
             out TimeSpan duration)
         {
-            recipientName = RecipientName;
-            recipientType = RecipientType;
+            recipient = Recipient;
             result = Result;
             duration = Duration;
         }

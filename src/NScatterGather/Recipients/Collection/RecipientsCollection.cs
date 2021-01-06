@@ -24,36 +24,36 @@ namespace NScatterGather
             _defaultCollisionStrategy = defaultCollisionStrategy;
         }
 
-        public void Add<TRecipient>(string name) =>
-            AddWithDefaultFactoryMethod<TRecipient>(name: name);
+        public Guid Add<TRecipient>(string name) =>
+            AddTypeRecipientWithDefaultFactoryMethod<TRecipient>(name: name);
 
-        public void Add<TRecipient>(Lifetime lifetime) =>
-            AddWithDefaultFactoryMethod<TRecipient>(lifetime: lifetime);
+        public Guid Add<TRecipient>(Lifetime lifetime) =>
+            AddTypeRecipientWithDefaultFactoryMethod<TRecipient>(lifetime: lifetime);
 
-        public void Add<TRecipient>(Func<TRecipient> factoryMethod) =>
-            Internal_Add(factoryMethod: factoryMethod);
+        public Guid Add<TRecipient>(Func<TRecipient> factoryMethod) =>
+            AddTypeRecipient(factoryMethod: factoryMethod);
 
-        public void Add<TRecipient>(CollisionStrategy collisionStrategy) =>
-            AddWithDefaultFactoryMethod<TRecipient>(collisionStrategy: collisionStrategy);
+        public Guid Add<TRecipient>(CollisionStrategy collisionStrategy) =>
+            AddTypeRecipientWithDefaultFactoryMethod<TRecipient>(collisionStrategy: collisionStrategy);
 
-        public void Add<TRecipient>(
+        public Guid Add<TRecipient>(
             string? name = null,
             Lifetime lifetime = Transient,
             CollisionStrategy? collisionStrategy = null)
         {
-            AddWithDefaultFactoryMethod<TRecipient>(name, lifetime, collisionStrategy);
+            return AddTypeRecipientWithDefaultFactoryMethod<TRecipient>(name, lifetime, collisionStrategy);
         }
 
-        public void Add<TRecipient>(
+        public Guid Add<TRecipient>(
             Func<TRecipient> factoryMethod,
             string? name = null,
             Lifetime lifetime = Transient,
             CollisionStrategy? collisionStrategy = null)
         {
-            Internal_Add(factoryMethod, name, lifetime, collisionStrategy);
+            return AddTypeRecipient(factoryMethod, name, lifetime, collisionStrategy);
         }
 
-        internal void AddWithDefaultFactoryMethod<TRecipient>(
+        internal Guid AddTypeRecipientWithDefaultFactoryMethod<TRecipient>(
             string? name = null,
             Lifetime lifetime = Transient,
             CollisionStrategy? collisionStrategy = null)
@@ -63,7 +63,7 @@ namespace NScatterGather
 
             static TRecipient factoryMethod() => ((TRecipient)Activator.CreateInstance(typeof(TRecipient)))!;
 
-            Internal_Add(factoryMethod, name, lifetime, collisionStrategy);
+            return AddTypeRecipient(factoryMethod, name, lifetime, collisionStrategy);
 
             // Local functions.
 
@@ -74,7 +74,7 @@ namespace NScatterGather
             }
         }
 
-        internal void Internal_Add<TRecipient>(
+        internal Guid AddTypeRecipient<TRecipient>(
             Func<TRecipient> factoryMethod,
             string? name = null,
             Lifetime lifetime = Transient,
@@ -86,10 +86,12 @@ namespace NScatterGather
             var typeRecipient = TypeRecipient.Create(
                 _registry, factoryMethod, name, lifetime, collisionStrategy ?? _defaultCollisionStrategy);
 
-            Add(typeRecipient);
+            _recipients.Add(typeRecipient);
+
+            return typeRecipient.Id;
         }
 
-        public void Add(
+        public Guid Add(
             object instance,
             string? name = null,
             CollisionStrategy? collisionStrategy = null)
@@ -100,10 +102,12 @@ namespace NScatterGather
             var instanceRecipient = InstanceRecipient.Create(
                 _registry, instance, name, collisionStrategy ?? _defaultCollisionStrategy);
 
-            Add(instanceRecipient);
+            _recipients.Add(instanceRecipient);
+
+            return instanceRecipient.Id;
         }
 
-        public void Add<TRequest, TResponse>(
+        public Guid Add<TRequest, TResponse>(
             Func<TRequest, TResponse> @delegate,
             string? name = null)
         {
@@ -112,12 +116,9 @@ namespace NScatterGather
 
             var delegateRecipient = DelegateRecipient.Create(@delegate, name);
 
-            Add(delegateRecipient);
-        }
+            _recipients.Add(delegateRecipient);
 
-        private void Add(Recipient recipient)
-        {
-            _recipients.Add(recipient);
+            return delegateRecipient.Id;
         }
 
         internal IRecipientsScope CreateScope()

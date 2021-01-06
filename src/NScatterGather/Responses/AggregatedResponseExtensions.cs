@@ -6,17 +6,14 @@ namespace NScatterGather
 {
     public static class AggregatedResponseExtensions
     {
-        public static IReadOnlyDictionary<Type, TResult> AsResultsDictionary<TResult>(
+        public static IReadOnlyDictionary<RecipientDescription, TResult> AsResultsDictionary<TResult>(
             this AggregatedResponse<TResult> aggregatedResponse)
         {
             if (aggregatedResponse is null)
                 throw new ArgumentNullException(nameof(aggregatedResponse));
 
             var dictionary = aggregatedResponse.Completed
-                .Where(x => x.RecipientType is not null)
-                .ToDictionary(
-                    x => x.RecipientType!,
-                    x => x.Result!);
+                .ToDictionary(keySelector: i => i.Recipient, elementSelector: i => i.Result!);
 
             return dictionary;
         }

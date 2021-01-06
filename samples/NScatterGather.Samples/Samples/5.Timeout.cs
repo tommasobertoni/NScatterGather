@@ -26,8 +26,8 @@ namespace NScatterGather.Samples.Samples
             Console.WriteLine($"Completed {response.Completed.Count}");
             Console.WriteLine(
                 $"Incomplete {response.Incomplete.Count}: " +
-                $"{response.Incomplete[0].RecipientType?.Name}, " +
-                $"{response.Incomplete[1].RecipientType?.Name}");
+                $"{response.Incomplete[0].Recipient.Type?.Name}, " +
+                $"{response.Incomplete[1].Recipient.Type?.Name}");
         }
 
         class Foo
@@ -46,7 +46,7 @@ namespace NScatterGather.Samples.Samples
 
         class Baz
         {
-            public Task<int> Block(int n)
+            public Task<int> Block(int _)
             {
                 var tcs = new TaskCompletionSource<int>();
                 return tcs.Task; // It will never complete.

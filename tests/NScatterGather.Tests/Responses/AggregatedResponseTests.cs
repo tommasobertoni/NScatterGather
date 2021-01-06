@@ -47,13 +47,13 @@ namespace NScatterGather.Responses
         {
             var response = AggregatedResponseFactory.CreateFrom(_runners);
 
-            Assert.Equal(typeof(SomeType), response.Completed[0].RecipientType);
+            Assert.Equal(typeof(SomeType), response.Completed[0].Recipient.Type);
             Assert.Equal("42", response.Completed[0].Result);
 
-            Assert.Equal(typeof(SomeFaultingType), response.Faulted[0].RecipientType);
+            Assert.Equal(typeof(SomeFaultingType), response.Faulted[0].Recipient.Type);
             Assert.Equal("A failure.", response.Faulted[0].Exception?.Message);
 
-            Assert.Equal(typeof(SomeNeverEndingType), response.Incomplete[0].RecipientType);
+            Assert.Equal(typeof(SomeNeverEndingType), response.Incomplete[0].Recipient.Type);
         }
 
         [Fact]

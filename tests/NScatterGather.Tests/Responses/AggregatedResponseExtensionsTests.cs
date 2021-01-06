@@ -51,7 +51,7 @@ namespace NScatterGather.Responses
             var results = response.AsResultsDictionary();
             Assert.NotNull(results);
             Assert.Single(results.Keys);
-            Assert.Equal(typeof(SomeType), results.Keys.First());
+            Assert.Equal(typeof(SomeType), results.Keys.First().Type);
             Assert.Single(results.Values);
             Assert.Equal("42", results.Values.First());
         }
