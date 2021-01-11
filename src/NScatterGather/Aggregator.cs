@@ -46,7 +46,7 @@ namespace NScatterGather
             object request,
             CancellationToken cancellationToken)
         {
-            var runners = recipients.SelectMany(recipient => recipient.Accept(request)).ToArray();
+            var runners = recipients.SelectMany(recipient => recipient.Accept(request, cancellationToken)).ToArray();
 
             var tasks = runners
                 .Select(runner => runner.Start())
@@ -90,7 +90,7 @@ namespace NScatterGather
             object request,
             CancellationToken cancellationToken)
         {
-            var runners = recipients.SelectMany(recipient => recipient.ReplyWith<TResponse>(request)).ToArray();
+            var runners = recipients.SelectMany(recipient => recipient.ReplyWith<TResponse>(request, cancellationToken)).ToArray();
 
             var tasks = runners
                 .Select(runner => runner.Start())
