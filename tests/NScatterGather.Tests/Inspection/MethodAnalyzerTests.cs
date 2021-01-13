@@ -54,7 +54,7 @@ namespace NScatterGather.Inspection
         {
             var analyzer = new MethodAnalyzer();
 
-            bool isMatch = analyzer.IsMatch(_doVoidInspection, typeof(void), out var match);
+            bool isMatch = analyzer.IsMatch(_doVoidInspection, typeof(void), false, out var match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
@@ -66,7 +66,7 @@ namespace NScatterGather.Inspection
         {
             var analyzer = new MethodAnalyzer();
 
-            bool isMatch = analyzer.IsMatch(_doVoidInspection, typeof(void), typeof(void), out var match);
+            bool isMatch = analyzer.IsMatch(_doVoidInspection, typeof(void), typeof(void), false, out var match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
@@ -81,8 +81,8 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_acceptIntVoidInspection, typeof(int), typeof(void), out var match)
-                : analyzer.IsMatch(_acceptIntVoidInspection, typeof(int), out match);
+                ? analyzer.IsMatch(_acceptIntVoidInspection, typeof(int), typeof(void), false, out var match)
+                : analyzer.IsMatch(_acceptIntVoidInspection, typeof(int), false, out match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
@@ -97,8 +97,8 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_echoStringInspection, typeof(string), typeof(string), out var match)
-                : analyzer.IsMatch(_echoStringInspection, typeof(string), out match);
+                ? analyzer.IsMatch(_echoStringInspection, typeof(string), typeof(string), false, out var match)
+                : analyzer.IsMatch(_echoStringInspection, typeof(string), false, out match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
@@ -113,8 +113,8 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_doTaskInspection, typeof(void), typeof(Task), out var match)
-                : analyzer.IsMatch(_doTaskInspection, typeof(void), out match);
+                ? analyzer.IsMatch(_doTaskInspection, typeof(void), typeof(Task), false, out var match)
+                : analyzer.IsMatch(_doTaskInspection, typeof(void), false, out match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
@@ -129,8 +129,8 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_doValueTaskInspection, typeof(void), typeof(ValueTask), out var match)
-                : analyzer.IsMatch(_doValueTaskInspection, typeof(void), out match);
+                ? analyzer.IsMatch(_doValueTaskInspection, typeof(void), typeof(ValueTask), false, out var match)
+                : analyzer.IsMatch(_doValueTaskInspection, typeof(void), false, out match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
@@ -145,8 +145,8 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_doAndReturnValueTaskInspection, typeof(void), typeof(ValueTask<int>), out var match)
-                : analyzer.IsMatch(_doAndReturnValueTaskInspection, typeof(void), out match);
+                ? analyzer.IsMatch(_doAndReturnValueTaskInspection, typeof(void), typeof(ValueTask<int>), false, out var match)
+                : analyzer.IsMatch(_doAndReturnValueTaskInspection, typeof(void), false, out match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
@@ -157,7 +157,7 @@ namespace NScatterGather.Inspection
         public void Method_returning_task_does_not_return_void()
         {
             var analyzer = new MethodAnalyzer();
-            bool isMatch = analyzer.IsMatch(_doTaskInspection, typeof(void), typeof(void), out var match);
+            bool isMatch = analyzer.IsMatch(_doTaskInspection, typeof(void), typeof(void), false, out var match);
             Assert.False(isMatch);
             Assert.Null(match);
         }
@@ -166,7 +166,7 @@ namespace NScatterGather.Inspection
         public void Method_returning_valuetask_does_not_return_void()
         {
             var analyzer = new MethodAnalyzer();
-            bool isMatch = analyzer.IsMatch(_doValueTaskInspection, typeof(void), typeof(void), out var match);
+            bool isMatch = analyzer.IsMatch(_doValueTaskInspection, typeof(void), typeof(void), false, out var match);
             Assert.False(isMatch);
             Assert.Null(match);
         }
@@ -179,8 +179,8 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_returnTaskInspection, typeof(int), typeof(Task<int>), out var match)
-                : analyzer.IsMatch(_returnTaskInspection, typeof(int), out match);
+                ? analyzer.IsMatch(_returnTaskInspection, typeof(int), typeof(Task<int>), false, out var match)
+                : analyzer.IsMatch(_returnTaskInspection, typeof(int), false, out match);
 
             Assert.True(isMatch);
             Assert.NotNull(match);
@@ -192,7 +192,7 @@ namespace NScatterGather.Inspection
         {
             var analyzer = new MethodAnalyzer();
 
-            bool isMatch = analyzer.IsMatch(_returnTaskInspection, typeof(int), typeof(Task), out var match);
+            bool isMatch = analyzer.IsMatch(_returnTaskInspection, typeof(int), typeof(Task), false, out var match);
 
             Assert.False(isMatch);
             Assert.Null(match);
@@ -206,8 +206,8 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_multiInspection, typeof(int), typeof(string), out var match)
-                : analyzer.IsMatch(_multiInspection, typeof(int), out match);
+                ? analyzer.IsMatch(_multiInspection, typeof(int), typeof(string), false, out var match)
+                : analyzer.IsMatch(_multiInspection, typeof(int), false, out match);
 
             Assert.False(isMatch);
             Assert.Null(match);
@@ -221,8 +221,8 @@ namespace NScatterGather.Inspection
             var analyzer = new MethodAnalyzer();
 
             bool isMatch = check == Check.RequestAndResponse
-                ? analyzer.IsMatch(_echoStringInspection, typeof(int), typeof(string), out var match)
-                : analyzer.IsMatch(_echoStringInspection, typeof(int), out match);
+                ? analyzer.IsMatch(_echoStringInspection, typeof(int), typeof(string), false, out var match)
+                : analyzer.IsMatch(_echoStringInspection, typeof(int), false, out match);
 
             Assert.False(isMatch);
             Assert.Null(match);
