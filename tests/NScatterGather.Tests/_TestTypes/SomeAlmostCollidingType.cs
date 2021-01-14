@@ -1,6 +1,6 @@
 ﻿namespace NScatterGather
 {
-    public class AlmostCollidingType
+    public class SomeAlmostCollidingType
     {
         public string Do(int n) => n.ToString();
 

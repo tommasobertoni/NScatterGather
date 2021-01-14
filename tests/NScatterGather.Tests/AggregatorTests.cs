@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -210,6 +211,20 @@ namespace NScatterGather
             Assert.Empty(stringsOnly.Incomplete);
 
             Assert.False(collisionDetected);
+        }
+
+        [Fact]
+        public async Task Recipients_are_cancelled_after_timeout()
+        {
+            var collection = new RecipientsCollection();
+            collection.Add<SomeType>();
+            collection.Add<SomeAlmostNeverEndingType>();
+
+            var aggregator = new Aggregator(collection);
+
+            var response = await aggregator.Send(42, TimeSpan.FromSeconds(2));
+            Assert.Equal(2, response.Completed.Count);
+            Assert.Empty(response.Incomplete);
         }
     }
 }

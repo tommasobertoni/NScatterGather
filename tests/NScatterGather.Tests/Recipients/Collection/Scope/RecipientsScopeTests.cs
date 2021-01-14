@@ -163,7 +163,7 @@ namespace NScatterGather.Recipients.Collection.Scope
             scope.OnCollision += _ => Assert.False(true, "No collisions should be detected");
 
             scope.AddTypeRecipient<SomeType>();
-            scope.AddTypeRecipient<AlmostCollidingType>();
+            scope.AddTypeRecipient<SomeAlmostCollidingType>();
 
             var two = scope.ListRecipientsReplyingWith(typeof(int), typeof(string));
             Assert.Equal(2, two.Count);
