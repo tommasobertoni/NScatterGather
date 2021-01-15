@@ -12,11 +12,15 @@ namespace NScatterGather
 {
     public class Aggregator
     {
+        public TimeSpan CancellationWindow { get; private set; }
+
         private readonly IRecipientsScope _scope;
 
         public Aggregator(RecipientsCollection collection)
         {
             _scope = collection.CreateScope();
+
+            CancellationWindow = TimeSpan.FromMilliseconds(100);
         }
 
         public async Task<AggregatedResponse<object?>> Send(
@@ -52,13 +56,16 @@ namespace NScatterGather
                 .Select(runner => runner.Start())
                 .ToArray();
 
-            var allTasksCompleted = Task.WhenAll(tasks);
-
-            if (allTasksCompleted.IsCompletedSuccessfully())
+            if (cancellationToken.IsCancellationRequested)
                 return runners;
+
+            var allTasksCompleted = Task.WhenAll(tasks);
 
             using (var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken))
                 await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
+
+            if (cancellationToken.IsCancellationRequested)
+                await WaitForLatecomers(runners).ConfigureAwait(false);
 
             return runners;
         }
@@ -96,15 +103,34 @@ namespace NScatterGather
                 .Select(runner => runner.Start())
                 .ToArray();
 
-            var allTasksCompleted = Task.WhenAll(tasks);
-
-            if (allTasksCompleted.IsCompletedSuccessfully())
+            if (cancellationToken.IsCancellationRequested)
                 return runners;
+
+            var allTasksCompleted = Task.WhenAll(tasks);
 
             using (var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken))
                 await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
+            if (cancellationToken.IsCancellationRequested)
+                await WaitForLatecomers(runners).ConfigureAwait(false);
+
             return runners;
+        }
+
+        private async Task WaitForLatecomers<TResponse>(IReadOnlyList<RecipientRunner<TResponse>> runners)
+        {
+            var incompleteRunners = runners.Where(r => !r.Task.IsCompleted);
+            var completionTasks = incompleteRunners.Select(CreateCompletionTask).ToArray();
+
+            if (!completionTasks.Any()) return;
+
+            await Task.WhenAny(completionTasks).ConfigureAwait(false);
+
+            async Task CreateCompletionTask(RecipientRunner<TResponse> runner)
+            {
+                var wait = Task.Delay(CancellationWindow);
+                await Task.WhenAny(runner.Task, wait).ConfigureAwait(false);
+            }
         }
     }
 }

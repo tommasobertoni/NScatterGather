@@ -16,6 +16,8 @@ namespace NScatterGather.Recipients.Run
         [MaybeNull, AllowNull]
         public TResult Result { get; private set; }
 
+        public Task Task { get; private set; } = Task.CompletedTask;
+
         public bool Faulted { get; private set; }
 
         public Exception? Exception { get; set; }
@@ -52,7 +54,9 @@ namespace NScatterGather.Recipients.Run
             }, ExecuteSynchronously | NotOnCanceled);
 
             // This task won't throw if the invocation failed with an exception.
-            return tcs.Task;
+            Task = tcs.Task;
+
+            return Task;
         }
 
         private void InspectAndExtract(Task<TResult> task)
