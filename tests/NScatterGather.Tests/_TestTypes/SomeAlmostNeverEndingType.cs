@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NScatterGather
@@ -10,7 +11,9 @@ namespace NScatterGather
 
         public async Task<string> Echo(int n, CancellationToken cancellationToken)
         {
-            await _semaphore.WaitAsync(cancellationToken);
+            try { await _semaphore.WaitAsync(cancellationToken); }
+            catch (OperationCanceledException) { }
+
             return n.ToString();
         }
     }
