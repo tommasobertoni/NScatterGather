@@ -124,7 +124,7 @@ namespace NScatterGather
 
             if (!completionTasks.Any()) return;
 
-            await Task.WhenAny(completionTasks).ConfigureAwait(false);
+            await Task.WhenAll(completionTasks).ConfigureAwait(false);
 
             async Task CreateCompletionTask(RecipientRunner<TResponse> runner)
             {
