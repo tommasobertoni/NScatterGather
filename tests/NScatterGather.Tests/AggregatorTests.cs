@@ -214,7 +214,7 @@ namespace NScatterGather
         }
 
         [Fact]
-        public async Task Recipients_are_cancelled_after_timeout()
+        public async Task Recipients_are_canceled_after_timeout()
         {
             var collection = new RecipientsCollection();
             collection.Add<SomeType>();
@@ -232,28 +232,6 @@ namespace NScatterGather
                 var response = await aggregator.Send<string>(42, TimeSpan.FromSeconds(2));
                 Assert.Equal(2, response.Completed.Count);
                 Assert.Empty(response.Incomplete);
-            }
-        }
-
-        [Fact]
-        public async Task Recipients_are_immediately_cancelled_via_cancellation_token()
-        {
-            var collection = new RecipientsCollection();
-            collection.Add<SomeType>();
-            collection.Add((int n) => n.ToString());
-
-            var aggregator = new Aggregator(collection);
-
-            {
-                var response = await aggregator.Send(42, new CancellationToken(canceled: true));
-                Assert.Equal(2, response.Incomplete.Count);
-                Assert.Empty(response.Completed);
-            }
-
-            {
-                var response = await aggregator.Send<string>(42, new CancellationToken(canceled: true));
-                Assert.Equal(2, response.Incomplete.Count);
-                Assert.Empty(response.Completed);
             }
         }
     }
