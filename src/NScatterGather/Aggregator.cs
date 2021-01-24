@@ -56,13 +56,10 @@ namespace NScatterGather
                 .Select(runner => runner.Start())
                 .ToArray();
 
-            if (cancellationToken.IsCancellationRequested)
-                return runners;
-
             var allTasksCompleted = Task.WhenAll(tasks);
 
-            using (var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken))
-                await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
+            using var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken);
+            await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
             if (cancellationToken.IsCancellationRequested)
                 await WaitForLatecomers(runners).ConfigureAwait(false);
@@ -103,13 +100,10 @@ namespace NScatterGather
                 .Select(runner => runner.Start())
                 .ToArray();
 
-            if (cancellationToken.IsCancellationRequested)
-                return runners;
-
             var allTasksCompleted = Task.WhenAll(tasks);
 
-            using (var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken))
-                await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
+            using var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken);
+            await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
             if (cancellationToken.IsCancellationRequested)
                 await WaitForLatecomers(runners).ConfigureAwait(false);
