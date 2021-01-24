@@ -12,7 +12,7 @@ namespace NScatterGather
 {
     public class Aggregator
     {
-        public TimeSpan CancellationWindow { get; private set; }
+        public TimeSpan CancellationWindow { get; set; }
 
         private readonly IRecipientsScope _scope;
 
