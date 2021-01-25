@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using NScatterGather.Inspection;
 using NScatterGather.Recipients;
 using NScatterGather.Recipients.Collection.Scope;
@@ -109,6 +110,20 @@ namespace NScatterGather
 
         public Guid Add<TRequest, TResponse>(
             Func<TRequest, TResponse> @delegate,
+            string? name = null)
+        {
+            if (@delegate is null)
+                throw new ArgumentNullException(nameof(@delegate));
+
+            var delegateRecipient = DelegateRecipient.Create(@delegate, name);
+
+            _recipients.Add(delegateRecipient);
+
+            return delegateRecipient.Id;
+        }
+
+        public Guid Add<TRequest, TResponse>(
+            Func<TRequest, CancellationToken, TResponse> @delegate,
             string? name = null)
         {
             if (@delegate is null)
