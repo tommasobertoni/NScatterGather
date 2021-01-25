@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace NScatterGather.Recipients.Descriptors
 {
@@ -8,10 +9,16 @@ namespace NScatterGather.Recipients.Descriptors
 
         public Type ResponseType { get; }
 
-        public DelegateRecipientDescriptor(Type requestType, Type responseType)
+        public bool AcceptsCancellationToken { get; }
+
+        public DelegateRecipientDescriptor(
+            Type requestType,
+            Type responseType,
+            bool acceptsCancellationToken)
         {
             RequestType = requestType;
             ResponseType = responseType;
+            AcceptsCancellationToken = acceptsCancellationToken;
         }
 
         public bool CanAccept(Type requestType, CollisionStrategy collisionStrategy)
@@ -22,11 +29,22 @@ namespace NScatterGather.Recipients.Descriptors
 
         public bool CanReplyWith(Type requestType, Type responseType, CollisionStrategy collisionStrategy)
         {
-            var requestAndResponseMatch =
-                TypesMatch(RequestType, requestType) &&
-                TypesMatch(ResponseType, responseType);
+            if (!TypesMatch(RequestType, requestType))
+                return false;
 
-            return requestAndResponseMatch;
+            if (TypesMatch(ResponseType, responseType))
+                return true;
+
+            // The response type may be an awaitable!
+            // (Task<TResponse>, ValueTask<TResponse>, ...)
+
+            if (!ResponseType.IsAwaitableWithResult(out var awaitResponseType))
+                return false;
+
+            if (TypesMatch(awaitResponseType, responseType))
+                return true;
+
+            return false;
         }
 
         private bool TypesMatch(Type target, Type actual)
