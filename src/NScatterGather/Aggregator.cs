@@ -12,8 +12,20 @@ namespace NScatterGather
 {
     public class Aggregator
     {
-        public TimeSpan CancellationWindow { get; set; }
+        public TimeSpan CancellationWindow
+        {
+            get { return _cancellationWindow; }
+            set
+            {
+                if (value.IsNegative())
+                    throw new ArgumentException($"{nameof(CancellationToken)} can't be negative.");
 
+                _cancellationWindow = value;
+            }
+        }
+
+
+        private TimeSpan _cancellationWindow;
         private readonly IRecipientsScope _scope;
 
         public Aggregator(RecipientsCollection collection)
