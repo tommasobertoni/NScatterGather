@@ -13,6 +13,8 @@ namespace NScatterGather.Recipients.Run
 
         public bool CompletedSuccessfully { get; private set; }
 
+        public bool AcceptedCancellationToken => _preparedInvocation.AcceptedCancellationToken;
+
         [MaybeNull, AllowNull]
         public TResult Result { get; private set; }
 

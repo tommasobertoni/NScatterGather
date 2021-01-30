@@ -24,6 +24,7 @@ namespace NScatterGather
             }
         }
 
+        public bool AllowCancellationWindowOnAllRecipients { get; set; } = false;
 
         private TimeSpan _cancellationWindow;
         private readonly IRecipientsScope _scope;
@@ -31,7 +32,6 @@ namespace NScatterGather
         public Aggregator(RecipientsCollection collection)
         {
             _scope = collection.CreateScope();
-
             CancellationWindow = TimeSpan.FromMilliseconds(100);
         }
 
@@ -126,6 +126,10 @@ namespace NScatterGather
         private async Task WaitForLatecomers<TResponse>(IReadOnlyList<RecipientRunner<TResponse>> runners)
         {
             var incompleteRunners = runners.Where(r => !r.Task.IsCompleted);
+
+            if (!AllowCancellationWindowOnAllRecipients)
+                incompleteRunners = incompleteRunners.Where(r => r.AcceptedCancellationToken);
+
             var completionTasks = incompleteRunners.Select(CreateCompletionTask).ToArray();
 
             if (!completionTasks.Any()) return;

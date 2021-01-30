@@ -38,11 +38,13 @@ namespace NScatterGather.Recipients.Invokers
             {
                 var recipientInstance = _factory.Get();
 
-                Func<object?> invocation = _methodAnalyzer.AcceptsCancellationToken(method)
+                var acceptedCancellationToken = _methodAnalyzer.AcceptsCancellationToken(method);
+
+                Func<object?> invocation = acceptedCancellationToken
                     ? () => method.Invoke(recipientInstance, new object?[] { request, cancellationToken })
                     : () => method.Invoke(recipientInstance, new object?[] { request });
 
-                return new PreparedInvocation<object?>(invocation);
+                return new PreparedInvocation<object?>(invocation, acceptedCancellationToken);
             });
 
             return preparedInvocations.ToArray();
@@ -62,11 +64,13 @@ namespace NScatterGather.Recipients.Invokers
             {
                 var recipientInstance = _factory.Get();
 
-                Func<object?> invocation = _methodAnalyzer.AcceptsCancellationToken(method)
+                var acceptedCancellationToken = _methodAnalyzer.AcceptsCancellationToken(method);
+
+                Func<object?> invocation = acceptedCancellationToken
                     ? () => method.Invoke(recipientInstance, new object?[] { request, cancellationToken })
                     : () => method.Invoke(recipientInstance, new object?[] { request });
 
-                return new PreparedInvocation<TResult>(invocation);
+                return new PreparedInvocation<TResult>(invocation, acceptedCancellationToken);
             });
 
             return preparedInvocations.ToArray();

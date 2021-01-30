@@ -35,7 +35,10 @@ namespace NScatterGather.Recipients.Invokers
                     $"Delegate '{_delegate}' doesn't support accepting requests " +
                     $"of type '{request.GetType().Name}'.");
 
-            var preparedInvocation = new PreparedInvocation<object?>(() => _delegate(request!, cancellationToken));
+            var preparedInvocation = new PreparedInvocation<object?>(
+                () => _delegate(request!, cancellationToken),
+                _descriptor.AcceptsCancellationToken);
+
             return new[] { preparedInvocation };
         }
 
@@ -49,7 +52,10 @@ namespace NScatterGather.Recipients.Invokers
                     $"requests of type '{request.GetType().Name}' and " +
                     $"returning '{typeof(TResult).Name}'.");
 
-            var preparedInvocation = new PreparedInvocation<TResult>(() => (TResult)_delegate(request, cancellationToken)!);
+            var preparedInvocation = new PreparedInvocation<TResult>(
+                () => _delegate(request, cancellationToken)!,
+                _descriptor.AcceptsCancellationToken);
+
             return new[] { preparedInvocation };
         }
 
