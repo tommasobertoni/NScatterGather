@@ -10,7 +10,7 @@ namespace NScatterGather.Recipients.Invokers
         [Fact]
         public void Can_be_cloned()
         {
-            var descriptor = new DelegateRecipientDescriptor(typeof(int), typeof(string));
+            var descriptor = new DelegateRecipientDescriptor(typeof(int), typeof(string), false);
             static object? @delegate(object o) { return o.ToString(); }
 
             var invoker = new DelegateRecipientInvoker(descriptor, @delegate);
@@ -23,7 +23,7 @@ namespace NScatterGather.Recipients.Invokers
         [Fact]
         public void Can_be_created_with_cancellation_token()
         {
-            var descriptor = new DelegateRecipientDescriptor(typeof(int), typeof(string));
+            var descriptor = new DelegateRecipientDescriptor(typeof(int), typeof(string), false);
             static object? @delegate(object o, CancellationToken cancellationToken) { return o.ToString(); }
             _ = new DelegateRecipientInvoker(descriptor, @delegate);
         }
@@ -31,7 +31,7 @@ namespace NScatterGather.Recipients.Invokers
         [Fact]
         public async Task Cancellation_token_is_forwarded()
         {
-            var descriptor = new DelegateRecipientDescriptor(typeof(int), typeof(string));
+            var descriptor = new DelegateRecipientDescriptor(typeof(int), typeof(string), false);
 
             static object? @delegate(object o, CancellationToken cancellationToken)
             {

@@ -16,7 +16,7 @@ namespace NScatterGather.Invocations
                 CollisionStrategy.UseAllMethodsMatching);
 
             var expectedResult = 42;
-            var expectedDuration = TimeSpan.FromSeconds(1);
+            var expectedDuration = TimeSpan.FromSeconds(0.1);
 
             var invocation = new CompletedInvocation<int>(
                 expectedDescription,

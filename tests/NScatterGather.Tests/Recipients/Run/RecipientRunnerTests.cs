@@ -163,7 +163,7 @@ namespace NScatterGather.Run
         public async Task Aggregate_exception_without_inner_is_handled()
         {
             var aggEx = new AggregateException("Empty inner exceptions");
-            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw aggEx));
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw aggEx, false));
 
             await runner.Start();
             Assert.Same(aggEx, runner.Exception);
@@ -175,7 +175,7 @@ namespace NScatterGather.Run
             var ex1 = new Exception();
             var ex2 = new Exception();
             var aggEx = new AggregateException(ex1, ex2);
-            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw aggEx));
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw aggEx, false));
 
             await runner.Start();
             Assert.Same(aggEx, runner.Exception);
@@ -186,7 +186,7 @@ namespace NScatterGather.Run
         {
             var ex = new Exception();
             var aggEx = new AggregateException(ex);
-            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw aggEx));
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw aggEx, false));
 
             await runner.Start();
             Assert.Same(ex, runner.Exception);
@@ -196,7 +196,7 @@ namespace NScatterGather.Run
         public async Task Target_invocation_exception_without_inner_is_handled()
         {
             var tiEx = new TargetInvocationException("Empty inner exception", null);
-            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw tiEx));
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw tiEx, false));
 
             await runner.Start();
             Assert.Same(tiEx, runner.Exception);
@@ -207,7 +207,7 @@ namespace NScatterGather.Run
         {
             var ex = new Exception();
             var tiEx = new TargetInvocationException(ex);
-            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw tiEx));
+            var runner = new RecipientRunner<int>(_recipient, new PreparedInvocation<int>(() => throw tiEx, false));
 
             await runner.Start();
             Assert.Same(ex, runner.Exception);
