@@ -27,7 +27,7 @@ namespace NScatterGather
         [Fact(Timeout = 5_000)]
         public async Task Sends_request_and_aggregates_responses()
         {
-            var result = await _aggregator.Send(42, timeout: TimeSpan.FromSeconds(1));
+            var result = await _aggregator.Send(42, timeout: TimeSpan.FromSeconds(2));
 
             Assert.NotNull(result);
             Assert.Equal(3, result.Completed.Count);
@@ -45,7 +45,7 @@ namespace NScatterGather
         [Fact(Timeout = 5_000)]
         public async Task Receives_expected_response_types()
         {
-            var result = await _aggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(1));
+            var result = await _aggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(2));
 
             Assert.NotNull(result);
             Assert.Equal(3, result.Completed.Count);

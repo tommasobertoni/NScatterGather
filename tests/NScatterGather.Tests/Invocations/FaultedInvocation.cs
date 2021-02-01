@@ -16,7 +16,7 @@ namespace NScatterGather.Invocations
                 CollisionStrategy.UseAllMethodsMatching);
 
             var expectedException = new Exception();
-            var expectedDuration = TimeSpan.FromSeconds(0.1);
+            var expectedDuration = TimeSpan.FromSeconds(1);
 
             var invocation = new FaultedInvocation(
                 expectedDescription,

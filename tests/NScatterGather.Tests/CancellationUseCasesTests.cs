@@ -24,16 +24,16 @@ namespace NScatterGather
                 return n.ToString();
             });
 
-            var aggregator = new Aggregator(collection) { CancellationWindow = TimeSpan.FromSeconds(1) };
+            var aggregator = new Aggregator(collection) { CancellationWindow = TimeSpan.FromSeconds(2) };
 
             {
-                var response = await aggregator.Send(42, TimeSpan.FromSeconds(0.1));
+                var response = await aggregator.Send(42, TimeSpan.FromSeconds(2));
                 Assert.Equal(collection.RecipientsCount, response.Completed.Count);
                 Assert.Empty(response.Incomplete);
             }
 
             {
-                var response = await aggregator.Send<string>(42, TimeSpan.FromSeconds(0.1));
+                var response = await aggregator.Send<string>(42, TimeSpan.FromSeconds(2));
                 Assert.Equal(collection.RecipientsCount, response.Completed.Count);
                 Assert.Empty(response.Incomplete);
             }
@@ -50,7 +50,7 @@ namespace NScatterGather
             var aggregator = new Aggregator(collection) { CancellationWindow = TimeSpan.FromSeconds(3) };
 
             {
-                var response = await aggregator.Send(42, timeout: TimeSpan.FromSeconds(0.1));
+                var response = await aggregator.Send(42, timeout: TimeSpan.FromSeconds(1));
                 Assert.Equal(1, response.Completed.Count);
                 Assert.Equal(1, response.Incomplete.Count);
             }
@@ -60,7 +60,7 @@ namespace NScatterGather
                 // even though it doesn't accept a cancellation token.
                 aggregator.AllowCancellationWindowOnAllRecipients = true;
 
-                var response = await aggregator.Send(42, timeout: TimeSpan.FromSeconds(0.1));
+                var response = await aggregator.Send(42, timeout: TimeSpan.FromSeconds(1));
                 Assert.Equal(2, response.Completed.Count);
                 Assert.Equal(0, response.Incomplete.Count);
             }
