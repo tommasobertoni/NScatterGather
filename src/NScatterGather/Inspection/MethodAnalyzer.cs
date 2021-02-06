@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NScatterGather.Inspection
@@ -10,6 +12,7 @@ namespace NScatterGather.Inspection
         public bool IsMatch(
             MethodInspection inspection,
             Type requestType,
+            bool allowCancellationTokenParameter,
             [NotNullWhen(true)] out MethodInfo? match)
         {
             match = null;
@@ -22,8 +25,17 @@ namespace NScatterGather.Inspection
                 return true;
             }
 
-            if (parameters.Count != 1)
+            if (parameters.Count > 2)
                 return false;
+
+            if (parameters.Count == 2)
+            {
+                if (!allowCancellationTokenParameter)
+                    return false;
+
+                if (!AcceptsCancellationToken(inspection))
+                    return false;
+            }
 
             var theParameter = parameters[0];
 
@@ -40,11 +52,12 @@ namespace NScatterGather.Inspection
             MethodInspection inspection,
             Type requestType,
             Type responseType,
+            bool allowCancellationTokenParameter,
             [NotNullWhen(true)] out MethodInfo? match)
         {
             match = null;
 
-            if (!IsMatch(inspection, requestType, out _))
+            if (!IsMatch(inspection, requestType, allowCancellationTokenParameter, out _))
                 return false;
 
             // Method has the correct input parameter.
@@ -72,6 +85,22 @@ namespace NScatterGather.Inspection
             }
 
             return false;
+        }
+
+        public bool AcceptsCancellationToken(MethodInspection inspection) =>
+            AcceptCancellationToken(inspection.Parameters);
+
+        public bool AcceptsCancellationToken(MethodInfo method) =>
+            AcceptCancellationToken(method.GetParameters());
+
+        private bool AcceptCancellationToken(IReadOnlyList<ParameterInfo> parameters)
+        {
+            if (parameters.Count != 2)
+                return false;
+
+            var theCancellationTokenParameter = parameters[1];
+
+            return theCancellationTokenParameter.ParameterType == typeof(CancellationToken);
         }
 
         private bool IsSameOrCompatible(Type baseType, Type otherType)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -10,7 +11,10 @@ namespace NScatterGather.Recipients
         public void Error_if_instance_is_null()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                DelegateRecipient.Create<int, string>(null!, name: null));
+                DelegateRecipient.Create<int, string>((null as Func<int, string>)!, name: null));
+
+            Assert.Throws<ArgumentNullException>(() =>
+                DelegateRecipient.Create<int, string>((null as Func<int, CancellationToken, string>)!, name: null));
         }
 
         [Fact]

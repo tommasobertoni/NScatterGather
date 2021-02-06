@@ -12,11 +12,27 @@ namespace NScatterGather
 {
     public class Aggregator
     {
+        public TimeSpan CancellationWindow
+        {
+            get { return _cancellationWindow; }
+            set
+            {
+                if (value.IsNegative())
+                    throw new ArgumentException($"{nameof(CancellationToken)} can't be negative.");
+
+                _cancellationWindow = value;
+            }
+        }
+
+        public bool AllowCancellationWindowOnAllRecipients { get; set; } = false;
+
+        private TimeSpan _cancellationWindow;
         private readonly IRecipientsScope _scope;
 
         public Aggregator(RecipientsCollection collection)
         {
             _scope = collection.CreateScope();
+            CancellationWindow = TimeSpan.FromMilliseconds(100);
         }
 
         public async Task<AggregatedResponse<object?>> Send(
@@ -46,7 +62,7 @@ namespace NScatterGather
             object request,
             CancellationToken cancellationToken)
         {
-            var runners = recipients.SelectMany(recipient => recipient.Accept(request)).ToArray();
+            var runners = recipients.SelectMany(recipient => recipient.Accept(request, cancellationToken)).ToArray();
 
             var tasks = runners
                 .Select(runner => runner.Start())
@@ -54,11 +70,11 @@ namespace NScatterGather
 
             var allTasksCompleted = Task.WhenAll(tasks);
 
-            if (allTasksCompleted.IsCompletedSuccessfully())
-                return runners;
+            using var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken);
+            await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
-            using (var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken))
-                await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
+            if (cancellationToken.IsCancellationRequested)
+                await WaitForLatecomers(runners).ConfigureAwait(false);
 
             return runners;
         }
@@ -90,7 +106,7 @@ namespace NScatterGather
             object request,
             CancellationToken cancellationToken)
         {
-            var runners = recipients.SelectMany(recipient => recipient.ReplyWith<TResponse>(request)).ToArray();
+            var runners = recipients.SelectMany(recipient => recipient.ReplyWith<TResponse>(request, cancellationToken)).ToArray();
 
             var tasks = runners
                 .Select(runner => runner.Start())
@@ -98,13 +114,33 @@ namespace NScatterGather
 
             var allTasksCompleted = Task.WhenAll(tasks);
 
-            if (allTasksCompleted.IsCompletedSuccessfully())
-                return runners;
+            using var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken);
+            await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
 
-            using (var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken))
-                await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
+            if (cancellationToken.IsCancellationRequested)
+                await WaitForLatecomers(runners).ConfigureAwait(false);
 
             return runners;
+        }
+
+        private async Task WaitForLatecomers<TResponse>(IReadOnlyList<RecipientRunner<TResponse>> runners)
+        {
+            var incompleteRunners = runners.Where(r => !r.Task.IsCompleted);
+
+            if (!AllowCancellationWindowOnAllRecipients)
+                incompleteRunners = incompleteRunners.Where(r => r.AcceptedCancellationToken);
+
+            var completionTasks = incompleteRunners.Select(CreateCompletionTask).ToArray();
+
+            if (!completionTasks.Any()) return;
+
+            await Task.WhenAll(completionTasks).ConfigureAwait(false);
+
+            async Task CreateCompletionTask(RecipientRunner<TResponse> runner)
+            {
+                var wait = Task.Delay(CancellationWindow);
+                await Task.WhenAny(runner.Task, wait).ConfigureAwait(false);
+            }
         }
     }
 }

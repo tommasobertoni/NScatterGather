@@ -8,11 +8,16 @@ namespace NScatterGather.Recipients.Invokers
 {
     internal class PreparedInvocation<TResult>
     {
+        public bool AcceptedCancellationToken { get; }
+
         private readonly Func<object?> _invocation;
 
-        public PreparedInvocation(Func<object?> invocation)
+        public PreparedInvocation(
+            Func<object?> invocation,
+            bool acceptedCancellationToken)
         {
             _invocation = invocation;
+            AcceptedCancellationToken = acceptedCancellationToken;
         }
 
         public async Task<TResult> Execute()

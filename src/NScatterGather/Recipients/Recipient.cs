@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using NScatterGather.Recipients.Descriptors;
 using NScatterGather.Recipients.Invokers;
 using NScatterGather.Recipients.Run;
@@ -41,9 +42,11 @@ namespace NScatterGather.Recipients
         public bool CanReplyWith(Type requestType, Type responseType) =>
             _descriptor.CanReplyWith(requestType, responseType, CollisionStrategy);
 
-        public IReadOnlyList<RecipientRunner<object?>> Accept(object request)
+        public IReadOnlyList<RecipientRunner<object?>> Accept(
+            object request,
+            CancellationToken cancellationToken = default)
         {
-            var preparedInvocations = _invoker.PrepareInvocations(request);
+            var preparedInvocations = _invoker.PrepareInvocations(request, cancellationToken);
 
             var runners = preparedInvocations.Select(preparedInvocation =>
                 new RecipientRunner<object?>(this, preparedInvocation));
@@ -51,9 +54,11 @@ namespace NScatterGather.Recipients
             return runners.ToArray();
         }
 
-        public IReadOnlyList<RecipientRunner<TResponse>> ReplyWith<TResponse>(object request)
+        public IReadOnlyList<RecipientRunner<TResponse>> ReplyWith<TResponse>(
+            object request,
+            CancellationToken cancellationToken = default)
         {
-            var preparedInvocations = _invoker.PrepareInvocations<TResponse>(request);
+            var preparedInvocations = _invoker.PrepareInvocations<TResponse>(request, cancellationToken);
 
             var runners = preparedInvocations.Select(preparedInvocation =>
                 new RecipientRunner<TResponse>(this, preparedInvocation));

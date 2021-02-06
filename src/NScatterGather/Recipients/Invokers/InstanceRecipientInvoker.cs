@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using NScatterGather.Inspection;
 using NScatterGather.Recipients.Factories;
 
@@ -8,6 +9,8 @@ namespace NScatterGather.Recipients.Invokers
 {
     internal class InstanceRecipientInvoker : IRecipientInvoker
     {
+        private static readonly MethodAnalyzer _methodAnalyzer = new MethodAnalyzer();
+
         private readonly TypeInspector _inspector;
         private readonly IRecipientFactory _factory;
         private readonly CollisionStrategy _collisionStrategy;
@@ -22,7 +25,9 @@ namespace NScatterGather.Recipients.Invokers
             _collisionStrategy = collisionStrategy;
         }
 
-        public IReadOnlyList<PreparedInvocation<object?>> PrepareInvocations(object request)
+        public IReadOnlyList<PreparedInvocation<object?>> PrepareInvocations(
+            object request,
+            CancellationToken cancellationToken = default)
         {
             if (!_inspector.TryGetMethodsAccepting(request.GetType(), _collisionStrategy, out var methods))
                 throw new InvalidOperationException(
@@ -33,14 +38,21 @@ namespace NScatterGather.Recipients.Invokers
             {
                 var recipientInstance = _factory.Get();
 
-                return new PreparedInvocation<object?>(invocation: () =>
-                    method.Invoke(recipientInstance, new object?[] { request }));
+                var acceptedCancellationToken = _methodAnalyzer.AcceptsCancellationToken(method);
+
+                Func<object?> invocation = acceptedCancellationToken
+                    ? () => method.Invoke(recipientInstance, new object?[] { request, cancellationToken })
+                    : () => method.Invoke(recipientInstance, new object?[] { request });
+
+                return new PreparedInvocation<object?>(invocation, acceptedCancellationToken);
             });
 
             return preparedInvocations.ToArray();
         }
 
-        public IReadOnlyList<PreparedInvocation<TResult>> PrepareInvocations<TResult>(object request)
+        public IReadOnlyList<PreparedInvocation<TResult>> PrepareInvocations<TResult>(
+            object request,
+            CancellationToken cancellationToken = default)
         {
             if (!_inspector.TryGetMethodsReturning(request.GetType(), typeof(TResult), _collisionStrategy, out var methods))
                 throw new InvalidOperationException(
@@ -52,8 +64,13 @@ namespace NScatterGather.Recipients.Invokers
             {
                 var recipientInstance = _factory.Get();
 
-                return new PreparedInvocation<TResult>(invocation: () =>
-                    method.Invoke(recipientInstance, new object?[] { request })!);
+                var acceptedCancellationToken = _methodAnalyzer.AcceptsCancellationToken(method);
+
+                Func<object?> invocation = acceptedCancellationToken
+                    ? () => method.Invoke(recipientInstance, new object?[] { request, cancellationToken })
+                    : () => method.Invoke(recipientInstance, new object?[] { request });
+
+                return new PreparedInvocation<TResult>(invocation, acceptedCancellationToken);
             });
 
             return preparedInvocations.ToArray();

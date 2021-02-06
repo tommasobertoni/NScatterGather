@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -69,7 +68,11 @@ namespace NScatterGather.Inspection
 
             var matches = ListMatchingMethods(requestType);
 
-            var evaluation = new MethodMatchEvaluation(requestType, responseType: null, matches);
+            var evaluation = new MethodMatchEvaluation(
+                requestType,
+                responseType: null,
+                matches);
+
             _evaluationsCache.TryAdd(evaluation);
 
             return evaluation;
@@ -78,9 +81,14 @@ namespace NScatterGather.Inspection
         private IReadOnlyList<MethodInfo> ListMatchingMethods(Type requestType)
         {
             return _methodInspections
-                .Select(i =>
+                .Select(inspection =>
                 {
-                    var isMatch = _methodAnalyzer.IsMatch(i, requestType, out var match);
+                    var isMatch = _methodAnalyzer.IsMatch(
+                        inspection,
+                        requestType,
+                        allowCancellationTokenParameter: true,
+                        out var match);
+
                     return (isMatch, match);
                 })
                 .Where(x => x.isMatch)
@@ -137,9 +145,15 @@ namespace NScatterGather.Inspection
         private IReadOnlyList<MethodInfo> ListMatchingMethods(Type requestType, Type responseType)
         {
             return _methodInspections
-                .Select(i =>
+                .Select(inspection =>
                 {
-                    var isMatch = _methodAnalyzer.IsMatch(i, requestType, responseType, out var match);
+                    var isMatch = _methodAnalyzer.IsMatch(
+                        inspection,
+                        requestType,
+                        responseType,
+                        allowCancellationTokenParameter: true,
+                        out var match);
+
                     return (isMatch, match);
                 })
                 .Where(x => x.isMatch)
