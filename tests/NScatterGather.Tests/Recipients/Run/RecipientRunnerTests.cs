@@ -37,9 +37,9 @@ namespace NScatterGather.Run
         {
             var runners = _recipient.Accept(42);
             var runner = runners[0];
-            Assert.False(runner.CompletedSuccessfully);
+            Assert.False(runner.HasCompletedSuccessfully);
             Assert.Equal(default, runner.Result);
-            Assert.False(runner.Faulted);
+            Assert.False(runner.HasFaulted);
             Assert.Null(runner.Exception);
             Assert.Equal(default, runner.StartedAt);
             Assert.Equal(default, runner.FinishedAt);
@@ -61,10 +61,10 @@ namespace NScatterGather.Run
             var runner = runners[0];
             await runner.Start();
 
-            Assert.True(runner.CompletedSuccessfully);
+            Assert.True(runner.HasCompletedSuccessfully);
             Assert.Equal("42", runner.Result);
 
-            Assert.False(runner.Faulted);
+            Assert.False(runner.HasFaulted);
             Assert.Null(runner.Exception);
 
             Assert.NotEqual(default, runner.StartedAt);
@@ -79,9 +79,9 @@ namespace NScatterGather.Run
             var runner = runners[0];
             await runner.Start();
 
-            Assert.False(runner.CompletedSuccessfully);
+            Assert.False(runner.HasCompletedSuccessfully);
             Assert.Equal(default, runner.Result);
-            Assert.True(runner.Faulted);
+            Assert.True(runner.HasFaulted);
 
             Assert.NotEqual(default, runner.StartedAt);
             Assert.NotEqual(default, runner.FinishedAt);
@@ -97,10 +97,10 @@ namespace NScatterGather.Run
             var runner = runners[0];
             await runner.Start();
 
-            Assert.False(runner.CompletedSuccessfully);
+            Assert.False(runner.HasCompletedSuccessfully);
             Assert.Equal(default, runner.Result);
 
-            Assert.True(runner.Faulted);
+            Assert.True(runner.HasFaulted);
 
             Assert.NotEqual(default, runner.StartedAt);
             Assert.NotEqual(default, runner.FinishedAt);
@@ -117,10 +117,10 @@ namespace NScatterGather.Run
             var runner = runners[0];
             await runner.Start();
 
-            Assert.False(runner.CompletedSuccessfully);
+            Assert.False(runner.HasCompletedSuccessfully);
             Assert.Equal(default, runner.Result);
 
-            Assert.True(runner.Faulted);
+            Assert.True(runner.HasFaulted);
 
             Assert.NotEqual(default, runner.StartedAt);
             Assert.NotEqual(default, runner.FinishedAt);
@@ -147,9 +147,9 @@ namespace NScatterGather.Run
             var runner = runners[0];
             await runner.Start();
 
-            Assert.False(runner.CompletedSuccessfully);
+            Assert.False(runner.HasCompletedSuccessfully);
             Assert.Equal(default, runner.Result);
-            Assert.True(runner.Faulted);
+            Assert.True(runner.HasFaulted);
 
             Assert.NotEqual(default, runner.StartedAt);
             Assert.NotEqual(default, runner.FinishedAt);

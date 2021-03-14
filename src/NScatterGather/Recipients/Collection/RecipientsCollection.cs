@@ -17,7 +17,7 @@ namespace NScatterGather
         public int RecipientsCount => _recipients.Count;
 
         private readonly List<Recipient> _recipients = new();
-        private readonly TypeInspectorRegistry _registry = new TypeInspectorRegistry();
+        private readonly TypeInspectorRegistry _registry = new();
         private readonly CollisionStrategy _defaultCollisionStrategy;
 
         public RecipientsCollection(CollisionStrategy defaultCollisionStrategy = IgnoreRecipient)
@@ -62,7 +62,7 @@ namespace NScatterGather
             if (!HasADefaultConstructor<TRecipient>())
                 throw new ArgumentException($"Type '{typeof(TRecipient).Name}' is missing a public, parameterless constructor.");
 
-            static TRecipient factoryMethod() => ((TRecipient)Activator.CreateInstance(typeof(TRecipient)))!;
+            static TRecipient factoryMethod() => (TRecipient)Activator.CreateInstance(typeof(TRecipient))!;
 
             return AddTypeRecipient(factoryMethod, name, lifetime, collisionStrategy);
 

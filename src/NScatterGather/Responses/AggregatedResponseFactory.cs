@@ -17,7 +17,7 @@ namespace NScatterGather.Responses
             {
                 var recipientDescription = RecipientDescriptionFactory.CreateFrom(invocation.Recipient);
 
-                if (invocation.CompletedSuccessfully)
+                if (invocation.HasCompletedSuccessfully)
                 {
                     var completedInvocation = new CompletedInvocation<TResponse>(
                         recipientDescription,
@@ -26,7 +26,7 @@ namespace NScatterGather.Responses
 
                     completed.Add(completedInvocation);
                 }
-                else if (invocation.Faulted)
+                else if (invocation.HasFaulted)
                 {
                     var faultedInvocation = new FaultedInvocation(
                         recipientDescription,

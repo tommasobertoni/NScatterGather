@@ -11,7 +11,7 @@ namespace NScatterGather.Recipients.Run
     {
         public Recipient Recipient { get; }
 
-        public bool CompletedSuccessfully { get; private set; }
+        public bool HasCompletedSuccessfully { get; private set; }
 
         public bool AcceptedCancellationToken => _preparedInvocation.AcceptedCancellationToken;
 
@@ -20,7 +20,7 @@ namespace NScatterGather.Recipients.Run
 
         public Task Task { get; private set; } = Task.CompletedTask;
 
-        public bool Faulted { get; private set; }
+        public bool HasFaulted { get; private set; }
 
         public Exception? Exception { get; set; }
 
@@ -68,12 +68,12 @@ namespace NScatterGather.Recipients.Run
 
             if (task.IsCompletedSuccessfully())
             {
-                CompletedSuccessfully = true;
+                HasCompletedSuccessfully = true;
                 Result = task.Result;
             }
             else if (task.IsFaulted)
             {
-                Faulted = true;
+                HasFaulted = true;
 
                 /*
                  * task.Exception would be null only due to a race condition while accessing
