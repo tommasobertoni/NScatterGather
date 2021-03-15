@@ -62,16 +62,14 @@ namespace NScatterGather
             object request,
             CancellationToken cancellationToken)
         {
-            var runners = recipients.SelectMany(recipient => recipient.Accept(request, cancellationToken)).ToArray();
+            var cancellation = new CancellationGroup(cancellationToken);
 
-            var tasks = runners
-                .Select(runner => runner.Start())
-                .ToArray();
+            var runners = recipients.SelectMany(recipient => recipient.Accept(request, cancellation.CancellationToken)).ToArray();
 
-            var allTasksCompleted = Task.WhenAll(tasks);
+            var coordinator = new RunnersCoordinator<object?>(runners);
+            coordinator.Start(cancellation);
 
-            using var cancellation = new CancellationTokenTaskSource<object?[]>(cancellationToken);
-            await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
+            await coordinator.Completed;
 
             if (cancellationToken.IsCancellationRequested)
                 await WaitForLatecomers(runners).ConfigureAwait(false);
@@ -106,16 +104,14 @@ namespace NScatterGather
             object request,
             CancellationToken cancellationToken)
         {
+            var cancellation = new CancellationGroup(cancellationToken);
+
             var runners = recipients.SelectMany(recipient => recipient.ReplyWith<TResponse>(request, cancellationToken)).ToArray();
 
-            var tasks = runners
-                .Select(runner => runner.Start())
-                .ToArray();
+            var coordinator = new RunnersCoordinator<TResponse>(runners);
+            coordinator.Start(cancellation);
 
-            var allTasksCompleted = Task.WhenAll(tasks);
-
-            using var cancellation = new CancellationTokenTaskSource<TResponse[]>(cancellationToken);
-            await Task.WhenAny(allTasksCompleted, cancellation.Task).ConfigureAwait(false);
+            await coordinator.Completed;
 
             if (cancellationToken.IsCancellationRequested)
                 await WaitForLatecomers(runners).ConfigureAwait(false);
