@@ -12,39 +12,39 @@ namespace NScatterGather
 {
     public class Aggregator
     {
-        public TimeSpan CancellationWindow
-        {
-            get { return _cancellationWindow; }
-            set
-            {
-                if (value.IsNegative())
-                    throw new ArgumentException($"{nameof(CancellationToken)} can't be negative.");
-
-                _cancellationWindow = value;
-            }
-        }
-
-        public bool AllowCancellationWindowOnAllRecipients { get; set; } = false;
-
-        private TimeSpan _cancellationWindow;
         private readonly IRecipientsScope _scope;
 
         public Aggregator(RecipientsCollection collection)
         {
             _scope = collection.CreateScope();
-            CancellationWindow = TimeSpan.FromMilliseconds(100);
         }
 
         public async Task<AggregatedResponse<object?>> Send(
             object request,
             TimeSpan timeout)
         {
-            using var cts = new CancellationTokenSource(timeout);
-            return await Send(request, cts.Token).ConfigureAwait(false);
+            return await Send(request, new ScatterGatherOptions(), timeout).ConfigureAwait(false);
         }
 
         public async Task<AggregatedResponse<object?>> Send(
             object request,
+            ScatterGatherOptions options,
+            TimeSpan timeout)
+        {
+            using var cts = new CancellationTokenSource(timeout);
+            return await Send(request, options, cts.Token).ConfigureAwait(false);
+        }
+
+        public async Task<AggregatedResponse<object?>> Send(
+            object request,
+            CancellationToken cancellationToken = default)
+        {
+            return await Send(request, new ScatterGatherOptions(), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<AggregatedResponse<object?>> Send(
+            object request,
+            ScatterGatherOptions options,
             CancellationToken cancellationToken = default)
         {
             if (request is null)
@@ -52,7 +52,7 @@ namespace NScatterGather
 
             var recipients = _scope.ListRecipientsAccepting(request.GetType());
 
-            var invocations = await Invoke(recipients, request, cancellationToken).ConfigureAwait(false);
+            var invocations = await Invoke(recipients, request, options, cancellationToken).ConfigureAwait(false);
 
             return AggregatedResponseFactory.CreateFrom(invocations);
         }
@@ -60,8 +60,10 @@ namespace NScatterGather
         private async Task<IReadOnlyList<RecipientRunner<object?>>> Invoke(
             IReadOnlyList<Recipient> recipients,
             object request,
+            ScatterGatherOptions options,
             CancellationToken cancellationToken)
         {
+            options = options.Clone(); // Create a snapshot of the options.
             var cancellation = new CancellationGroup(cancellationToken);
 
             var runners = recipients.SelectMany(recipient => recipient.Accept(request, cancellation.CancellationToken)).ToArray();
@@ -72,7 +74,7 @@ namespace NScatterGather
             await coordinator.Completed;
 
             if (cancellationToken.IsCancellationRequested)
-                await WaitForLatecomers(runners).ConfigureAwait(false);
+                await WaitForLatecomers(runners, options).ConfigureAwait(false);
 
             return runners;
         }
@@ -81,12 +83,28 @@ namespace NScatterGather
             object request,
             TimeSpan timeout)
         {
-            using var cts = new CancellationTokenSource(timeout);
-            return await Send<TResponse>(request, cts.Token).ConfigureAwait(false);
+            return await Send<TResponse>(request, new ScatterGatherOptions(), timeout).ConfigureAwait(false);
         }
 
         public async Task<AggregatedResponse<TResponse>> Send<TResponse>(
             object request,
+            ScatterGatherOptions options,
+            TimeSpan timeout)
+        {
+            using var cts = new CancellationTokenSource(timeout);
+            return await Send<TResponse>(request, options, cts.Token).ConfigureAwait(false);
+        }
+
+        public async Task<AggregatedResponse<TResponse>> Send<TResponse>(
+            object request,
+            CancellationToken cancellationToken = default)
+        {
+            return await Send<TResponse>(request, new ScatterGatherOptions(), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<AggregatedResponse<TResponse>> Send<TResponse>(
+            object request,
+            ScatterGatherOptions options,
             CancellationToken cancellationToken = default)
         {
             if (request is null)
@@ -94,7 +112,7 @@ namespace NScatterGather
 
             var recipients = _scope.ListRecipientsReplyingWith(request.GetType(), typeof(TResponse));
 
-            var runners = await Invoke<TResponse>(recipients, request, cancellationToken).ConfigureAwait(false);
+            var runners = await Invoke<TResponse>(recipients, request, options, cancellationToken).ConfigureAwait(false);
 
             return AggregatedResponseFactory.CreateFrom(runners);
         }
@@ -102,8 +120,10 @@ namespace NScatterGather
         private async Task<IReadOnlyList<RecipientRunner<TResponse>>> Invoke<TResponse>(
             IReadOnlyList<Recipient> recipients,
             object request,
+            ScatterGatherOptions options,
             CancellationToken cancellationToken)
         {
+            options = options.Clone(); // Create a snapshot of the options.
             var cancellation = new CancellationGroup(cancellationToken);
 
             var runners = recipients.SelectMany(recipient => recipient.ReplyWith<TResponse>(request, cancellationToken)).ToArray();
@@ -114,16 +134,18 @@ namespace NScatterGather
             await coordinator.Completed;
 
             if (cancellationToken.IsCancellationRequested)
-                await WaitForLatecomers(runners).ConfigureAwait(false);
+                await WaitForLatecomers(runners, options).ConfigureAwait(false);
 
             return runners;
         }
 
-        private async Task WaitForLatecomers<TResponse>(IReadOnlyList<RecipientRunner<TResponse>> runners)
+        private async Task WaitForLatecomers<TResponse>(
+            IReadOnlyList<RecipientRunner<TResponse>> runners,
+            ScatterGatherOptions options)
         {
             var incompleteRunners = runners.Where(r => !r.Task.IsCompleted);
 
-            if (!AllowCancellationWindowOnAllRecipients)
+            if (!options.AllowCancellationWindowOnAllRecipients)
                 incompleteRunners = incompleteRunners.Where(r => r.AcceptedCancellationToken);
 
             var completionTasks = incompleteRunners.Select(CreateCompletionTask).ToArray();
@@ -134,7 +156,7 @@ namespace NScatterGather
 
             async Task CreateCompletionTask(RecipientRunner<TResponse> runner)
             {
-                var wait = Task.Delay(CancellationWindow);
+                var wait = Task.Delay(options.CancellationWindow);
                 await Task.WhenAny(runner.Task, wait).ConfigureAwait(false);
             }
         }

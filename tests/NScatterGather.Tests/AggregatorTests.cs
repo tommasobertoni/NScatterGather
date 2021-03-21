@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using static NScatterGather.CancellationHelpers;
 
 namespace NScatterGather
 {
@@ -65,12 +63,6 @@ namespace NScatterGather
         {
             Assert.ThrowsAsync<ArgumentNullException>(() => _aggregator.Send((null as object)!));
             Assert.ThrowsAsync<ArgumentNullException>(() => _aggregator.Send<int>((null as object)!));
-        }
-
-        [Fact]
-        public void Cancellation_window_can_not_be_negative()
-        {
-            Assert.Throws<ArgumentException>(() => _aggregator.CancellationWindow = TimeSpan.FromSeconds(-1));
         }
     }
 }
