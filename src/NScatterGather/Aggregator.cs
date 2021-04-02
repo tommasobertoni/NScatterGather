@@ -52,9 +52,9 @@ namespace NScatterGather
 
             var recipients = _scope.ListRecipientsAccepting(request.GetType());
 
-            var invocations = await Invoke(recipients, request, options, cancellationToken).ConfigureAwait(false);
+            var runners = await Invoke(recipients, request, options, cancellationToken).ConfigureAwait(false);
 
-            return AggregatedResponseFactory.CreateFrom(invocations);
+            return AggregatedResponseFactory.CreateFrom(runners, options);
         }
 
         private async Task<IReadOnlyList<RecipientRunner<object?>>> Invoke(
@@ -68,7 +68,7 @@ namespace NScatterGather
 
             var runners = recipients.SelectMany(recipient => recipient.Accept(request, cancellation.CancellationToken)).ToArray();
 
-            var coordinator = new RunnersCoordinator<object?>(runners);
+            var coordinator = new RunnersCoordinator<object?>(runners, options);
             coordinator.Start(cancellation);
 
             await coordinator.Completed;
@@ -114,7 +114,7 @@ namespace NScatterGather
 
             var runners = await Invoke<TResponse>(recipients, request, options, cancellationToken).ConfigureAwait(false);
 
-            return AggregatedResponseFactory.CreateFrom(runners);
+            return AggregatedResponseFactory.CreateFrom(runners, options);
         }
 
         private async Task<IReadOnlyList<RecipientRunner<TResponse>>> Invoke<TResponse>(
@@ -128,7 +128,7 @@ namespace NScatterGather
 
             var runners = recipients.SelectMany(recipient => recipient.ReplyWith<TResponse>(request, cancellationToken)).ToArray();
 
-            var coordinator = new RunnersCoordinator<TResponse>(runners);
+            var coordinator = new RunnersCoordinator<TResponse>(runners, options);
             coordinator.Start(cancellation);
 
             await coordinator.Completed;

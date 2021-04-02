@@ -7,20 +7,21 @@ namespace NScatterGather.Recipients.Run
     internal class RunnersCoordinator<T>
     {
         private readonly IReadOnlyList<RecipientRunner<T>> _runners;
-        private readonly TaskCompletionSource<bool> _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly ScatterGatherOptions _options;
 
-        private readonly int? _targetCompletedRunnersCount;
+        private readonly TaskCompletionSource<bool> _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly List<RecipientRunner<T>> _completedRunners = new();
+
         private readonly object _sync = new();
 
         private CancellationGroup? _cancellation;
 
         public RunnersCoordinator(
             IReadOnlyList<RecipientRunner<T>> runners,
-            int? targetCompletedRunnersCount = null)
+            ScatterGatherOptions options)
         {
             _runners = runners;
-            _targetCompletedRunnersCount = targetCompletedRunnersCount;
+            _options = options;
         }
 
         public bool HasStarted { get; private set; }
@@ -55,6 +56,10 @@ namespace NScatterGather.Recipients.Run
 
         private void OnCompleted(RecipientRunner<T> runner)
         {
+            // Pre-lock short circuit.
+            if (RunWasCanceled()) return;
+            if (HasReachedTargetCompletedRunnersCount()) return;
+
             lock (_sync)
             {
                 if (RunWasCanceled()) return;
@@ -76,8 +81,8 @@ namespace NScatterGather.Recipients.Run
         private bool HasReachedTargetCompletedRunnersCount()
         {
             return
-                _targetCompletedRunnersCount.HasValue &&
-                _completedRunners.Count >= _targetCompletedRunnersCount.Value;
+                _options.Limit.HasValue &&
+                _completedRunners.Count >= _options.Limit.Value;
         }
 
         private void CancelRunners() =>
