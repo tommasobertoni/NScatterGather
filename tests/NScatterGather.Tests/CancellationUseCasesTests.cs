@@ -52,7 +52,7 @@ namespace NScatterGather
             var options = new ScatterGatherOptions { CancellationWindow = TimeSpan.FromSeconds(3) };
 
             {
-                var response = await aggregator.Send(42, options, timeout: TimeSpan.FromSeconds(2));
+                var response = await aggregator.Send(42, options, timeout: TimeSpan.FromSeconds(1));
                 Assert.Equal(1, response.Completed.Count);
                 Assert.Equal(1, response.Incomplete.Count);
             }
