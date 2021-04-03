@@ -136,8 +136,9 @@ namespace NScatterGather
             collection.Add(new SomeFaultingType(), name: "Some faulting type");
             collection.Add<SomeNeverEndingType>(name: "Some never ending type");
 
-            var localAggregator = new Aggregator(collection);
-            var result = await localAggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(1));
+            var aggregator = new Aggregator(collection);
+
+            var result = await aggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(1));
 
             Assert.NotNull(result);
 
@@ -152,6 +153,76 @@ namespace NScatterGather
             Assert.Equal(1, result.Incomplete.Count);
             Assert.Equal("Some never ending type", result.Incomplete[0].Recipient.Name);
             Assert.Equal(typeof(SomeNeverEndingType), result.Incomplete[0].Recipient.Type);
+        }
+
+        [Fact(Timeout = 5000)]
+        public async Task Limit_completed_recipients()
+        {
+            var collection = new RecipientsCollection();
+
+            // Three completing.
+            collection.Add<SomeType>();
+            collection.Add((int n) => n.ToString());
+            collection.Add(async (int n) =>
+            {
+                await Task.Delay(1000);
+                return n.ToString();
+            });
+
+            // Two never ending.
+            collection.Add<SomeNeverEndingType>();
+            collection.Add(new SomeNeverEndingType());
+
+            var aggregator = new Aggregator(collection);
+
+            {
+                var (completed, faulted, aaa) = await aggregator.Send(42, new ScatterGatherOptions { Limit = 1 });
+
+                Assert.Equal(1, completed.Count);
+                Assert.Empty(faulted);
+            }
+
+            {
+                var (completed, faulted, aaa) = await aggregator.Send(42, new ScatterGatherOptions { Limit = 3 });
+
+                Assert.Equal(3, completed.Count);
+                Assert.Empty(faulted);
+            }
+        }
+
+        [Fact(Timeout = 5000)]
+        public async Task Limit_returns_quickest_recipients()
+        {
+            var collection = new RecipientsCollection();
+
+            // Three completing.
+            collection.Add<SomeType>(name: "Quick 1");
+            collection.Add((int n) => n.ToString(), name: "Quick 2");
+            collection.Add(async (int n) =>
+            {
+                await Task.Delay(2000);
+                return n.ToString();
+            }, name: "Slowest");
+            collection.Add(async (int n) =>
+            {
+                await Task.Delay(1000);
+                return n.ToString();
+            }, name: "Slow");
+
+            // Two never ending.
+            collection.Add<SomeNeverEndingType>();
+            collection.Add(new SomeNeverEndingType());
+
+            var aggregator = new Aggregator(collection);
+
+            var (completed, faulted, aaa) = await aggregator.Send(42, new ScatterGatherOptions { Limit = 3 });
+
+            Assert.Equal(3, completed.Count);
+            Assert.Empty(faulted);
+
+            Assert.Contains(completed, x => x.Recipient.Name == "Quick 1");
+            Assert.Contains(completed, x => x.Recipient.Name == "Quick 2");
+            Assert.Contains(completed, x => x.Recipient.Name == "Slow");
         }
     }
 }
