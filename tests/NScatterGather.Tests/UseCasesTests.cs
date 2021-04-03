@@ -138,7 +138,7 @@ namespace NScatterGather
 
             var aggregator = new Aggregator(collection);
 
-            var result = await aggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(1));
+            var result = await aggregator.Send<string>(42, timeout: TimeSpan.FromSeconds(2));
 
             Assert.NotNull(result);
 

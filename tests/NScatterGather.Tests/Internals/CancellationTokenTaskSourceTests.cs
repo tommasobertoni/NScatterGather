@@ -18,7 +18,7 @@ namespace NScatterGather.Internals
         [Fact(Timeout = 5000)]
         public async Task Task_completes_after_expected_time()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
             using var source = new CancellationTokenTaskSource<object>(cts.Token);
 
             bool canceled = false;
